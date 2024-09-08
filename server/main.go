@@ -8,6 +8,8 @@ import (
 	"server/src/database"
 	"server/src/router"
 
+	"server/src"
+
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -15,7 +17,7 @@ import (
 
 func main() {
 
-	config := ConfigEnv()
+	config := src.ConfigEnv()
 
 	gin.SetMode(config.Gin_Mode)
 
