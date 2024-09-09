@@ -118,18 +118,48 @@ func (d *Database) GetUserFeed(following []string) ([]post.DBPost, error) {
 }
 
 func (d *Database) GetUserInterests(interests []string) ([]post.DBPost, error) {
-	return d.getFilteredWithValidation(interests, constants.TAGS_FIELD, "$all")
-}
-
-func (d *Database) WordSearchPosts(words string) ([]post.DBPost, error) {
-	return d.getFilteredWithValidation(strings.Split(words, " "), constants.TAGS_FIELD, "$all")
-}
-
-func (d *Database) getFilteredWithValidation(dataFilter []string, field string, filterLogic string) ([]post.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []post.DBPost
 
-	filter := bson.M{field: bson.M{filterLogic: dataFilter}}
+	filter := bson.M{constants.TAGS_FIELD: bson.M{"$all": interests}}
+
+	cursor, err := postCollection.Find(context.Background(), filter)
+	if err != nil {
+		log.Println(err)
+	}
+	defer cursor.Close(context.Background())
+
+	for cursor.Next(context.Background()) {
+		var dbPost post.DBPost
+		err := cursor.Decode(&dbPost)
+		if err != nil {
+			log.Println(err)
+		}
+		if dbPost.Public {
+			posts = append(posts, dbPost)
+		}
+	}
+
+	sort.Slice(posts, func(i, j int) bool {
+		return posts[i].Time.After(posts[j].Time)
+	})
+
+	return posts, err
+}
+
+func (d *Database) WordSearchPosts(words string) ([]post.DBPost, error) {
+	
+	postCollection := d.db.Collection(FEED_COLLECTION)
+	var posts []post.DBPost
+
+	filters := bson.A{}
+
+	for _, word := range strings.Split(words, " ") {
+		log.Println(word)
+		filters = append(filters, bson.M{constants.CONTENT_FIELD: bson.M{"$regex": word, "$options": "i"}})
+	}
+
+	filter := bson.M{"$or": filters}
 
 	cursor, err := postCollection.Find(context.Background(), filter)
 	if err != nil {
