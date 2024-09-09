@@ -11,7 +11,7 @@ type DBPost struct {
 	Content   string    `bson:"content"`
 	Author_ID string    `bson:"author_id"`
 	Time      time.Time `bson:"time"`
-	// Privacy   int    `bson:"privacy"`
+	Public   bool    `bson:"public"`
 	Tags     []string  `bson:"tags"`
 	// Likes is a list with the user_id of the users that liked the post
 }
@@ -24,13 +24,14 @@ type PostOutput struct {
 	Time      time.Time `json:"-"`
 }
 
-func NewDBPost(author_id string, content string, tags []string) DBPost {
+func NewDBPost(author_id string, content string, tags []string, privacy bool) DBPost {
 	return DBPost{
 		Post_ID:   uuid.NewString(),
 		Content:   content,
 		Author_ID: author_id,
 		Time:      time.Now(),
 		Tags:      tags,
+		Public:   privacy,
 	}
 }
 

@@ -37,7 +37,7 @@ func (c *PostController) NewPost(context *gin.Context) {
 		return
 	}
 
-	postNew := post.NewDBPost(newPost.Author_ID, newPost.Content, newPost.Tags)
+	postNew := post.NewDBPost(newPost.Author_ID, newPost.Content, newPost.Tags, newPost.Public)
 
 	if err := c.db.AddNewPost(postNew); err != nil {
 		context.JSON(http.StatusInternalServerError, postErrors.DatabaseError())
@@ -60,7 +60,7 @@ func (c *PostController) GetPostByID(context *gin.Context, postID string) {
 		return
 	}
 
-	result:= gin.H{
+	result := gin.H{
 		"post": post,
 	}
 	context.JSON(http.StatusOK, result)
@@ -94,15 +94,15 @@ func (c *PostController) UpdatePostContentByID(context *gin.Context, postID stri
 
 	if err != nil {
 		if errors.Is(err, postErrors.ErrTwitsnapNotFound) {
-		context.JSON(http.StatusNotFound, postErrors.TwitsnapNotFound(postID))
-		return
+			context.JSON(http.StatusNotFound, postErrors.TwitsnapNotFound(postID))
+			return
 		} else {
 			context.JSON(http.StatusInternalServerError, postErrors.DatabaseError())
 			return
 		}
 	}
 
-	result:= gin.H{
+	result := gin.H{
 		"post": modPost,
 	}
 
@@ -128,19 +128,18 @@ func (c *PostController) UpdatePostTagsByID(context *gin.Context, postID string)
 		if errors.Is(err, postErrors.ErrTwitsnapNotFound) {
 			context.JSON(http.StatusNotFound, postErrors.TwitsnapNotFound(postID))
 			return
-			} else {
-				context.JSON(http.StatusInternalServerError, postErrors.DatabaseError())
-				return
-			}
+		} else {
+			context.JSON(http.StatusInternalServerError, postErrors.DatabaseError())
+			return
+		}
 	}
 
-	result:= gin.H{
+	result := gin.H{
 		"post": modPost,
 	}
 
 	context.JSON(http.StatusOK, result)
 }
-
 
 func (c *PostController) GetUserFeed(context *gin.Context) {
 	following := context.QueryArray("following")
@@ -159,6 +158,24 @@ func (c *PostController) GetUserInterests(context *gin.Context) {
 	interests := context.QueryArray("tags")
 
 	posts, err := c.db.GetUserInterests(interests)
+
+	if err != nil {
+		context.JSON(http.StatusNotFound, err.Error())
+		return
+	}
+
+	if posts == nil {
+		context.JSON(http.StatusNotFound, postErrors.NoTagsFound())
+		return
+	}
+
+	context.JSON(http.StatusOK, posts)
+}
+
+func (c *PostController) WordsSearch(context *gin.Context) {
+	words := context.Query("words")
+
+	posts, err := c.db.WordSearchPosts(words)
 
 	if err != nil {
 		context.JSON(http.StatusNotFound, err.Error())

@@ -45,6 +45,11 @@ func CreateRouter(db *database.Database) *gin.Engine {
 		postController.GetUserInterests(c)
 	})
 
+	r.GET("/twitsnap/wordsearch", func(c *gin.Context) {
+		postController.WordsSearch(c)
+	})
+
+
 	r.DELETE("/twitsnap/:id", func(c *gin.Context) {
 		postController.DeletePostByID(c, c.Param("id"))
 	})

@@ -5,10 +5,12 @@ import (
 	"log"
 	"server/src/post"
 	"sort"
+	"strings"
+
+	postErrors "server/src/all_errors"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	postErrors "server/src/all_errors"
 
 	constants "server/src"
 )
@@ -88,14 +90,42 @@ func (d *Database) UpdatePosTags(postID string, newTags []string) (post.DBPost, 
 }
 
 func (d *Database) GetUserFeed(following []string) ([]post.DBPost, error) {
-	return d.getFiltered(following, constants.AUTHOR_ID_FIELD, "$in")
+	postCollection := d.db.Collection(FEED_COLLECTION)
+	var posts []post.DBPost
+
+	filter := bson.M{constants.AUTHOR_ID_FIELD: bson.M{"$in": following}}
+
+	cursor, err := postCollection.Find(context.Background(), filter)
+	if err != nil {
+		log.Println(err)
+	}
+	defer cursor.Close(context.Background())
+
+	for cursor.Next(context.Background()) {
+		var dbPost post.DBPost
+		err := cursor.Decode(&dbPost)
+		if err != nil {
+			log.Println(err)
+		}
+		posts = append(posts, dbPost)
+	}
+
+	sort.Slice(posts, func(i, j int) bool {
+		return posts[i].Time.After(posts[j].Time)
+	})
+
+	return posts, err
 }
 
 func (d *Database) GetUserInterests(interests []string) ([]post.DBPost, error) {
-	return d.getFiltered(interests, constants.TAGS_FIELD, "$all")
+	return d.getFilteredWithValidation(interests, constants.TAGS_FIELD, "$all")
 }
 
-func (d *Database) getFiltered(dataFilter []string, field string, filterLogic string) ([]post.DBPost, error) {
+func (d *Database) WordSearchPosts(words string) ([]post.DBPost, error) {
+	return d.getFilteredWithValidation(strings.Split(words, " "), constants.TAGS_FIELD, "$all")
+}
+
+func (d *Database) getFilteredWithValidation(dataFilter []string, field string, filterLogic string) ([]post.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []post.DBPost
 
@@ -113,7 +143,9 @@ func (d *Database) getFiltered(dataFilter []string, field string, filterLogic st
 		if err != nil {
 			log.Println(err)
 		}
-		posts = append(posts, dbPost)
+		if dbPost.Public {
+			posts = append(posts, dbPost)
+		}
 	}
 
 	sort.Slice(posts, func(i, j int) bool {
