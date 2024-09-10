@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateRouter(db *database.Database) *gin.Engine {
+func CreateRouter(db database.Database) *gin.Engine {
 	r := gin.Default()
 
 	// create a postController

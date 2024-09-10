@@ -37,7 +37,7 @@ func main() {
 		}
 	}()
 
-	db := database.NewDatabase(client)
+	db := database.NewAppDatabase(client)
 
 	r := router.CreateRouter(db)
 

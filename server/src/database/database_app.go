@@ -20,15 +20,15 @@ const (
 	FEED_COLLECTION = "posts"
 )
 
-type Database struct {
+type AppDatabase struct {
 	db *mongo.Database
 }
 
-func NewDatabase(client *mongo.Client) *Database {
-	return &Database{db: client.Database(DATABASE_NAME)}
+func NewAppDatabase(client *mongo.Client) Database {
+	return &AppDatabase{db: client.Database(DATABASE_NAME)}
 }
 
-func (d *Database) AddNewPost(newPost post.DBPost) error {
+func (d *AppDatabase) AddNewPost(newPost post.DBPost) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	_, err := postCollection.InsertOne(context.Background(), newPost)
 	if err != nil {
@@ -37,13 +37,13 @@ func (d *Database) AddNewPost(newPost post.DBPost) error {
 	return err
 }
 
-func (d *Database) GetPostByID(postID string) (post.DBPost, error) {
+func (d *AppDatabase) GetPostByID(postID string) (post.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	post, err := d.findPost(postID, postCollection)
 	return post, err
 }
 
-func (d *Database) DeletePostByID(postID string) error {
+func (d *AppDatabase) DeletePostByID(postID string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	filter := bson.M{constants.POST_ID_FIELD: postID}
@@ -55,7 +55,7 @@ func (d *Database) DeletePostByID(postID string) error {
 	return err
 }
 
-func (d *Database) UpdatePostContent(postID string, newContent string) (post.DBPost, error) {
+func (d *AppDatabase) UpdatePostContent(postID string, newContent string) (post.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var post post.DBPost
 
@@ -72,7 +72,7 @@ func (d *Database) UpdatePostContent(postID string, newContent string) (post.DBP
 	return post, err
 }
 
-func (d *Database) UpdatePosTags(postID string, newTags []string) (post.DBPost, error) {
+func (d *AppDatabase) UpdatePostTags(postID string, newTags []string) (post.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var post post.DBPost
 
@@ -89,7 +89,7 @@ func (d *Database) UpdatePosTags(postID string, newTags []string) (post.DBPost, 
 	return post, err
 }
 
-func (d *Database) GetUserFeed(following []string) ([]post.DBPost, error) {
+func (d *AppDatabase) GetUserFeed(following []string) ([]post.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []post.DBPost
 
@@ -117,7 +117,7 @@ func (d *Database) GetUserFeed(following []string) ([]post.DBPost, error) {
 	return posts, err
 }
 
-func (d *Database) GetUserInterests(interests []string) ([]post.DBPost, error) {
+func (d *AppDatabase) GetUserInterests(interests []string) ([]post.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []post.DBPost
 
@@ -147,7 +147,7 @@ func (d *Database) GetUserInterests(interests []string) ([]post.DBPost, error) {
 	return posts, err
 }
 
-func (d *Database) WordSearchPosts(words string) ([]post.DBPost, error) {
+func (d *AppDatabase) WordSearchPosts(words string) ([]post.DBPost, error) {
 	
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []post.DBPost
@@ -185,7 +185,7 @@ func (d *Database) WordSearchPosts(words string) ([]post.DBPost, error) {
 	return posts, err
 }
 
-func (d *Database) findPost(postID string, postCollection *mongo.Collection) (post.DBPost, error) {
+func (d *AppDatabase) findPost(postID string, postCollection *mongo.Collection) (post.DBPost, error) {
 	var post post.DBPost
 	filter := bson.M{constants.POST_ID_FIELD: postID}
 	err := postCollection.FindOne(context.Background(), filter).Decode(&post)

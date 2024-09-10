@@ -12,10 +12,10 @@ import (
 )
 
 type PostController struct {
-	db *database.Database
+	db database.Database
 }
 
-func NewPostController(db *database.Database) *PostController {
+func NewPostController(db database.Database) *PostController {
 	return &PostController{db: db}
 }
 
@@ -122,7 +122,7 @@ func (c *PostController) UpdatePostTagsByID(context *gin.Context, postID string)
 		return
 	}
 
-	modPost, err := c.db.UpdatePosTags(postID, newTags.Tags)
+	modPost, err := c.db.UpdatePostTags(postID, newTags.Tags)
 
 	if err != nil {
 		if errors.Is(err, postErrors.ErrTwitsnapNotFound) {
@@ -151,7 +151,11 @@ func (c *PostController) GetUserFeed(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, posts)
+	result := gin.H{
+		"posts": posts,
+	}
+
+	context.JSON(http.StatusOK, result)
 }
 
 func (c *PostController) GetUserInterests(context *gin.Context) {
@@ -183,7 +187,7 @@ func (c *PostController) WordsSearch(context *gin.Context) {
 	}
 
 	if posts == nil {
-		context.JSON(http.StatusNotFound, postErrors.NoTagsFound())
+		context.JSON(http.StatusNotFound, postErrors.NoWordssFound())
 		return
 	}
 
