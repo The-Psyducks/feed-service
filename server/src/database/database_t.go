@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	postErrors "server/src/all_errors"
-
 	"github.com/mjarkk/mongomock"
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/exp/slices"
@@ -76,29 +75,53 @@ func (d *TestDatabase) EditPost(postID string, editInfo post.EditPostExpectedFor
 func (d *TestDatabase) updatePostContent(postID string, newContent string)  error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
-	filter := bson.M{constants.POST_ID_FIELD: postID}
-	update := bson.M{"$set": bson.M{constants.CONTENT_FIELD: newContent}}
-
-	err := postCollection.ReplaceFirst(filter, update)
-	if err != nil {
-		log.Println(err)
+	if len(newContent) == 0 {
+		return nil
 	}
 
-	return err
+	post, err := d.findPost(postID, postCollection)
+
+	if err != nil {
+		return err
+	}
+
+	err_2 := d.DeletePostByID(postID)
+
+	if err_2 != nil {
+		return err_2
+	}
+
+	post.Content = newContent
+
+	err_3 := d.AddNewPost(post)
+
+	return err_3
 }
 
 func (d *TestDatabase) updatePostTags(postID string, newTags []string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
-
-	filter := bson.M{constants.POST_ID_FIELD: postID}
-	update := bson.M{"$set": bson.M{constants.TAGS_FIELD: newTags}}
-
-	err := postCollection.ReplaceFirst(filter, update)
-	if err != nil {
-		log.Println(err)
+	
+	if len(newTags) == 0 {
+		return nil
 	}
 
-	return err
+	post, err := d.findPost(postID, postCollection)
+
+	if err != nil {
+		return err
+	}
+
+	err_2 := d.DeletePostByID(postID)
+
+	if err_2 != nil {
+		return err_2
+	}
+
+	post.Tags = newTags
+
+	err_3 := d.AddNewPost(post)
+
+	return err_3
 }
 
 func (d *TestDatabase) GetUserFeed(following []string) ([]post.DBPost, error) {

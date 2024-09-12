@@ -102,7 +102,6 @@ func (c *PostController) UpdatePostByID(context *gin.Context, postID string) {
 		}
 	}
 
-
 	result := gin.H{
 		"post": modPost,
 	}

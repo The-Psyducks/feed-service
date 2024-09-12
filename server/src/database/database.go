@@ -61,8 +61,15 @@ func (d *AppDatabase) EditPost(postID string, editInfo post.EditPostExpectedForm
 
 	err := d.updatePostContent(postID, editInfo.Content)
 
-	err = d.updatePostTags(postID, editInfo.Tags)
+	if err != nil {
+		return post, err
+	}
 
+	err_2 := d.updatePostTags(postID, editInfo.Tags)
+
+	if err_2 != nil {
+		return post, err_2
+	}
 
 	post, err = d.findPost(postID, postCollection)
 
@@ -93,7 +100,7 @@ func (d *AppDatabase) updatePostTags(postID string, newTags []string) error {
 	if len(newTags) == 0 {
 		return nil
 	}
-	
+
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	filter := bson.M{constants.POST_ID_FIELD: postID}
