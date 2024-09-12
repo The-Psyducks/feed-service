@@ -196,5 +196,9 @@ func (c *PostController) WordsSearch(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, posts)
+	result := gin.H{
+		"posts": posts,
+	}
+
+	context.JSON(http.StatusOK, result)
 }

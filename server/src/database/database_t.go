@@ -168,16 +168,11 @@ func (d *TestDatabase) WordSearchPosts(words string) ([]post.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []post.DBPost
 
-	filters := bson.A{}
+	filter := []string{}
 
-	for _, word := range strings.Split(words, " ") {
-		log.Println(word)
-		filters = append(filters, bson.M{constants.CONTENT_FIELD: bson.M{"$regex": word, "$options": "i"}})
-	}
+	filter = append(filter, strings.Split(words, " ")...)
 
-	filter := bson.M{"$or": filters}
-
-	cursor, err := postCollection.FindCursor(filter)
+	cursor, err := postCollection.FindCursor(bson.M{})
 	if err != nil {
 		log.Println(err)
 	}
@@ -197,7 +192,26 @@ func (d *TestDatabase) WordSearchPosts(words string) ([]post.DBPost, error) {
 		return posts[i].Time.After(posts[j].Time)
 	})
 
-	return posts, err
+	result := []post.DBPost{}
+
+	for _, post := range posts {
+		postContent := strings.Split(post.Content, " ")
+
+		if containsOne(postContent, filter) {
+			result = append(result, post)
+		}
+	}
+
+	return result, err
+}
+
+func containsOne(s []string, e []string) bool {
+	for _, a := range e {
+		if slices.Contains(s, a) {
+			return true
+		}
+	}
+	return false
 }
 
 func (d *TestDatabase) findPost(postID string, postCollection *mongomock.Collection) (post.DBPost, error) {
