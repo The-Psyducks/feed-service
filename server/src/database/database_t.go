@@ -10,6 +10,7 @@ import (
 
 	"github.com/mjarkk/mongomock"
 	"go.mongodb.org/mongo-driver/bson"
+	"golang.org/x/exp/slices"
 
 	constants "server/src"
 )
@@ -87,9 +88,8 @@ func (d *TestDatabase) GetUserFeed(following []string) ([]post.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []post.DBPost
 
-	filter := bson.M{constants.AUTHOR_ID_FIELD: bson.M{"$in": following}}
 
-	cursor, err := postCollection.FindCursor(filter)
+	cursor, err := postCollection.FindCursor(bson.M{})
 	if err != nil {
 		log.Println(err)
 	}
@@ -107,16 +107,23 @@ func (d *TestDatabase) GetUserFeed(following []string) ([]post.DBPost, error) {
 		return posts[i].Time.After(posts[j].Time)
 	})
 
-	return posts, err
+	feed := []post.DBPost{}
+
+	for _, post := range posts {
+		if slices.Contains(following, post.Author_ID) {
+			feed = append(feed, post)
+		} 
+	}
+
+	return feed, err
 }
 
 func (d *TestDatabase) GetUserInterests(interests []string) ([]post.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []post.DBPost
 
-	filter := bson.M{constants.TAGS_FIELD: bson.M{"$all": interests}}
 
-	cursor, err := postCollection.FindCursor(filter)
+	cursor, err := postCollection.FindCursor(bson.M{})
 	if err != nil {
 		log.Println(err)
 	}
@@ -136,7 +143,24 @@ func (d *TestDatabase) GetUserInterests(interests []string) ([]post.DBPost, erro
 		return posts[i].Time.After(posts[j].Time)
 	})
 
-	return posts, err
+	feed := []post.DBPost{}
+
+	for _, post := range posts {
+		if containsAll(post.Tags, interests) {
+			feed = append(feed, post)
+		} 
+	}
+
+	return feed, err
+}
+
+func containsAll(s []string, e []string) bool {
+	for _, a := range e {
+		if !slices.Contains(s, a) {
+			return false
+		}
+	}
+	return true
 }
 
 func (d *TestDatabase) WordSearchPosts(words string) ([]post.DBPost, error) {

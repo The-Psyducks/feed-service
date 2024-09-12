@@ -17,10 +17,6 @@ func CreateRouter(db database.Database) *gin.Engine {
 		postController.NewPost(c)
 	})
 
-	r.POST("/twitsnap/like/:id", func(c *gin.Context) {
-		// controller.PostLike(c)
-	})
-
 	r.PUT("/twitsnap/content/:id", func(c *gin.Context) {
 		postController.UpdatePostContentByID(c, c.Param("id"))
 	})
@@ -31,10 +27,6 @@ func CreateRouter(db database.Database) *gin.Engine {
 
 	r.GET("/twitsnap/feed", func(c *gin.Context) {
 		postController.GetUserFeed(c)
-	})
-
-	r.GET("/twitsnap/myposts/:id", func(c *gin.Context) {
-		// controller.GetAllTwitsnaps(c)
 	})
 
 	r.GET("/twitsnap/:id", func(c *gin.Context) {
@@ -48,7 +40,6 @@ func CreateRouter(db database.Database) *gin.Engine {
 	r.GET("/twitsnap/wordsearch", func(c *gin.Context) {
 		postController.WordsSearch(c)
 	})
-
 
 	r.DELETE("/twitsnap/:id", func(c *gin.Context) {
 		postController.DeletePostByID(c, c.Param("id"))
