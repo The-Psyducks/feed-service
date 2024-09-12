@@ -12,9 +12,9 @@ type LikeExpectedFormat struct {
 }
 
 type EditPostExpectedFormat struct {
-	Content string `json:"content" validate:"required"`
+	Content string `json:"content"`
+	Tags []string `json:"tags"`
 }
 
 type EditPostTagsExpectedFormat struct {
-	Tags []string `json:"tags" validate:"required"`
 }

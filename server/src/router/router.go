@@ -17,12 +17,8 @@ func CreateRouter(db database.Database) *gin.Engine {
 		postController.NewPost(c)
 	})
 
-	r.PUT("/twitsnap/content/:id", func(c *gin.Context) {
-		postController.UpdatePostContentByID(c, c.Param("id"))
-	})
-
-	r.PUT("/twitsnap/tags/:id", func(c *gin.Context) {
-		postController.UpdatePostTagsByID(c, c.Param("id"))
+	r.PUT("/twitsnap/edit/:id", func(c *gin.Context) {
+		postController.UpdatePostByID(c, c.Param("id"))
 	})
 
 	r.GET("/twitsnap/feed", func(c *gin.Context) {

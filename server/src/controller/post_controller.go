@@ -77,20 +77,20 @@ func (c *PostController) DeletePostByID(context *gin.Context, postID string) {
 	context.JSON(http.StatusNoContent, gin.H{})
 }
 
-func (c *PostController) UpdatePostContentByID(context *gin.Context, postID string) {
-	var newContent post.EditPostExpectedFormat
-	if err := context.ShouldBind(&newContent); err != nil {
+func (c *PostController) UpdatePostByID(context *gin.Context, postID string) {
+	var editInfo post.EditPostExpectedFormat
+	if err := context.ShouldBind(&editInfo); err != nil {
 		context.JSON(http.StatusBadRequest, postErrors.UnexpectedFormat())
 		return
 	}
 
 	validate := validator.New()
-	if err := validate.Struct(newContent); err != nil {
+	if err := validate.Struct(editInfo); err != nil {
 		context.JSON(http.StatusBadRequest, postErrors.TwitSnapImportantFieldsMissing(err))
 		return
 	}
 
-	modPost, err := c.db.UpdatePostContent(postID, newContent.Content)
+	modPost, err := c.db.EditPost(postID, editInfo)
 
 	if err != nil {
 		if errors.Is(err, postErrors.ErrTwitsnapNotFound) {
@@ -102,37 +102,6 @@ func (c *PostController) UpdatePostContentByID(context *gin.Context, postID stri
 		}
 	}
 
-	result := gin.H{
-		"post": modPost,
-	}
-
-	context.JSON(http.StatusOK, result)
-}
-
-func (c *PostController) UpdatePostTagsByID(context *gin.Context, postID string) {
-	var newTags post.EditPostTagsExpectedFormat
-	if err := context.ShouldBind(&newTags); err != nil {
-		context.JSON(http.StatusBadRequest, postErrors.UnexpectedFormat())
-		return
-	}
-
-	validate := validator.New()
-	if err := validate.Struct(newTags); err != nil {
-		context.JSON(http.StatusBadRequest, postErrors.TwitSnapImportantFieldsMissing(err))
-		return
-	}
-
-	modPost, err := c.db.UpdatePostTags(postID, newTags.Tags)
-
-	if err != nil {
-		if errors.Is(err, postErrors.ErrTwitsnapNotFound) {
-			context.JSON(http.StatusNotFound, postErrors.TwitsnapNotFound(postID))
-			return
-		} else {
-			context.JSON(http.StatusInternalServerError, postErrors.DatabaseError())
-			return
-		}
-	}
 
 	result := gin.H{
 		"post": modPost,

@@ -55,9 +55,27 @@ func (d *AppDatabase) DeletePostByID(postID string) error {
 	return err
 }
 
-func (d *AppDatabase) UpdatePostContent(postID string, newContent string) (post.DBPost, error) {
+func (d *AppDatabase) EditPost(postID string, editInfo post.EditPostExpectedFormat) (post.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var post post.DBPost
+
+	err := d.updatePostContent(postID, editInfo.Content)
+
+	err = d.updatePostTags(postID, editInfo.Tags)
+
+
+	post, err = d.findPost(postID, postCollection)
+
+	return post, err
+}
+
+func (d *AppDatabase) updatePostContent(postID string, newContent string)  error {
+
+	if len(newContent) == 0 {
+		return nil
+	}
+
+	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	filter := bson.M{constants.POST_ID_FIELD: postID}
 	update := bson.M{"$set": bson.M{constants.CONTENT_FIELD: newContent}}
@@ -67,14 +85,16 @@ func (d *AppDatabase) UpdatePostContent(postID string, newContent string) (post.
 		log.Println(err)
 	}
 
-	post, err = d.findPost(postID, postCollection)
-
-	return post, err
+	return err
 }
 
-func (d *AppDatabase) UpdatePostTags(postID string, newTags []string) (post.DBPost, error) {
+func (d *AppDatabase) updatePostTags(postID string, newTags []string) error {
+
+	if len(newTags) == 0 {
+		return nil
+	}
+	
 	postCollection := d.db.Collection(FEED_COLLECTION)
-	var post post.DBPost
 
 	filter := bson.M{constants.POST_ID_FIELD: postID}
 	update := bson.M{"$set": bson.M{constants.TAGS_FIELD: newTags}}
@@ -84,9 +104,7 @@ func (d *AppDatabase) UpdatePostTags(postID string, newTags []string) (post.DBPo
 		log.Println(err)
 	}
 
-	post, err = d.findPost(postID, postCollection)
-
-	return post, err
+	return err
 }
 
 func (d *AppDatabase) GetUserFeed(following []string) ([]post.DBPost, error) {
