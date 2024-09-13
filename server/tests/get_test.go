@@ -120,10 +120,5 @@ func TestGetPostWithInvalidID(t *testing.T) {
 	log.Println(result_post)
 
 	assert.Equal(t, err, nil)
-	assert.Equal(t, http.StatusOK, second.Code)
-	assert.Equal(t, result_post.Post.Content, content)
-	assert.Equal(t, result_post.Post.Author_ID, author_id)
-	assert.Equal(t, result_post.Post.Tags, tags)
-	assert.Equal(t, result_post.Post.Public, public)
+	assert.Equal(t, http.StatusNotFound, second.Code)
 }
-

@@ -147,7 +147,7 @@ func TestGetInterests(t *testing.T) {
 		}
 	}{}
 	
-	getFeed, _ := http.NewRequest("GET", "/twitsnap/interests?tags=apple", nil)
+	getFeed, _ := http.NewRequest("GET", "/twitsnap/hashtags?tags=apple", nil)
 	
 	feedRecorder := httptest.NewRecorder()
 	r.ServeHTTP(feedRecorder, getFeed)
