@@ -12,13 +12,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	constants "server/src"
 )
 
-const (
-	DATABASE_NAME   = "feed"
-	FEED_COLLECTION = "posts"
-)
+
 
 type AppDatabase struct {
 	db *mongo.Database
@@ -46,7 +42,7 @@ func (d *AppDatabase) GetPostByID(postID string) (models.DBPost, error) {
 func (d *AppDatabase) DeletePostByID(postID string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
-	filter := bson.M{constants.POST_ID_FIELD: postID}
+	filter := bson.M{POST_ID_FIELD: postID}
 
 	_, err := postCollection.DeleteOne(context.Background(), filter)
 	if err != nil {
@@ -84,8 +80,8 @@ func (d *AppDatabase) updatePostContent(postID string, newContent string) error 
 
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
-	filter := bson.M{constants.POST_ID_FIELD: postID}
-	update := bson.M{"$set": bson.M{constants.CONTENT_FIELD: newContent}}
+	filter := bson.M{POST_ID_FIELD: postID}
+	update := bson.M{"$set": bson.M{CONTENT_FIELD: newContent}}
 
 	_, err := postCollection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
@@ -103,8 +99,8 @@ func (d *AppDatabase) updatePostTags(postID string, newTags []string) error {
 
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
-	filter := bson.M{constants.POST_ID_FIELD: postID}
-	update := bson.M{"$set": bson.M{constants.TAGS_FIELD: newTags}}
+	filter := bson.M{POST_ID_FIELD: postID}
+	update := bson.M{"$set": bson.M{TAGS_FIELD: newTags}}
 
 	_, err := postCollection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
@@ -118,7 +114,7 @@ func (d *AppDatabase) GetUserFeed(following []string) ([]models.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []models.DBPost
 
-	filter := bson.M{constants.AUTHOR_ID_FIELD: bson.M{"$in": following}}
+	filter := bson.M{AUTHOR_ID_FIELD: bson.M{"$in": following}}
 
 	cursor, err := postCollection.Find(context.Background(), filter)
 	if err != nil {
@@ -146,7 +142,7 @@ func (d *AppDatabase) GetUserHashtags(interests []string) ([]models.DBPost, erro
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []models.DBPost
 
-	filter := bson.M{constants.TAGS_FIELD: bson.M{"$all": interests}}
+	filter := bson.M{TAGS_FIELD: bson.M{"$all": interests}}
 
 	cursor, err := postCollection.Find(context.Background(), filter)
 	if err != nil {
@@ -181,7 +177,7 @@ func (d *AppDatabase) WordSearchPosts(words string) ([]models.DBPost, error) {
 
 	for _, word := range strings.Split(words, " ") {
 		log.Println(word)
-		filters = append(filters, bson.M{constants.CONTENT_FIELD: bson.M{"$regex": word, "$options": "i"}})
+		filters = append(filters, bson.M{CONTENT_FIELD: bson.M{"$regex": word, "$options": "i"}})
 	}
 
 	filter := bson.M{"$or": filters}
@@ -212,7 +208,7 @@ func (d *AppDatabase) WordSearchPosts(words string) ([]models.DBPost, error) {
 
 func (d *AppDatabase) findPost(postID string, postCollection *mongo.Collection) (models.DBPost, error) {
 	var post models.DBPost
-	filter := bson.M{constants.POST_ID_FIELD: postID}
+	filter := bson.M{POST_ID_FIELD: postID}
 	err := postCollection.FindOne(context.Background(), filter).Decode(&post)
 	if err != nil {
 		log.Println(err)

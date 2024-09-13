@@ -1,4 +1,9 @@
-package src
+package database
+
+const (
+	DATABASE_NAME   = "feed"
+	FEED_COLLECTION = "posts"
+)
 
 const (
 	POST_ID_FIELD = "post_id"

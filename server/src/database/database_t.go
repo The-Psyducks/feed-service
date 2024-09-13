@@ -12,7 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/exp/slices"
 
-	constants "server/src"
 )
 
 type TestDatabase struct {
@@ -41,7 +40,7 @@ func (d *TestDatabase) GetPostByID(postID string) (models.DBPost, error) {
 func (d *TestDatabase) DeletePostByID(postID string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
-	filter := bson.M{constants.POST_ID_FIELD: postID}
+	filter := bson.M{POST_ID_FIELD: postID}
 
 	err := postCollection.DeleteFirst(filter)
 	if err != nil {
@@ -254,7 +253,7 @@ func containsOne(s []string, e []string) bool {
 
 func (d *TestDatabase) findPost(postID string, postCollection *mongomock.Collection) (models.DBPost, error) {
 	var post models.DBPost
-	filter := bson.M{constants.POST_ID_FIELD: postID}
+	filter := bson.M{POST_ID_FIELD: postID}
 	err := postCollection.FindFirst(&post, filter)
 	if err != nil {
 		log.Println(err)
