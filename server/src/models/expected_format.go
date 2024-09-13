@@ -1,6 +1,6 @@
-package post
+package models
 
-type PostExpectedFromat struct {
+type PostExpectedFormat struct {
 	Content   string   `json:"content" validate:"required"`
 	Author_ID string   `json:"author_id" validate:"required"`
 	Public    bool     `json:"public"`
@@ -12,9 +12,6 @@ type LikeExpectedFormat struct {
 }
 
 type EditPostExpectedFormat struct {
-	Content string `json:"content"`
-	Tags []string `json:"tags"`
-}
-
-type EditPostTagsExpectedFormat struct {
+	Content string   `json:"content"`
+	Tags    []string `json:"tags"`
 }

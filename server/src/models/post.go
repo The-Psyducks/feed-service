@@ -1,4 +1,4 @@
-package post
+package models
 
 import (
 	"time"
@@ -16,13 +16,6 @@ type DBPost struct {
 	// Likes is a list with the user_id of the users that liked the post
 }
 
-type PostOutput struct {
-	Post_ID   string `json:"post_id"`
-	Content   string `json:"content"`
-	Author_ID string `json:"author_id"`
-	Tags    []string `json:"tags"`
-	Time      time.Time `json:"-"`
-}
 
 func NewDBPost(author_id string, content string, tags []string, privacy bool) DBPost {
 	return DBPost{
@@ -32,14 +25,5 @@ func NewDBPost(author_id string, content string, tags []string, privacy bool) DB
 		Time:      time.Now(),
 		Tags:      tags,
 		Public:   privacy,
-	}
-}
-
-func NewPostOutput(author_id string, content string, post_id string, postTime time.Time) PostOutput {
-	return PostOutput{
-		Post_ID:   post_id,
-		Content:   content,
-		Author_ID: author_id,
-		Time:      postTime,
 	}
 }

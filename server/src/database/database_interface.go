@@ -1,15 +1,15 @@
 package database
 
 import (
-	"server/src/post"
+	"server/src/models"
 )
 
 type Database interface {
-	AddNewPost(newPost post.DBPost) error
-	GetPostByID(postID string) (post.DBPost, error) 
+	AddNewPost(newPost models.DBPost) error
+	GetPostByID(postID string) (models.DBPost, error)
 	DeletePostByID(postID string) error
-	EditPost(postID string, editInfo post.EditPostExpectedFormat) (post.DBPost, error)
-	GetUserFeed(following []string) ([]post.DBPost, error)
-	WordSearchPosts(words string) ([]post.DBPost, error)
-	GetUserInterests(interests []string) ([]post.DBPost, error)
+	EditPost(postID string, editInfo models.EditPostExpectedFormat) (models.DBPost, error)
+	GetUserFeed(following []string) ([]models.DBPost, error)
+	WordSearchPosts(words string) ([]models.DBPost, error)
+	GetUserHashtags(interests []string) ([]models.DBPost, error)
 }

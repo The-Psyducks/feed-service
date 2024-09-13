@@ -5,7 +5,7 @@ import (
 	"net/http"
 	postErrors "server/src/all_errors"
 	"server/src/database"
-	"server/src/post"
+	"server/src/models"
 
 	"github.com/gin-gonic/gin"
 	validator "github.com/go-playground/validator/v10"
@@ -20,7 +20,7 @@ func NewPostController(db database.Database) *PostController {
 }
 
 func (c *PostController) NewPost(context *gin.Context) {
-	var newPost post.PostExpectedFromat
+	var newPost models.PostExpectedFormat
 	if err := context.ShouldBind(&newPost); err != nil {
 		context.JSON(http.StatusBadRequest, postErrors.UnexpectedFormat())
 		return
@@ -37,7 +37,7 @@ func (c *PostController) NewPost(context *gin.Context) {
 		return
 	}
 
-	postNew := post.NewDBPost(newPost.Author_ID, newPost.Content, newPost.Tags, newPost.Public)
+	postNew := models.NewDBPost(newPost.Author_ID, newPost.Content, newPost.Tags, newPost.Public)
 
 	if err := c.db.AddNewPost(postNew); err != nil {
 		context.JSON(http.StatusInternalServerError, postErrors.DatabaseError())
@@ -78,7 +78,7 @@ func (c *PostController) DeletePostByID(context *gin.Context, postID string) {
 }
 
 func (c *PostController) UpdatePostByID(context *gin.Context, postID string) {
-	var editInfo post.EditPostExpectedFormat
+	var editInfo models.EditPostExpectedFormat
 	if err := context.ShouldBind(&editInfo); err != nil {
 		context.JSON(http.StatusBadRequest, postErrors.UnexpectedFormat())
 		return
@@ -126,10 +126,10 @@ func (c *PostController) GetUserFeed(context *gin.Context) {
 	context.JSON(http.StatusOK, result)
 }
 
-func (c *PostController) GetUserInterests(context *gin.Context) {
+func (c *PostController) GetUserPostsByHashtags(context *gin.Context) {
 	interests := context.QueryArray("tags")
 
-	posts, err := c.db.GetUserInterests(interests)
+	posts, err := c.db.GetUserHashtags(interests)
 
 	if err != nil {
 		context.JSON(http.StatusNotFound, err.Error())
@@ -144,7 +144,6 @@ func (c *PostController) GetUserInterests(context *gin.Context) {
 	result := gin.H{
 		"posts": posts,
 	}
-
 
 	context.JSON(http.StatusOK, result)
 }

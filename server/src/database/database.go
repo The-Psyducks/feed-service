@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 	"log"
-	"server/src/post"
+	"server/src/models"
 	"sort"
 	"strings"
 
@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	DATABASE_NAME = "feed"
+	DATABASE_NAME   = "feed"
 	FEED_COLLECTION = "posts"
 )
 
@@ -28,7 +28,7 @@ func NewAppDatabase(client *mongo.Client) Database {
 	return &AppDatabase{db: client.Database(DATABASE_NAME)}
 }
 
-func (d *AppDatabase) AddNewPost(newPost post.DBPost) error {
+func (d *AppDatabase) AddNewPost(newPost models.DBPost) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	_, err := postCollection.InsertOne(context.Background(), newPost)
 	if err != nil {
@@ -37,7 +37,7 @@ func (d *AppDatabase) AddNewPost(newPost post.DBPost) error {
 	return err
 }
 
-func (d *AppDatabase) GetPostByID(postID string) (post.DBPost, error) {
+func (d *AppDatabase) GetPostByID(postID string) (models.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	post, err := d.findPost(postID, postCollection)
 	return post, err
@@ -55,9 +55,9 @@ func (d *AppDatabase) DeletePostByID(postID string) error {
 	return err
 }
 
-func (d *AppDatabase) EditPost(postID string, editInfo post.EditPostExpectedFormat) (post.DBPost, error) {
+func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFormat) (models.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
-	var post post.DBPost
+	var post models.DBPost
 
 	err := d.updatePostContent(postID, editInfo.Content)
 
@@ -76,7 +76,7 @@ func (d *AppDatabase) EditPost(postID string, editInfo post.EditPostExpectedForm
 	return post, err
 }
 
-func (d *AppDatabase) updatePostContent(postID string, newContent string)  error {
+func (d *AppDatabase) updatePostContent(postID string, newContent string) error {
 
 	if len(newContent) == 0 {
 		return nil
@@ -114,9 +114,9 @@ func (d *AppDatabase) updatePostTags(postID string, newTags []string) error {
 	return err
 }
 
-func (d *AppDatabase) GetUserFeed(following []string) ([]post.DBPost, error) {
+func (d *AppDatabase) GetUserFeed(following []string) ([]models.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
-	var posts []post.DBPost
+	var posts []models.DBPost
 
 	filter := bson.M{constants.AUTHOR_ID_FIELD: bson.M{"$in": following}}
 
@@ -127,7 +127,7 @@ func (d *AppDatabase) GetUserFeed(following []string) ([]post.DBPost, error) {
 	defer cursor.Close(context.Background())
 
 	for cursor.Next(context.Background()) {
-		var dbPost post.DBPost
+		var dbPost models.DBPost
 		err := cursor.Decode(&dbPost)
 		if err != nil {
 			log.Println(err)
@@ -142,9 +142,9 @@ func (d *AppDatabase) GetUserFeed(following []string) ([]post.DBPost, error) {
 	return posts, err
 }
 
-func (d *AppDatabase) GetUserInterests(interests []string) ([]post.DBPost, error) {
+func (d *AppDatabase) GetUserHashtags(interests []string) ([]models.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
-	var posts []post.DBPost
+	var posts []models.DBPost
 
 	filter := bson.M{constants.TAGS_FIELD: bson.M{"$all": interests}}
 
@@ -155,7 +155,7 @@ func (d *AppDatabase) GetUserInterests(interests []string) ([]post.DBPost, error
 	defer cursor.Close(context.Background())
 
 	for cursor.Next(context.Background()) {
-		var dbPost post.DBPost
+		var dbPost models.DBPost
 		err := cursor.Decode(&dbPost)
 		if err != nil {
 			log.Println(err)
@@ -172,10 +172,10 @@ func (d *AppDatabase) GetUserInterests(interests []string) ([]post.DBPost, error
 	return posts, err
 }
 
-func (d *AppDatabase) WordSearchPosts(words string) ([]post.DBPost, error) {
-	
+func (d *AppDatabase) WordSearchPosts(words string) ([]models.DBPost, error) {
+
 	postCollection := d.db.Collection(FEED_COLLECTION)
-	var posts []post.DBPost
+	var posts []models.DBPost
 
 	filters := bson.A{}
 
@@ -193,7 +193,7 @@ func (d *AppDatabase) WordSearchPosts(words string) ([]post.DBPost, error) {
 	defer cursor.Close(context.Background())
 
 	for cursor.Next(context.Background()) {
-		var dbPost post.DBPost
+		var dbPost models.DBPost
 		err := cursor.Decode(&dbPost)
 		if err != nil {
 			log.Println(err)
@@ -210,8 +210,8 @@ func (d *AppDatabase) WordSearchPosts(words string) ([]post.DBPost, error) {
 	return posts, err
 }
 
-func (d *AppDatabase) findPost(postID string, postCollection *mongo.Collection) (post.DBPost, error) {
-	var post post.DBPost
+func (d *AppDatabase) findPost(postID string, postCollection *mongo.Collection) (models.DBPost, error) {
+	var post models.DBPost
 	filter := bson.M{constants.POST_ID_FIELD: postID}
 	err := postCollection.FindOne(context.Background(), filter).Decode(&post)
 	if err != nil {

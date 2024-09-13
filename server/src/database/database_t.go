@@ -2,11 +2,12 @@ package database
 
 import (
 	"log"
-	"server/src/post"
+	"server/src/models"
 	"sort"
 	"strings"
 
 	postErrors "server/src/all_errors"
+
 	"github.com/mjarkk/mongomock"
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/exp/slices"
@@ -22,7 +23,7 @@ func NewTestDatabase() Database {
 	return &TestDatabase{db: mongomock.NewDB()}
 }
 
-func (d *TestDatabase) AddNewPost(newPost post.DBPost) error {
+func (d *TestDatabase) AddNewPost(newPost models.DBPost) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	err := postCollection.Insert(newPost)
 	if err != nil {
@@ -31,7 +32,7 @@ func (d *TestDatabase) AddNewPost(newPost post.DBPost) error {
 	return err
 }
 
-func (d *TestDatabase) GetPostByID(postID string) (post.DBPost, error) {
+func (d *TestDatabase) GetPostByID(postID string) (models.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	post, err := d.findPost(postID, postCollection)
 	return post, err
@@ -49,9 +50,9 @@ func (d *TestDatabase) DeletePostByID(postID string) error {
 	return err
 }
 
-func (d *TestDatabase) EditPost(postID string, editInfo post.EditPostExpectedFormat) (post.DBPost, error) {
+func (d *TestDatabase) EditPost(postID string, editInfo models.EditPostExpectedFormat) (models.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
-	var post post.DBPost
+	var post models.DBPost
 
 	err := d.updatePostContent(postID, editInfo.Content)
 
@@ -71,8 +72,7 @@ func (d *TestDatabase) EditPost(postID string, editInfo post.EditPostExpectedFor
 
 }
 
-
-func (d *TestDatabase) updatePostContent(postID string, newContent string)  error {
+func (d *TestDatabase) updatePostContent(postID string, newContent string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	if len(newContent) == 0 {
@@ -100,7 +100,7 @@ func (d *TestDatabase) updatePostContent(postID string, newContent string)  erro
 
 func (d *TestDatabase) updatePostTags(postID string, newTags []string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
-	
+
 	if len(newTags) == 0 {
 		return nil
 	}
@@ -124,10 +124,9 @@ func (d *TestDatabase) updatePostTags(postID string, newTags []string) error {
 	return err_3
 }
 
-func (d *TestDatabase) GetUserFeed(following []string) ([]post.DBPost, error) {
+func (d *TestDatabase) GetUserFeed(following []string) ([]models.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
-	var posts []post.DBPost
-
+	var posts []models.DBPost
 
 	cursor, err := postCollection.FindCursor(bson.M{})
 	if err != nil {
@@ -135,7 +134,7 @@ func (d *TestDatabase) GetUserFeed(following []string) ([]post.DBPost, error) {
 	}
 
 	for cursor.Next() {
-		var dbPost post.DBPost
+		var dbPost models.DBPost
 		err := cursor.Decode(&dbPost)
 		if err != nil {
 			log.Println(err)
@@ -147,21 +146,20 @@ func (d *TestDatabase) GetUserFeed(following []string) ([]post.DBPost, error) {
 		return posts[i].Time.After(posts[j].Time)
 	})
 
-	feed := []post.DBPost{}
+	feed := []models.DBPost{}
 
 	for _, post := range posts {
 		if slices.Contains(following, post.Author_ID) {
 			feed = append(feed, post)
-		} 
+		}
 	}
 
 	return feed, err
 }
 
-func (d *TestDatabase) GetUserInterests(interests []string) ([]post.DBPost, error) {
+func (d *TestDatabase) GetUserHashtags(interests []string) ([]models.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
-	var posts []post.DBPost
-
+	var posts []models.DBPost
 
 	cursor, err := postCollection.FindCursor(bson.M{})
 	if err != nil {
@@ -169,7 +167,7 @@ func (d *TestDatabase) GetUserInterests(interests []string) ([]post.DBPost, erro
 	}
 
 	for cursor.Next() {
-		var dbPost post.DBPost
+		var dbPost models.DBPost
 		err := cursor.Decode(&dbPost)
 		if err != nil {
 			log.Println(err)
@@ -183,12 +181,12 @@ func (d *TestDatabase) GetUserInterests(interests []string) ([]post.DBPost, erro
 		return posts[i].Time.After(posts[j].Time)
 	})
 
-	feed := []post.DBPost{}
+	feed := []models.DBPost{}
 
 	for _, post := range posts {
 		if containsAll(post.Tags, interests) {
 			feed = append(feed, post)
-		} 
+		}
 	}
 
 	return feed, err
@@ -203,10 +201,10 @@ func containsAll(s []string, e []string) bool {
 	return true
 }
 
-func (d *TestDatabase) WordSearchPosts(words string) ([]post.DBPost, error) {
-	
+func (d *TestDatabase) WordSearchPosts(words string) ([]models.DBPost, error) {
+
 	postCollection := d.db.Collection(FEED_COLLECTION)
-	var posts []post.DBPost
+	var posts []models.DBPost
 
 	filter := []string{}
 
@@ -218,7 +216,7 @@ func (d *TestDatabase) WordSearchPosts(words string) ([]post.DBPost, error) {
 	}
 
 	for cursor.Next() {
-		var dbPost post.DBPost
+		var dbPost models.DBPost
 		err := cursor.Decode(&dbPost)
 		if err != nil {
 			log.Println(err)
@@ -232,7 +230,7 @@ func (d *TestDatabase) WordSearchPosts(words string) ([]post.DBPost, error) {
 		return posts[i].Time.After(posts[j].Time)
 	})
 
-	result := []post.DBPost{}
+	result := []models.DBPost{}
 
 	for _, post := range posts {
 		postContent := strings.Split(post.Content, " ")
@@ -254,8 +252,8 @@ func containsOne(s []string, e []string) bool {
 	return false
 }
 
-func (d *TestDatabase) findPost(postID string, postCollection *mongomock.Collection) (post.DBPost, error) {
-	var post post.DBPost
+func (d *TestDatabase) findPost(postID string, postCollection *mongomock.Collection) (models.DBPost, error) {
+	var post models.DBPost
 	filter := bson.M{constants.POST_ID_FIELD: postID}
 	err := postCollection.FindFirst(&post, filter)
 	if err != nil {

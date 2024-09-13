@@ -29,8 +29,8 @@ func CreateRouter(db database.Database) *gin.Engine {
 		postController.GetPostByID(c, c.Param("id"))
 	})
 
-	r.GET("/twitsnap/interests", func(c *gin.Context) {
-		postController.GetUserInterests(c)
+	r.GET("/twitsnap/hashtags", func(c *gin.Context) {
+		postController.GetUserPostsByHashtags(c)
 	})
 
 	r.GET("/twitsnap/wordsearch", func(c *gin.Context) {
