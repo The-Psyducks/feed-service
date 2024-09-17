@@ -13,7 +13,7 @@ services:
       - MONGO_URI=mongodb://mongo:27017
 
   mongo:
-    image: mongo:latest
+    image: mongo:jammy
     ports:
       - "3030:27017"
     environment:
