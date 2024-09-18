@@ -1,46 +1,34 @@
 package controller
 
 import (
-	"errors"
 	"net/http"
 	postErrors "server/src/all_errors"
 	"server/src/database"
 	"server/src/models"
+	"server/src/service"
 
 	"github.com/gin-gonic/gin"
-	validator "github.com/go-playground/validator/v10"
 )
 
 type PostController struct {
-	db database.Database
+	sv *service.Service
 }
 
-func NewPostController(db database.Database) *PostController {
-	return &PostController{db: db}
+func NewPostController(sv database.Database) *PostController {
+	return &PostController{sv: service.NewService(sv)}
 }
 
 func (c *PostController) NewPost(context *gin.Context) {
 	var newPost models.PostExpectedFormat
 	if err := context.ShouldBind(&newPost); err != nil {
-		context.JSON(http.StatusBadRequest, postErrors.UnexpectedFormat())
+		context.Error(postErrors.UnexpectedFormat())
 		return
 	}
 
-	validate := validator.New()
-	if err := validate.Struct(newPost); err != nil {
-		context.JSON(http.StatusBadRequest, postErrors.TwitSnapImportantFieldsMissing(err))
-		return
-	}
+	postNew, err := c.sv.NewPost(&newPost)
 
-	if len(newPost.Content) > 280 {
-		context.JSON(http.StatusRequestEntityTooLarge, postErrors.TwitsnapTooLong())
-		return
-	}
-
-	postNew := models.NewDBPost(newPost.Author_ID, newPost.Content, newPost.Tags, newPost.Public)
-
-	if err := c.db.AddNewPost(postNew); err != nil {
-		context.JSON(http.StatusInternalServerError, postErrors.DatabaseError())
+	if err != nil {
+		context.Error(err)
 		return
 	}
 
@@ -53,10 +41,10 @@ func (c *PostController) NewPost(context *gin.Context) {
 
 func (c *PostController) GetPostByID(context *gin.Context, postID string) {
 
-	post, err := c.db.GetPostByID(postID)
+	post, err := c.sv.GetPostByID(postID)
 
 	if err != nil {
-		context.JSON(http.StatusNotFound, postErrors.TwitsnapNotFound(postID))
+		context.Error(err)
 		return
 	}
 
@@ -67,10 +55,10 @@ func (c *PostController) GetPostByID(context *gin.Context, postID string) {
 }
 
 func (c *PostController) DeletePostByID(context *gin.Context, postID string) {
-	err := c.db.DeletePostByID(postID)
+	err := c.sv.DeletePostByID(postID)
 
 	if err != nil {
-		context.JSON(http.StatusNotFound, postErrors.TwitsnapNotFound(postID))
+		context.Error(err)
 		return
 	}
 
@@ -84,22 +72,11 @@ func (c *PostController) UpdatePostByID(context *gin.Context, postID string) {
 		return
 	}
 
-	validate := validator.New()
-	if err := validate.Struct(editInfo); err != nil {
-		context.JSON(http.StatusBadRequest, postErrors.TwitSnapImportantFieldsMissing(err))
-		return
-	}
-
-	modPost, err := c.db.EditPost(postID, editInfo)
+	modPost, err := c.sv.UpdatePostByID(postID, editInfo)
 
 	if err != nil {
-		if errors.Is(err, postErrors.ErrTwitsnapNotFound) {
-			context.JSON(http.StatusNotFound, postErrors.TwitsnapNotFound(postID))
-			return
-		} else {
-			context.JSON(http.StatusInternalServerError, postErrors.DatabaseError())
-			return
-		}
+		context.Error(err)
+		return
 	}
 
 	result := gin.H{
@@ -112,10 +89,10 @@ func (c *PostController) UpdatePostByID(context *gin.Context, postID string) {
 func (c *PostController) GetUserFeed(context *gin.Context) {
 	following := context.QueryArray("following")
 
-	posts, err := c.db.GetUserFeed(following)
+	posts, err := c.sv.GetUserFeed(following)
 
 	if err != nil {
-		context.JSON(http.StatusNotFound, err.Error())
+		context.Error(err)
 		return
 	}
 
@@ -127,17 +104,12 @@ func (c *PostController) GetUserFeed(context *gin.Context) {
 }
 
 func (c *PostController) GetUserPostsByHashtags(context *gin.Context) {
-	interests := context.QueryArray("tags")
+	hashtags := context.QueryArray("tags")
 
-	posts, err := c.db.GetUserHashtags(interests)
+	posts, err := c.sv.GetUserPostsByHashtags(hashtags)
 
 	if err != nil {
-		context.JSON(http.StatusNotFound, err.Error())
-		return
-	}
-
-	if posts == nil {
-		context.JSON(http.StatusNotFound, postErrors.NoTagsFound())
+		context.Error(err)
 		return
 	}
 
@@ -151,15 +123,10 @@ func (c *PostController) GetUserPostsByHashtags(context *gin.Context) {
 func (c *PostController) WordsSearch(context *gin.Context) {
 	words := context.Query("words")
 
-	posts, err := c.db.WordSearchPosts(words)
+	posts, err := c.sv.WordsSearch(words)
 
 	if err != nil {
-		context.JSON(http.StatusNotFound, err.Error())
-		return
-	}
-
-	if posts == nil {
-		context.JSON(http.StatusNotFound, postErrors.NoWordssFound())
+		context.Error(err)
 		return
 	}
 

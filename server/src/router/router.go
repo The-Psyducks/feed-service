@@ -1,14 +1,16 @@
 package router
 
 import (
-	"server/src/controller"
 	"server/src/database"
-
+	"server/src/controller"
 	"github.com/gin-gonic/gin"
+	"server/src/middleware"
 )
 
 func CreateRouter(db database.Database) *gin.Engine {
 	r := gin.Default()
+
+	r.Use(middleware.ErrorManager())
 
 	// create a postController
 	postController := controller.NewPostController(db)
