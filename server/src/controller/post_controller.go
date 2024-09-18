@@ -21,14 +21,14 @@ func NewPostController(sv database.Database) *PostController {
 func (c *PostController) NewPost(context *gin.Context) {
 	var newPost models.PostExpectedFormat
 	if err := context.ShouldBind(&newPost); err != nil {
-		context.Error(postErrors.UnexpectedFormat())
+		_ = context.Error(postErrors.UnexpectedFormat())
 		return
 	}
 
 	postNew, err := c.sv.NewPost(&newPost)
 
 	if err != nil {
-		context.Error(err)
+		_ = context.Error(err)
 		return
 	}
 
@@ -44,7 +44,7 @@ func (c *PostController) GetPostByID(context *gin.Context, postID string) {
 	post, err := c.sv.GetPostByID(postID)
 
 	if err != nil {
-		context.Error(err)
+		_ = context.Error(err)
 		return
 	}
 
@@ -58,7 +58,7 @@ func (c *PostController) DeletePostByID(context *gin.Context, postID string) {
 	err := c.sv.DeletePostByID(postID)
 
 	if err != nil {
-		context.Error(err)
+		_ = context.Error(err)
 		return
 	}
 
@@ -68,14 +68,14 @@ func (c *PostController) DeletePostByID(context *gin.Context, postID string) {
 func (c *PostController) UpdatePostByID(context *gin.Context, postID string) {
 	var editInfo models.EditPostExpectedFormat
 	if err := context.ShouldBind(&editInfo); err != nil {
-		context.JSON(http.StatusBadRequest, postErrors.UnexpectedFormat())
+		_ = context.Error(postErrors.UnexpectedFormat())
 		return
 	}
 
 	modPost, err := c.sv.UpdatePostByID(postID, editInfo)
 
 	if err != nil {
-		context.Error(err)
+		_ = context.Error(err)
 		return
 	}
 
@@ -92,7 +92,7 @@ func (c *PostController) GetUserFeed(context *gin.Context) {
 	posts, err := c.sv.GetUserFeed(following)
 
 	if err != nil {
-		context.Error(err)
+		_ = context.Error(err)
 		return
 	}
 
@@ -109,7 +109,7 @@ func (c *PostController) GetUserPostsByHashtags(context *gin.Context) {
 	posts, err := c.sv.GetUserPostsByHashtags(hashtags)
 
 	if err != nil {
-		context.Error(err)
+		_ = context.Error(err)
 		return
 	}
 
@@ -126,7 +126,7 @@ func (c *PostController) WordsSearch(context *gin.Context) {
 	posts, err := c.sv.WordsSearch(words)
 
 	if err != nil {
-		context.Error(err)
+		_ = context.Error(err)
 		return
 	}
 
