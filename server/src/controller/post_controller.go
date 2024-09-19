@@ -19,13 +19,14 @@ func NewPostController(sv database.Database) *PostController {
 }
 
 func (c *PostController) NewPost(context *gin.Context) {
+
 	var newPost models.PostExpectedFormat
 	if err := context.ShouldBind(&newPost); err != nil {
 		_ = context.Error(postErrors.UnexpectedFormat())
 		return
 	}
 
-	postNew, err := c.sv.NewPost(&newPost)
+	postNew, err := c.sv.CreatePost(&newPost)
 
 	if err != nil {
 		_ = context.Error(err)
@@ -39,9 +40,11 @@ func (c *PostController) NewPost(context *gin.Context) {
 	context.JSON(http.StatusCreated, result)
 }
 
-func (c *PostController) GetPostByID(context *gin.Context, postID string) {
+func (c *PostController) GetPostByID(context *gin.Context) {
 
-	post, err := c.sv.GetPostByID(postID)
+	postID := context.Param("id")
+
+	post, err := c.sv.FetchPostByID(postID)
 
 	if err != nil {
 		_ = context.Error(err)
@@ -54,8 +57,11 @@ func (c *PostController) GetPostByID(context *gin.Context, postID string) {
 	context.JSON(http.StatusOK, result)
 }
 
-func (c *PostController) DeletePostByID(context *gin.Context, postID string) {
-	err := c.sv.DeletePostByID(postID)
+func (c *PostController) DeletePostByID(context *gin.Context) {
+
+	postID := context.Param("id")
+
+	err := c.sv.RemovePostByID(postID)
 
 	if err != nil {
 		_ = context.Error(err)
@@ -65,14 +71,17 @@ func (c *PostController) DeletePostByID(context *gin.Context, postID string) {
 	context.JSON(http.StatusNoContent, gin.H{})
 }
 
-func (c *PostController) UpdatePostByID(context *gin.Context, postID string) {
+func (c *PostController) UpdatePostByID(context *gin.Context) {
+
+	postID := context.Param("id")
+
 	var editInfo models.EditPostExpectedFormat
 	if err := context.ShouldBind(&editInfo); err != nil {
 		_ = context.Error(postErrors.UnexpectedFormat())
 		return
 	}
 
-	modPost, err := c.sv.UpdatePostByID(postID, editInfo)
+	modPost, err := c.sv.ModifyPostByID(postID, editInfo)
 
 	if err != nil {
 		_ = context.Error(err)
@@ -87,9 +96,12 @@ func (c *PostController) UpdatePostByID(context *gin.Context, postID string) {
 }
 
 func (c *PostController) GetUserFeed(context *gin.Context) {
-	following := context.QueryArray("following")
 
-	posts, err := c.sv.GetUserFeed(following)
+	userID := context.Param("id")
+
+	feedType := context.Query("feed_type")
+
+	posts, err := c.sv.FetchUserFeed(userID, feedType)
 
 	if err != nil {
 		_ = context.Error(err)
@@ -106,7 +118,7 @@ func (c *PostController) GetUserFeed(context *gin.Context) {
 func (c *PostController) GetUserPostsByHashtags(context *gin.Context) {
 	hashtags := context.QueryArray("tags")
 
-	posts, err := c.sv.GetUserPostsByHashtags(hashtags)
+	posts, err := c.sv.FetchUserPostsByHashtags(hashtags)
 
 	if err != nil {
 		_ = context.Error(err)

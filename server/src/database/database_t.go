@@ -11,7 +11,6 @@ import (
 	"github.com/mjarkk/mongomock"
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/exp/slices"
-
 )
 
 type TestDatabase struct {
@@ -123,7 +122,7 @@ func (d *TestDatabase) updatePostTags(postID string, newTags []string) error {
 	return err_3
 }
 
-func (d *TestDatabase) GetUserFeed(following []string) ([]models.DBPost, error) {
+func (d *TestDatabase) GetUserFeedFollowing(following []string) ([]models.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []models.DBPost
 
@@ -260,4 +259,12 @@ func (d *TestDatabase) findPost(postID string, postCollection *mongomock.Collect
 		err = postErrors.ErrTwitsnapNotFound
 	}
 	return post, err
+}
+
+func (d *TestDatabase) GetUserFeedInterests(interests []string) ([]models.DBPost, error) {
+	return nil, nil
+}
+
+func (d *TestDatabase) GetUserFeedSingle(userId string) ([]models.DBPost, error) {
+	return nil, nil
 }

@@ -11,10 +11,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-
 )
-
-
 
 type AppDatabase struct {
 	db *mongo.Database
@@ -110,11 +107,67 @@ func (d *AppDatabase) updatePostTags(postID string, newTags []string) error {
 	return err
 }
 
-func (d *AppDatabase) GetUserFeed(following []string) ([]models.DBPost, error) {
+func (d *AppDatabase) GetUserFeedFollowing(following []string) ([]models.DBPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []models.DBPost
 
 	filter := bson.M{AUTHOR_ID_FIELD: bson.M{"$in": following}}
+
+	cursor, err := postCollection.Find(context.Background(), filter)
+	if err != nil {
+		log.Println(err)
+	}
+	defer cursor.Close(context.Background())
+
+	for cursor.Next(context.Background()) {
+		var dbPost models.DBPost
+		err := cursor.Decode(&dbPost)
+		if err != nil {
+			log.Println(err)
+		}
+		posts = append(posts, dbPost)
+	}
+
+	sort.Slice(posts, func(i, j int) bool {
+		return posts[i].Time.After(posts[j].Time)
+	})
+
+	return posts, err
+}
+
+func (d *AppDatabase) GetUserFeedInterests(interests []string) ([]models.DBPost, error) {
+	postCollection := d.db.Collection(FEED_COLLECTION)
+	var posts []models.DBPost
+
+	filter := bson.M{TAGS_FIELD: bson.M{"$in": interests}}
+
+	cursor, err := postCollection.Find(context.Background(), filter)
+	if err != nil {
+		log.Println(err)
+	}
+	defer cursor.Close(context.Background())
+
+	for cursor.Next(context.Background()) {
+		var dbPost models.DBPost
+		err := cursor.Decode(&dbPost)
+		if err != nil {
+			log.Println(err)
+		}
+		posts = append(posts, dbPost)
+	}
+
+	sort.Slice(posts, func(i, j int) bool {
+		return posts[i].Time.After(posts[j].Time)
+	})
+
+	return posts, err
+}
+
+func (d *AppDatabase) GetUserFeedSingle(userId string) ([]models.DBPost, error) {
+	postCollection := d.db.Collection(FEED_COLLECTION)
+	var posts []models.DBPost
+
+	filter := bson.M{AUTHOR_ID_FIELD: userId}
 
 	cursor, err := postCollection.Find(context.Background(), filter)
 	if err != nil {

@@ -21,16 +21,15 @@ type TwitSnapError struct {
 	Instance    string `json:"instance"`
 }
 
-// Error implements error.
 func (e TwitSnapError) Error() string {
 	return e.Detail
 }
 
-var ErrTwitsnapNotFound = errors.New("twitsnap not found")
-
 func (e TwitSnapError) Status() int {
 	return e.ErrorStatus
 }
+
+var ErrTwitsnapNotFound = errors.New("twitsnap not found")
 
 func TwitsnapNotFound(id string) TwitSnapError {
 	error := TwitSnapError{
@@ -79,6 +78,17 @@ func UnexpectedFormat() TwitSnapError {
 		"Unexpected Format",
 		http.StatusBadRequest,
 		"The twitsnap message has an unexpected format",
+		"/twitsnap",
+	}
+	return error
+}
+
+func BadFeedRequest() TwitSnapError {
+	error := TwitSnapError{
+		"about:blank",
+		"Unexpected Format",
+		http.StatusBadRequest,
+		"There is no feed like that",
 		"/twitsnap",
 	}
 	return error

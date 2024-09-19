@@ -9,6 +9,12 @@ import (
 	validator "github.com/go-playground/validator/v10"
 )
 
+const (
+	FOLLOWING = "following"
+	FORYOU    = "foryou"
+	SINGLE    = "single"
+)
+
 type Service struct {
 	db database.Database
 }
@@ -17,7 +23,7 @@ func NewService(db database.Database) *Service {
 	return &Service{db: db}
 }
 
-func (c *Service) NewPost(newPost *models.PostExpectedFormat) (*models.DBPost, error) {
+func (c *Service) CreatePost(newPost *models.PostExpectedFormat) (*models.DBPost, error) {
 
 	validate := validator.New()
 	if err := validate.Struct(newPost); err != nil {
@@ -37,7 +43,7 @@ func (c *Service) NewPost(newPost *models.PostExpectedFormat) (*models.DBPost, e
 	return &postNew, nil
 }
 
-func (c *Service) GetPostByID(postID string) (*models.DBPost, error)  {
+func (c *Service) FetchPostByID(postID string) (*models.DBPost, error) {
 
 	post, err := c.db.GetPostByID(postID)
 
@@ -48,7 +54,7 @@ func (c *Service) GetPostByID(postID string) (*models.DBPost, error)  {
 	return &post, nil
 }
 
-func (c *Service) DeletePostByID(postID string) error {
+func (c *Service) RemovePostByID(postID string) error {
 	err := c.db.DeletePostByID(postID)
 
 	if err != nil {
@@ -58,7 +64,7 @@ func (c *Service) DeletePostByID(postID string) error {
 	return nil
 }
 
-func (c *Service) UpdatePostByID(postID string, editInfo models.EditPostExpectedFormat) (*models.DBPost, error) {
+func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpectedFormat) (*models.DBPost, error) {
 	validate := validator.New()
 	if err := validate.Struct(editInfo); err != nil {
 		return nil, postErrors.TwitSnapImportantFieldsMissing(err)
@@ -77,12 +83,38 @@ func (c *Service) UpdatePostByID(postID string, editInfo models.EditPostExpected
 	return &modPost, nil
 }
 
-func (c *Service) GetUserFeed(following []string) ([]models.DBPost, error) {
-	posts, err := c.db.GetUserFeed(following)
+func (c *Service) FetchUserFeed(userID string, feedType string) ([]models.DBPost, error) {
+	switch feedType {
+	case FOLLOWING:
+		return c.fetchFollowingFeed(userID)
+	case FORYOU:
+		return c.fetchForyouFeed(userID)
+	case SINGLE:
+		return c.fetchForyouSingle(userID)
+	}
+	return nil, postErrors.BadFeedRequest()
+}
+
+func (c *Service) fetchFollowingFeed(userID string) ([]models.DBPost, error) {
+	_ = userID
+	following := []string{"3", "1"}
+	posts, err := c.db.GetUserFeedFollowing(following)
 	return posts, err
 }
 
-func (c *Service) GetUserPostsByHashtags(hashtags []string) ([]models.DBPost, error) {
+func (c *Service) fetchForyouFeed(userID string) ([]models.DBPost, error) {
+	_ = userID
+	following := []string{"apple", "1"}
+	posts, err := c.db.GetUserFeedInterests(following)
+	return posts, err
+}
+
+func (c *Service) fetchForyouSingle(userID string) ([]models.DBPost, error) {
+	posts, err := c.db.GetUserFeedSingle(userID)
+	return posts, err
+}
+
+func (c *Service) FetchUserPostsByHashtags(hashtags []string) ([]models.DBPost, error) {
 
 	posts, err := c.db.GetUserHashtags(hashtags)
 

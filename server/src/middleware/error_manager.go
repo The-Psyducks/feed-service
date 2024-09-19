@@ -18,9 +18,7 @@ func ErrorManager() gin.HandlerFunc {
 				context.JSON(twtErr.Status(), twtErr)
 				return
 			}
-
 		}
-
 		context.Abort()
 	}
 }

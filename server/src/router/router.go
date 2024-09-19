@@ -12,36 +12,21 @@ func CreateRouter(db database.Database) *gin.Engine {
 
 	r.Use(middleware.ErrorManager())
 
-	// create a postController
 	postController := controller.NewPostController(db)
 
-	r.POST("/twitsnap", func(c *gin.Context) {
-		postController.NewPost(c)
-	})
+	r.POST("/twitsnap", postController.NewPost)
 
-	r.PUT("/twitsnap/edit/:id", func(c *gin.Context) {
-		postController.UpdatePostByID(c, c.Param("id"))
-	})
+	r.PUT("/twitsnap/edit/:id", postController.UpdatePostByID)
 
-	r.GET("/twitsnap/feed", func(c *gin.Context) {
-		postController.GetUserFeed(c)
-	})
+	r.GET("/twitsnap/feed/:id", postController.GetUserFeed)
 
-	r.GET("/twitsnap/:id", func(c *gin.Context) {
-		postController.GetPostByID(c, c.Param("id"))
-	})
+	r.GET("/twitsnap/:id", postController.GetPostByID)
 
-	r.GET("/twitsnap/hashtags", func(c *gin.Context) {
-		postController.GetUserPostsByHashtags(c)
-	})
+	r.GET("/twitsnap/hashtags", postController.WordsSearch)
 
-	r.GET("/twitsnap/wordsearch", func(c *gin.Context) {
-		postController.WordsSearch(c)
-	})
+	r.GET("/twitsnap/wordsearch",postController.WordsSearch)
 
-	r.DELETE("/twitsnap/:id", func(c *gin.Context) {
-		postController.DeletePostByID(c, c.Param("id"))
-	})
+	r.DELETE("/twitsnap/:id", postController.DeletePostByID)
 
 	return r
 }
