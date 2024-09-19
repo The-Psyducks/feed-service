@@ -116,6 +116,39 @@ func NoWordssFound() TwitSnapError {
 	return error
 }
 
+func AuthenticationErrorHeaderRequired() TwitSnapError {
+	error := TwitSnapError{
+		"about:blank",
+		"Authorization header is required",
+		http.StatusUnauthorized,
+		"authorization header is required",
+		"/twitsnap",
+	}
+	return error
+}
+
+func AuthenticationErrorInvalidHeader() TwitSnapError {
+	error := TwitSnapError{
+		"about:blank",
+		"Invalid authorization header",
+		http.StatusUnauthorized,
+		"Invalid authorization header",
+		"/twitsnap",
+	}
+	return error
+}
+
+func AuthenticationErrorInvalidToken(err string) TwitSnapError {
+	error := TwitSnapError{
+		"about:blank",
+		"Invalid token",
+		http.StatusUnauthorized,
+		"err",
+		"/twitsnap",
+	}
+	return error
+}
+
 func DatabaseError() TwitSnapError {
 	error := TwitSnapError{
 		"about:blank",

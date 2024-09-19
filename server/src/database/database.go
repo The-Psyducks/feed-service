@@ -41,10 +41,15 @@ func (d *AppDatabase) DeletePostByID(postID string) error {
 
 	filter := bson.M{POST_ID_FIELD: postID}
 
-	_, err := postCollection.DeleteOne(context.Background(), filter)
+	result, err := postCollection.DeleteOne(context.Background(), filter)
 	if err != nil {
 		log.Println(err)
 	}
+
+	if result.DeletedCount == 0 {
+		err = postErrors.ErrTwitsnapNotFound
+	}
+
 	return err
 }
 
@@ -229,8 +234,10 @@ func (d *AppDatabase) WordSearchPosts(words string) ([]models.DBPost, error) {
 	filters := bson.A{}
 
 	for _, word := range strings.Split(words, " ") {
-		log.Println(word)
-		filters = append(filters, bson.M{CONTENT_FIELD: bson.M{"$regex": word, "$options": "i"}})
+		if word != "" {
+			log.Println(word)
+			filters = append(filters, bson.M{CONTENT_FIELD: bson.M{"$regex": word, "$options": "i"}})
+		}
 	}
 
 	filter := bson.M{"$or": filters}
@@ -250,6 +257,10 @@ func (d *AppDatabase) WordSearchPosts(words string) ([]models.DBPost, error) {
 		if dbPost.Public {
 			posts = append(posts, dbPost)
 		}
+	}
+
+	if posts == nil {
+		err = postErrors.NoWordssFound()
 	}
 
 	sort.Slice(posts, func(i, j int) bool {
