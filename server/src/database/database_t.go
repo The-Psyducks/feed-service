@@ -21,19 +21,21 @@ func NewTestDatabase() Database {
 	return &TestDatabase{db: mongomock.NewDB()}
 }
 
-func (d *TestDatabase) AddNewPost(newPost models.DBPost) error {
+func (d *TestDatabase) AddNewPost(newPost models.DBPost) (models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	err := postCollection.Insert(newPost)
-	if err != nil {
-		return err
-	}
-	return err
+	
+	frontPost := makeDBPostIntoFrontPost(newPost)
+
+	return frontPost, err
 }
 
-func (d *TestDatabase) GetPostByID(postID string) (models.DBPost, error) {
+func (d *TestDatabase) GetPostByID(postID string) (models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	post, err := d.findPost(postID, postCollection)
-	return post, err
+
+	frontPost := makeDBPostIntoFrontPost(post)
+	return frontPost, err
 }
 
 func (d *TestDatabase) DeletePostByID(postID string) error {
@@ -48,9 +50,10 @@ func (d *TestDatabase) DeletePostByID(postID string) error {
 	return err
 }
 
-func (d *TestDatabase) EditPost(postID string, editInfo models.EditPostExpectedFormat) (models.DBPost, error) {
+func (d *TestDatabase) EditPost(postID string, editInfo models.EditPostExpectedFormat) (models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
-	var post models.DBPost
+	var post models.FrontPost
+	var dbPost models.DBPost
 
 	err := d.updatePostContent(postID, editInfo.Content)
 
@@ -64,9 +67,11 @@ func (d *TestDatabase) EditPost(postID string, editInfo models.EditPostExpectedF
 		return post, err
 	}
 
-	post, err = d.findPost(postID, postCollection)
+	dbPost, err = d.findPost(postID, postCollection)
 
-	return post, err
+	frontPost := makeDBPostIntoFrontPost(dbPost)
+
+	return frontPost, err
 
 }
 
@@ -91,7 +96,7 @@ func (d *TestDatabase) updatePostContent(postID string, newContent string) error
 
 	post.Content = newContent
 
-	err_3 := d.AddNewPost(post)
+	_ , err_3 := d.AddNewPost(post)
 
 	return err_3
 }
@@ -117,12 +122,12 @@ func (d *TestDatabase) updatePostTags(postID string, newTags []string) error {
 
 	post.Tags = newTags
 
-	err_3 := d.AddNewPost(post)
+	_, err_3 := d.AddNewPost(post)
 
 	return err_3
 }
 
-func (d *TestDatabase) GetUserFeedFollowing(following []string) ([]models.DBPost, error) {
+func (d *TestDatabase) GetUserFeedFollowing(following []string) ([]models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []models.DBPost
 
@@ -141,7 +146,7 @@ func (d *TestDatabase) GetUserFeedFollowing(following []string) ([]models.DBPost
 	}
 
 	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].Time.After(posts[j].Time)
+		return posts[i].Time > posts[j].Time
 	})
 
 	feed := []models.DBPost{}
@@ -152,10 +157,10 @@ func (d *TestDatabase) GetUserFeedFollowing(following []string) ([]models.DBPost
 		}
 	}
 
-	return feed, err
+	return allPostIntoFrontPost(feed), err
 }
 
-func (d *TestDatabase) GetUserHashtags(interests []string) ([]models.DBPost, error) {
+func (d *TestDatabase) GetUserHashtags(interests []string, following []string) ([]models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []models.DBPost
 
@@ -176,7 +181,7 @@ func (d *TestDatabase) GetUserHashtags(interests []string) ([]models.DBPost, err
 	}
 
 	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].Time.After(posts[j].Time)
+		return posts[i].Time > posts[j].Time
 	})
 
 	feed := []models.DBPost{}
@@ -187,7 +192,7 @@ func (d *TestDatabase) GetUserHashtags(interests []string) ([]models.DBPost, err
 		}
 	}
 
-	return feed, err
+	return allPostIntoFrontPost(feed), err
 }
 
 func containsAll(s []string, e []string) bool {
@@ -199,7 +204,7 @@ func containsAll(s []string, e []string) bool {
 	return true
 }
 
-func (d *TestDatabase) WordSearchPosts(words string) ([]models.DBPost, error) {
+func (d *TestDatabase) WordSearchPosts(words string, following []string) ([]models.FrontPost, error) {
 
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []models.DBPost
@@ -225,7 +230,7 @@ func (d *TestDatabase) WordSearchPosts(words string) ([]models.DBPost, error) {
 	}
 
 	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].Time.After(posts[j].Time)
+		return posts[i].Time > posts[j].Time
 	})
 
 	result := []models.DBPost{}
@@ -238,7 +243,7 @@ func (d *TestDatabase) WordSearchPosts(words string) ([]models.DBPost, error) {
 		}
 	}
 
-	return result, err
+	return allPostIntoFrontPost(result), err
 }
 
 func containsOne(s []string, e []string) bool {
@@ -261,10 +266,10 @@ func (d *TestDatabase) findPost(postID string, postCollection *mongomock.Collect
 	return post, err
 }
 
-func (d *TestDatabase) GetUserFeedInterests(interests []string) ([]models.DBPost, error) {
+func (d *TestDatabase) GetUserFeedInterests(interests []string, following []string) ([]models.FrontPost, error) {
 	return nil, nil
 }
 
-func (d *TestDatabase) GetUserFeedSingle(userId string) ([]models.DBPost, error) {
+func (d *TestDatabase) GetUserFeedSingle(userId string) ([]models.FrontPost, error) {
 	return nil, nil
 }

@@ -5,13 +5,13 @@ import (
 )
 
 type Database interface {
-	AddNewPost(newPost models.DBPost) error
-	GetPostByID(postID string) (models.DBPost, error)
+	AddNewPost(newPost models.DBPost) (models.FrontPost, error)
+	GetPostByID(postID string) (models.FrontPost, error)
 	DeletePostByID(postID string) error
-	EditPost(postID string, editInfo models.EditPostExpectedFormat) (models.DBPost, error)
-	GetUserFeedFollowing(following []string) ([]models.DBPost, error)
-	GetUserFeedInterests(interests []string) ([]models.DBPost, error)
-	GetUserFeedSingle(userID string) ([]models.DBPost, error)
-	WordSearchPosts(words string) ([]models.DBPost, error)
-	GetUserHashtags(interests []string) ([]models.DBPost, error)
+	EditPost(postID string, editInfo models.EditPostExpectedFormat) (models.FrontPost, error)
+	GetUserFeedFollowing(following []string) ([]models.FrontPost, error)
+	GetUserFeedInterests(interests []string, following []string) ([]models.FrontPost, error)
+	GetUserFeedSingle(userID string) ([]models.FrontPost, error)
+	WordSearchPosts(words string, following []string) ([]models.FrontPost, error)
+	GetUserHashtags(hashtags []string, following []string) ([]models.FrontPost, error)
 }

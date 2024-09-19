@@ -23,7 +23,7 @@ func NewService(db database.Database) *Service {
 	return &Service{db: db}
 }
 
-func (c *Service) CreatePost(newPost *models.PostExpectedFormat) (*models.DBPost, error) {
+func (c *Service) CreatePost(newPost *models.PostExpectedFormat) (*models.FrontPost, error) {
 
 	validate := validator.New()
 	if err := validate.Struct(newPost); err != nil {
@@ -36,14 +36,16 @@ func (c *Service) CreatePost(newPost *models.PostExpectedFormat) (*models.DBPost
 
 	postNew := models.NewDBPost(newPost.Author_ID, newPost.Content, newPost.Tags, newPost.Public)
 
-	if err := c.db.AddNewPost(postNew); err != nil {
+	newPosted, err := c.db.AddNewPost(postNew)
+
+	if err != nil {
 		return nil, postErrors.DatabaseError()
 	}
 
-	return &postNew, nil
+	return &newPosted, nil
 }
 
-func (c *Service) FetchPostByID(postID string) (*models.DBPost, error) {
+func (c *Service) FetchPostByID(postID string) (*models.FrontPost, error) {
 
 	post, err := c.db.GetPostByID(postID)
 
@@ -64,7 +66,7 @@ func (c *Service) RemovePostByID(postID string) error {
 	return nil
 }
 
-func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpectedFormat) (*models.DBPost, error) {
+func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpectedFormat) (*models.FrontPost, error) {
 	validate := validator.New()
 	if err := validate.Struct(editInfo); err != nil {
 		return nil, postErrors.TwitSnapImportantFieldsMissing(err)
@@ -83,7 +85,7 @@ func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpected
 	return &modPost, nil
 }
 
-func (c *Service) FetchUserFeed(userID string, feedType string) ([]models.DBPost, error) {
+func (c *Service) FetchUserFeed(userID string, feedType string) ([]models.FrontPost, error) {
 	switch feedType {
 	case FOLLOWING:
 		return c.fetchFollowingFeed(userID)
@@ -95,28 +97,30 @@ func (c *Service) FetchUserFeed(userID string, feedType string) ([]models.DBPost
 	return nil, postErrors.BadFeedRequest()
 }
 
-func (c *Service) fetchFollowingFeed(userID string) ([]models.DBPost, error) {
+func (c *Service) fetchFollowingFeed(userID string) ([]models.FrontPost, error) {
 	_ = userID
 	following := []string{"3", "1"}
 	posts, err := c.db.GetUserFeedFollowing(following)
 	return posts, err
 }
 
-func (c *Service) fetchForyouFeed(userID string) ([]models.DBPost, error) {
+func (c *Service) fetchForyouFeed(userID string) ([]models.FrontPost, error) {
 	_ = userID
-	following := []string{"apple", "1"}
-	posts, err := c.db.GetUserFeedInterests(following)
+	interests := []string{"apple", "1"}
+	following := []string{"3", "1"}
+	posts, err := c.db.GetUserFeedInterests(interests, following)
 	return posts, err
 }
 
-func (c *Service) fetchForyouSingle(userID string) ([]models.DBPost, error) {
+func (c *Service) fetchForyouSingle(userID string) ([]models.FrontPost, error) {
 	posts, err := c.db.GetUserFeedSingle(userID)
 	return posts, err
 }
 
-func (c *Service) FetchUserPostsByHashtags(hashtags []string) ([]models.DBPost, error) {
+func (c *Service) FetchUserPostsByHashtags(hashtags []string) ([]models.FrontPost, error) {
+	following := []string{"3", "1"}
 
-	posts, err := c.db.GetUserHashtags(hashtags)
+	posts, err := c.db.GetUserHashtags(hashtags, following)
 
 	if err != nil {
 		return nil, err
@@ -129,8 +133,9 @@ func (c *Service) FetchUserPostsByHashtags(hashtags []string) ([]models.DBPost, 
 	return posts, nil
 }
 
-func (c *Service) WordsSearch(words string) ([]models.DBPost, error) {
-	posts, err := c.db.WordSearchPosts(words)
+func (c *Service) WordsSearch(words string) ([]models.FrontPost, error) {
+	following := []string{"3", "1"}
+	posts, err := c.db.WordSearchPosts(words, following)
 
 	if err != nil {
 		return nil, err

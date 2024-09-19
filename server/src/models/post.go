@@ -10,7 +10,7 @@ type DBPost struct {
 	Post_ID   string    `bson:"post_id"`
 	Content   string    `bson:"content"`
 	Author_ID string    `bson:"author_id"`
-	Time      time.Time `bson:"time"`
+	Time      int64 `bson:"time"`
 	Public   bool    `bson:"public"`
 	Tags     []string  `bson:"tags"`
 	// Likes is a list with the user_id of the users that liked the post
@@ -22,8 +22,35 @@ func NewDBPost(author_id string, content string, tags []string, privacy bool) DB
 		Post_ID:   uuid.NewString(),
 		Content:   content,
 		Author_ID: author_id,
-		Time:      time.Now(),
+		Time:      time.Now().Unix(),
 		Tags:      tags,
 		Public:   privacy,
+	}
+}
+
+type AuthorInfo struct {
+	Author_ID string `json:"author_id"`
+	Username  string `json:"username"`
+	Alias	 string `json:"alias"`
+	PthotoURL    string `json:"photourl"`
+}
+
+type FrontPost struct {
+	Post_ID   string    `json:"post_id"`
+	Content   string    `json:"content"`
+	Author_Info AuthorInfo    `json:"author"`
+	Time      int64 `json:"time"`
+	Public   bool    `json:"public"`
+	Tags     []string  `json:"tags"`
+}
+
+func NewFrontPost(post DBPost, author AuthorInfo) FrontPost {
+	return FrontPost{
+		Post_ID:   post.Post_ID,
+		Content:   post.Content,
+		Author_Info: author,
+		Time:      post.Time,
+		Tags:      post.Tags,
+		Public:   post.Public,
 	}
 }

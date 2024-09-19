@@ -115,9 +115,9 @@ func (c *PostController) GetUserFeed(context *gin.Context) {
 	context.JSON(http.StatusOK, result)
 }
 
-func (c *PostController) GetUserPostsByHashtags(context *gin.Context) {
+func (c *PostController) HashtagsSearch(context *gin.Context) {
 	hashtags := context.QueryArray("tags")
-
+	
 	posts, err := c.sv.FetchUserPostsByHashtags(hashtags)
 
 	if err != nil {

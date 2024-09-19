@@ -11,6 +11,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/exp/slices"
 )
 
 type AppDatabase struct {
@@ -21,19 +22,20 @@ func NewAppDatabase(client *mongo.Client) Database {
 	return &AppDatabase{db: client.Database(DATABASE_NAME)}
 }
 
-func (d *AppDatabase) AddNewPost(newPost models.DBPost) error {
+func (d *AppDatabase) AddNewPost(newPost models.DBPost) (models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	_, err := postCollection.InsertOne(context.Background(), newPost)
-	if err != nil {
-		return err
-	}
-	return err
+
+	frontPost := makeDBPostIntoFrontPost(newPost)
+	return frontPost, err
 }
 
-func (d *AppDatabase) GetPostByID(postID string) (models.DBPost, error) {
+func (d *AppDatabase) GetPostByID(postID string) (models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	post, err := d.findPost(postID, postCollection)
-	return post, err
+
+	frontPost := makeDBPostIntoFrontPost(post)
+	return frontPost, err
 }
 
 func (d *AppDatabase) DeletePostByID(postID string) error {
@@ -53,9 +55,10 @@ func (d *AppDatabase) DeletePostByID(postID string) error {
 	return err
 }
 
-func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFormat) (models.DBPost, error) {
+func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFormat) (models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
-	var post models.DBPost
+	var post models.FrontPost
+	var dbPost models.DBPost
 
 	err := d.updatePostContent(postID, editInfo.Content)
 
@@ -69,9 +72,11 @@ func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFo
 		return post, err_2
 	}
 
-	post, err = d.findPost(postID, postCollection)
+	dbPost, err = d.findPost(postID, postCollection)
 
-	return post, err
+	frontPost := makeDBPostIntoFrontPost(dbPost)
+
+	return frontPost, err
 }
 
 func (d *AppDatabase) updatePostContent(postID string, newContent string) error {
@@ -112,9 +117,8 @@ func (d *AppDatabase) updatePostTags(postID string, newTags []string) error {
 	return err
 }
 
-func (d *AppDatabase) GetUserFeedFollowing(following []string) ([]models.DBPost, error) {
+func (d *AppDatabase) GetUserFeedFollowing(following []string) ([]models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
-	var posts []models.DBPost
 
 	filter := bson.M{AUTHOR_ID_FIELD: bson.M{"$in": following}}
 
@@ -124,25 +128,19 @@ func (d *AppDatabase) GetUserFeedFollowing(following []string) ([]models.DBPost,
 	}
 	defer cursor.Close(context.Background())
 
-	for cursor.Next(context.Background()) {
-		var dbPost models.DBPost
-		err := cursor.Decode(&dbPost)
-		if err != nil {
-			log.Println(err)
-		}
-		posts = append(posts, dbPost)
-	}
+	posts, err := createPostList(cursor, following)
 
 	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].Time.After(posts[j].Time)
+		return posts[i].Time > posts[j].Time
 	})
 
-	return posts, err
+	frontPosts := allPostIntoFrontPost(posts)
+
+	return frontPosts, err
 }
 
-func (d *AppDatabase) GetUserFeedInterests(interests []string) ([]models.DBPost, error) {
+func (d *AppDatabase) GetUserFeedInterests(interests []string, following []string) ([]models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
-	var posts []models.DBPost
 
 	filter := bson.M{TAGS_FIELD: bson.M{"$in": interests}}
 
@@ -152,23 +150,18 @@ func (d *AppDatabase) GetUserFeedInterests(interests []string) ([]models.DBPost,
 	}
 	defer cursor.Close(context.Background())
 
-	for cursor.Next(context.Background()) {
-		var dbPost models.DBPost
-		err := cursor.Decode(&dbPost)
-		if err != nil {
-			log.Println(err)
-		}
-		posts = append(posts, dbPost)
-	}
+	posts, err := createPostList(cursor, following)
 
 	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].Time.After(posts[j].Time)
+		return posts[i].Time > posts[j].Time
 	})
 
-	return posts, err
+	frontPosts := allPostIntoFrontPost(posts)
+
+	return frontPosts, err
 }
 
-func (d *AppDatabase) GetUserFeedSingle(userId string) ([]models.DBPost, error) {
+func (d *AppDatabase) GetUserFeedSingle(userId string) ([]models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []models.DBPost
 
@@ -190,15 +183,20 @@ func (d *AppDatabase) GetUserFeedSingle(userId string) ([]models.DBPost, error) 
 	}
 
 	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].Time.After(posts[j].Time)
+		return posts[i].Time > posts[j].Time
 	})
 
-	return posts, err
+	frontPosts := allPostIntoFrontPost(posts)
+
+	return frontPosts, err
 }
 
-func (d *AppDatabase) GetUserHashtags(interests []string) ([]models.DBPost, error) {
+func (d *AppDatabase) GetUserHashtags(interests []string, following []string) ([]models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
-	var posts []models.DBPost
+
+	if len(interests) == 0 {
+		return nil, postErrors.NoTagsFound()
+	}
 
 	filter := bson.M{TAGS_FIELD: bson.M{"$all": interests}}
 
@@ -208,28 +206,20 @@ func (d *AppDatabase) GetUserHashtags(interests []string) ([]models.DBPost, erro
 	}
 	defer cursor.Close(context.Background())
 
-	for cursor.Next(context.Background()) {
-		var dbPost models.DBPost
-		err := cursor.Decode(&dbPost)
-		if err != nil {
-			log.Println(err)
-		}
-		if dbPost.Public {
-			posts = append(posts, dbPost)
-		}
-	}
+	posts, err := createPostList(cursor, following)
 
 	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].Time.After(posts[j].Time)
+		return posts[i].Time > posts[j].Time
 	})
 
-	return posts, err
+	frontPosts := allPostIntoFrontPost(posts)
+
+	return frontPosts, err
 }
 
-func (d *AppDatabase) WordSearchPosts(words string) ([]models.DBPost, error) {
+func (d *AppDatabase) WordSearchPosts(words string, following []string) ([]models.FrontPost, error) {
 
 	postCollection := d.db.Collection(FEED_COLLECTION)
-	var posts []models.DBPost
 
 	filters := bson.A{}
 
@@ -248,24 +238,35 @@ func (d *AppDatabase) WordSearchPosts(words string) ([]models.DBPost, error) {
 	}
 	defer cursor.Close(context.Background())
 
-	for cursor.Next(context.Background()) {
-		var dbPost models.DBPost
-		err := cursor.Decode(&dbPost)
-		if err != nil {
-			log.Println(err)
-		}
-		if dbPost.Public {
-			posts = append(posts, dbPost)
-		}
-	}
+	posts, err := createPostList(cursor, following)
 
 	if posts == nil {
 		err = postErrors.NoWordssFound()
 	}
 
 	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].Time.After(posts[j].Time)
+		return posts[i].Time > posts[j].Time
 	})
+
+	frontPosts := allPostIntoFrontPost(posts)
+
+	return frontPosts, err
+}
+
+func createPostList(cursor *mongo.Cursor, following []string) ([]models.DBPost, error) {
+	var posts []models.DBPost
+	var err error
+
+	for cursor.Next(context.Background()) {
+		var dbPost models.DBPost
+		err = cursor.Decode(&dbPost)
+		if err != nil {
+			log.Println(err)
+		}
+		if dbPost.Public || (!dbPost.Public && slices.Contains(following, dbPost.Author_ID)) {
+			posts = append(posts, dbPost)
+		}
+	}
 
 	return posts, err
 }
