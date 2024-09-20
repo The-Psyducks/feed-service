@@ -13,7 +13,7 @@ type DBPost struct {
 	Time      int64 `bson:"time"`
 	Public   bool    `bson:"public"`
 	Tags     []string  `bson:"tags"`
-	// Likes is a list with the user_id of the users that liked the post
+	Likes   int  `bson:"likes"`
 }
 
 
@@ -42,6 +42,7 @@ type FrontPost struct {
 	Time      int64 `json:"time"`
 	Public   bool    `json:"public"`
 	Tags     []string  `json:"tags"`
+	Likes   int  `json:"likes"`
 }
 
 func NewFrontPost(post DBPost, author AuthorInfo) FrontPost {
@@ -52,5 +53,6 @@ func NewFrontPost(post DBPost, author AuthorInfo) FrontPost {
 		Time:      post.Time,
 		Tags:      post.Tags,
 		Public:   post.Public,
+		Likes:   post.Likes,
 	}
 }

@@ -147,3 +147,23 @@ func (c *Service) WordsSearch(words string) ([]models.FrontPost, error) {
 
 	return posts, nil
 }
+
+func (c *Service) LikePost(postID string) error {
+	err := c.db.LikeAPost(postID)
+
+	if err != nil {
+	  return postErrors.TwitsnapNotFound(postID)
+	}
+
+	return nil
+}
+
+func (c *Service) UnLikePost(postID string) error {
+	err := c.db.UnLikeAPost(postID)
+
+	if err != nil {
+		return postErrors.TwitsnapNotFound(postID)
+	}
+
+	return nil
+}

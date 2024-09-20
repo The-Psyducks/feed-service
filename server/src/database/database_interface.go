@@ -14,4 +14,6 @@ type Database interface {
 	GetUserFeedSingle(userID string) ([]models.FrontPost, error)
 	WordSearchPosts(words string, following []string) ([]models.FrontPost, error)
 	GetUserHashtags(hashtags []string, following []string) ([]models.FrontPost, error)
+	LikeAPost(postID string) error
+	UnLikeAPost(postID string) error
 }

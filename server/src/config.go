@@ -26,7 +26,7 @@ func ConfigEnv() *Config {
 	viper.SetDefault("PORT", "8080")
 	viper.SetDefault("HOST", "0.0.0.0")
 	viper.SetDefault("GIN_MODE", "debug")
-	viper.SetDefault("MONGO_URI", "mongodb://localhost:3030")
+	viper.SetDefault("MONGO_URI", "mongodb+srv://jpandolfi:<db_password>@cluster0.apod5.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 
 	config := &Config{
 		Enviroment: viper.GetString("ENVIROMENT"),

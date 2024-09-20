@@ -148,3 +148,31 @@ func (c *PostController) WordsSearch(context *gin.Context) {
 
 	context.JSON(http.StatusOK, result)
 }
+
+func (c *PostController) LikePost(context *gin.Context) {
+	postID := context.Param("id")
+
+	err := c.sv.LikePost(postID)
+
+	if err != nil {
+		_ = context.Error(err)
+		return
+	}
+
+
+
+	context.JSON(http.StatusNoContent, gin.H{})
+}
+
+func (c *PostController) UnLikePost(context *gin.Context) {
+	postID := context.Param("id")
+
+	err := c.sv.UnLikePost(postID)
+
+	if err != nil {
+		_ = context.Error(err)
+		return
+	}
+
+	context.JSON(http.StatusNoContent, gin.H{})
+}

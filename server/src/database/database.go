@@ -253,6 +253,34 @@ func (d *AppDatabase) WordSearchPosts(words string, following []string) ([]model
 	return frontPosts, err
 }
 
+func (d *AppDatabase) LikeAPost(postID string)  error {
+	postCollection := d.db.Collection(FEED_COLLECTION)
+
+	filter := bson.M{POST_ID_FIELD: postID}
+	update := bson.M{"$inc": bson.M{LIKES_FIELD: 1}}
+
+	_, err := postCollection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return err
+}
+
+func (d *AppDatabase) UnLikeAPost(postID string) error {
+	postCollection := d.db.Collection(FEED_COLLECTION)
+
+	filter := bson.M{POST_ID_FIELD: postID}
+	update := bson.M{"$inc": bson.M{LIKES_FIELD: -1}}
+
+	_, err := postCollection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return err
+}
+
 func createPostList(cursor *mongo.Cursor, following []string) ([]models.DBPost, error) {
 	var posts []models.DBPost
 	var err error

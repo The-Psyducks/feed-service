@@ -273,3 +273,11 @@ func (d *TestDatabase) GetUserFeedInterests(interests []string, following []stri
 func (d *TestDatabase) GetUserFeedSingle(userId string) ([]models.FrontPost, error) {
 	return nil, nil
 }
+
+func (d *TestDatabase) LikeAPost(postID string)  error {
+	return nil
+}
+
+func (d *TestDatabase) UnLikeAPost(postID string) error {
+	return nil
+}

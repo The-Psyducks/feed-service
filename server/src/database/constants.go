@@ -11,4 +11,5 @@ const (
 	AUTHOR_ID_FIELD = "author_id"
 	TIME_FIELD = "time"
 	TAGS_FIELD = "tags"
+	LIKES_FIELD = "likes"
 )
