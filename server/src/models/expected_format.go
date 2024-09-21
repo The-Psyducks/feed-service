@@ -15,3 +15,9 @@ type EditPostExpectedFormat struct {
 	Content string   `json:"content"`
 	Tags    []string `json:"tags"`
 }
+
+type ReturnPaginatedPosts struct {
+	Data        []FrontPost `json:"data"`
+	Next_Offset int         `json:"next_offset"`
+	Limit       int         `json:"limit"`
+}

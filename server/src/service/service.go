@@ -85,7 +85,7 @@ func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpected
 	return &modPost, nil
 }
 
-func (c *Service) FetchUserFeed(userID string, feedType string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
+func (c *Service) FetchUserFeed(userID string, feedType string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
 	switch feedType {
 	case FOLLOWING:
 		return c.fetchFollowingFeed(userID, limitConfig)
@@ -94,17 +94,17 @@ func (c *Service) FetchUserFeed(userID string, feedType string, limitConfig mode
 	case SINGLE:
 		return c.fetchForyouSingle(userID, limitConfig)
 	}
-	return nil, postErrors.BadFeedRequest()
+	return models.ReturnPaginatedPosts{}, postErrors.BadFeedRequest()
 }
 
-func (c *Service) fetchFollowingFeed(userID string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
+func (c *Service) fetchFollowingFeed(userID string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
 	_ = userID
 	following := []string{"3", "1"}
 	posts, err := c.db.GetUserFeedFollowing(following, limitConfig)
 	return posts, err
 }
 
-func (c *Service) fetchForyouFeed(userID string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
+func (c *Service) fetchForyouFeed(userID string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
 	_ = userID
 	interests := []string{"apple", "1"}
 	following := []string{"3", "1"}
@@ -112,37 +112,37 @@ func (c *Service) fetchForyouFeed(userID string, limitConfig models.LimitConfig)
 	return posts, err
 }
 
-func (c *Service) fetchForyouSingle(userID string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
+func (c *Service) fetchForyouSingle(userID string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
 	posts, err := c.db.GetUserFeedSingle(userID, limitConfig)
 	return posts, err
 }
 
-func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
+func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
 	following := []string{"3", "1"}
 
 	posts, err := c.db.GetUserHashtags(hashtags, following, limitConfig)
 
 	if err != nil {
-		return nil, err
+		return models.ReturnPaginatedPosts{}, err
 	}
 
-	if posts == nil {
-		return nil, postErrors.NoTagsFound()
+	if posts.Data == nil {
+		return models.ReturnPaginatedPosts{}, postErrors.NoTagsFound()
 	}
 
 	return posts, nil
 }
 
-func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
+func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
 	following := []string{"3", "1"}
 	posts, err := c.db.WordSearchPosts(words, following, limitConfig)
 
 	if err != nil {
-		return nil, err
+		return models.ReturnPaginatedPosts{}, err
 	}
 
-	if posts == nil {
-		return nil, postErrors.NoWordssFound()
+	if posts.Data == nil {
+		return models.ReturnPaginatedPosts{}, postErrors.NoWordssFound()
 	}
 
 	return posts, nil
@@ -152,7 +152,7 @@ func (c *Service) LikePost(postID string) error {
 	err := c.db.LikeAPost(postID)
 
 	if err != nil {
-	  return postErrors.TwitsnapNotFound(postID)
+		return postErrors.TwitsnapNotFound(postID)
 	}
 
 	return nil

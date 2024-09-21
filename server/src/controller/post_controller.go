@@ -106,16 +106,15 @@ func (c *PostController) GetUserFeed(context *gin.Context) {
 
 	limitParams := models.NewLimitConfig(time, skip, limit)
 
-	posts, err := c.sv.FetchUserFeed(userID, feedType, limitParams)
+	result, err := c.sv.FetchUserFeed(userID, feedType, limitParams)
 
 	if err != nil {
 		_ = context.Error(err)
 		return
 	}
 
-	result := gin.H{
-		"data": posts,
-		"pagination": len(posts),
+	if len(result.Data) == limitParams.Limit {
+		result.Next_Offset =limitParams.Skip + limitParams.Limit
 	}
 
 	context.JSON(http.StatusOK, result)
@@ -129,17 +128,16 @@ func (c *PostController) HashtagsSearch(context *gin.Context) {
 	limit := context.Query("limit")
 
 	limitParams := models.NewLimitConfig(time, skip, limit)
-	
-	posts, err := c.sv.FetchUserPostsByHashtags(hashtags, limitParams)
+
+	result, err := c.sv.FetchUserPostsByHashtags(hashtags, limitParams)
 
 	if err != nil {
 		_ = context.Error(err)
 		return
 	}
 
-	result := gin.H{
-		"data": posts,
-		"pagination": len(posts),
+	if len(result.Data) == limitParams.Limit {
+		result.Next_Offset =limitParams.Skip + limitParams.Limit
 	}
 
 	context.JSON(http.StatusOK, result)
@@ -154,16 +152,15 @@ func (c *PostController) WordsSearch(context *gin.Context) {
 
 	limitParams := models.NewLimitConfig(time, skip, limit)
 
-	posts, err := c.sv.WordsSearch(words, limitParams)
+	result, err := c.sv.WordsSearch(words, limitParams)
 
 	if err != nil {
 		_ = context.Error(err)
 		return
 	}
 
-	result := gin.H{
-		"data": posts,
-		"pagination": len(posts),
+	if len(result.Data) == limitParams.Limit {
+		result.Next_Offset =limitParams.Skip + limitParams.Limit
 	}
 
 	context.JSON(http.StatusOK, result)
@@ -178,8 +175,6 @@ func (c *PostController) LikePost(context *gin.Context) {
 		_ = context.Error(err)
 		return
 	}
-
-
 
 	context.JSON(http.StatusNoContent, gin.H{})
 }
