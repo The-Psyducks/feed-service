@@ -11,6 +11,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/exp/slices"
 )
 
@@ -117,12 +118,13 @@ func (d *AppDatabase) updatePostTags(postID string, newTags []string) error {
 	return err
 }
 
-func (d *AppDatabase) GetUserFeedFollowing(following []string) ([]models.FrontPost, error) {
+func (d *AppDatabase) GetUserFeedFollowing(following []string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
-	filter := bson.M{AUTHOR_ID_FIELD: bson.M{"$in": following}}
+	filter := bson.M{AUTHOR_ID_FIELD: bson.M{"$in": following}, TIME_FIELD: bson.M{"$lt": limitConfig.FromTime}}
 
-	cursor, err := postCollection.Find(context.Background(), filter)
+	cursor, err := postCollection.Find(context.Background(), filter,options.Find().
+					SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)))
 	if err != nil {
 		log.Println(err)
 	}
@@ -130,21 +132,18 @@ func (d *AppDatabase) GetUserFeedFollowing(following []string) ([]models.FrontPo
 
 	posts, err := createPostList(cursor, following)
 
-	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].Time > posts[j].Time
-	})
-
 	frontPosts := allPostIntoFrontPost(posts)
 
 	return frontPosts, err
 }
 
-func (d *AppDatabase) GetUserFeedInterests(interests []string, following []string) ([]models.FrontPost, error) {
+func (d *AppDatabase) GetUserFeedInterests(interests []string, following []string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
-	filter := bson.M{TAGS_FIELD: bson.M{"$in": interests}}
+	filter := bson.M{TAGS_FIELD: bson.M{"$in": interests}, TIME_FIELD: bson.M{"$lt": limitConfig.FromTime}}
 
-	cursor, err := postCollection.Find(context.Background(), filter)
+	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
+						SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)))
 	if err != nil {
 		log.Println(err)
 	}
@@ -152,22 +151,19 @@ func (d *AppDatabase) GetUserFeedInterests(interests []string, following []strin
 
 	posts, err := createPostList(cursor, following)
 
-	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].Time > posts[j].Time
-	})
-
 	frontPosts := allPostIntoFrontPost(posts)
 
 	return frontPosts, err
 }
 
-func (d *AppDatabase) GetUserFeedSingle(userId string) ([]models.FrontPost, error) {
+func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []models.DBPost
 
-	filter := bson.M{AUTHOR_ID_FIELD: userId}
+	filter := bson.M{AUTHOR_ID_FIELD: userId, TIME_FIELD: bson.M{"$lt": limitConfig.FromTime}}
 
-	cursor, err := postCollection.Find(context.Background(), filter)
+	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
+						SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)))
 	if err != nil {
 		log.Println(err)
 	}
@@ -182,25 +178,22 @@ func (d *AppDatabase) GetUserFeedSingle(userId string) ([]models.FrontPost, erro
 		posts = append(posts, dbPost)
 	}
 
-	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].Time > posts[j].Time
-	})
-
 	frontPosts := allPostIntoFrontPost(posts)
 
 	return frontPosts, err
 }
 
-func (d *AppDatabase) GetUserHashtags(interests []string, following []string) ([]models.FrontPost, error) {
+func (d *AppDatabase) GetUserHashtags(interests []string, following []string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	if len(interests) == 0 {
 		return nil, postErrors.NoTagsFound()
 	}
 
-	filter := bson.M{TAGS_FIELD: bson.M{"$all": interests}}
+	filter := bson.M{TAGS_FIELD: bson.M{"$all": interests}, TIME_FIELD: bson.M{"$lt": limitConfig.FromTime}}
 
-	cursor, err := postCollection.Find(context.Background(), filter)
+	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
+						SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)))
 	if err != nil {
 		log.Println(err)
 	}
@@ -217,7 +210,7 @@ func (d *AppDatabase) GetUserHashtags(interests []string, following []string) ([
 	return frontPosts, err
 }
 
-func (d *AppDatabase) WordSearchPosts(words string, following []string) ([]models.FrontPost, error) {
+func (d *AppDatabase) WordSearchPosts(words string, following []string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
 
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
@@ -230,9 +223,11 @@ func (d *AppDatabase) WordSearchPosts(words string, following []string) ([]model
 		}
 	}
 
-	filter := bson.M{"$or": filters}
+	filter := bson.M{"$or": filters, TIME_FIELD: bson.M{"$lt": limitConfig.FromTime}}
 
-	cursor, err := postCollection.Find(context.Background(), filter)
+	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
+						SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)))
+
 	if err != nil {
 		log.Println(err)
 	}
@@ -243,10 +238,6 @@ func (d *AppDatabase) WordSearchPosts(words string, following []string) ([]model
 	if posts == nil {
 		err = postErrors.NoWordssFound()
 	}
-
-	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].Time > posts[j].Time
-	})
 
 	frontPosts := allPostIntoFrontPost(posts)
 

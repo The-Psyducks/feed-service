@@ -127,7 +127,7 @@ func (d *TestDatabase) updatePostTags(postID string, newTags []string) error {
 	return err_3
 }
 
-func (d *TestDatabase) GetUserFeedFollowing(following []string) ([]models.FrontPost, error) {
+func (d *TestDatabase) GetUserFeedFollowing(following []string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []models.DBPost
 
@@ -160,7 +160,7 @@ func (d *TestDatabase) GetUserFeedFollowing(following []string) ([]models.FrontP
 	return allPostIntoFrontPost(feed), err
 }
 
-func (d *TestDatabase) GetUserHashtags(interests []string, following []string) ([]models.FrontPost, error) {
+func (d *TestDatabase) GetUserHashtags(interests []string, following []string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []models.DBPost
 
@@ -204,7 +204,7 @@ func containsAll(s []string, e []string) bool {
 	return true
 }
 
-func (d *TestDatabase) WordSearchPosts(words string, following []string) ([]models.FrontPost, error) {
+func (d *TestDatabase) WordSearchPosts(words string, following []string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
 
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []models.DBPost
@@ -266,11 +266,11 @@ func (d *TestDatabase) findPost(postID string, postCollection *mongomock.Collect
 	return post, err
 }
 
-func (d *TestDatabase) GetUserFeedInterests(interests []string, following []string) ([]models.FrontPost, error) {
+func (d *TestDatabase) GetUserFeedInterests(interests []string, following []string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
 	return nil, nil
 }
 
-func (d *TestDatabase) GetUserFeedSingle(userId string) ([]models.FrontPost, error) {
+func (d *TestDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
 	return nil, nil
 }
 

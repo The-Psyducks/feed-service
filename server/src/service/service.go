@@ -85,42 +85,42 @@ func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpected
 	return &modPost, nil
 }
 
-func (c *Service) FetchUserFeed(userID string, feedType string) ([]models.FrontPost, error) {
+func (c *Service) FetchUserFeed(userID string, feedType string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
 	switch feedType {
 	case FOLLOWING:
-		return c.fetchFollowingFeed(userID)
+		return c.fetchFollowingFeed(userID, limitConfig)
 	case FORYOU:
-		return c.fetchForyouFeed(userID)
+		return c.fetchForyouFeed(userID, limitConfig)
 	case SINGLE:
-		return c.fetchForyouSingle(userID)
+		return c.fetchForyouSingle(userID, limitConfig)
 	}
 	return nil, postErrors.BadFeedRequest()
 }
 
-func (c *Service) fetchFollowingFeed(userID string) ([]models.FrontPost, error) {
+func (c *Service) fetchFollowingFeed(userID string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
 	_ = userID
 	following := []string{"3", "1"}
-	posts, err := c.db.GetUserFeedFollowing(following)
+	posts, err := c.db.GetUserFeedFollowing(following, limitConfig)
 	return posts, err
 }
 
-func (c *Service) fetchForyouFeed(userID string) ([]models.FrontPost, error) {
+func (c *Service) fetchForyouFeed(userID string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
 	_ = userID
 	interests := []string{"apple", "1"}
 	following := []string{"3", "1"}
-	posts, err := c.db.GetUserFeedInterests(interests, following)
+	posts, err := c.db.GetUserFeedInterests(interests, following, limitConfig)
 	return posts, err
 }
 
-func (c *Service) fetchForyouSingle(userID string) ([]models.FrontPost, error) {
-	posts, err := c.db.GetUserFeedSingle(userID)
+func (c *Service) fetchForyouSingle(userID string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
+	posts, err := c.db.GetUserFeedSingle(userID, limitConfig)
 	return posts, err
 }
 
-func (c *Service) FetchUserPostsByHashtags(hashtags []string) ([]models.FrontPost, error) {
+func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
 	following := []string{"3", "1"}
 
-	posts, err := c.db.GetUserHashtags(hashtags, following)
+	posts, err := c.db.GetUserHashtags(hashtags, following, limitConfig)
 
 	if err != nil {
 		return nil, err
@@ -133,9 +133,9 @@ func (c *Service) FetchUserPostsByHashtags(hashtags []string) ([]models.FrontPos
 	return posts, nil
 }
 
-func (c *Service) WordsSearch(words string) ([]models.FrontPost, error) {
+func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig) ([]models.FrontPost, error) {
 	following := []string{"3", "1"}
-	posts, err := c.db.WordSearchPosts(words, following)
+	posts, err := c.db.WordSearchPosts(words, following, limitConfig)
 
 	if err != nil {
 		return nil, err
