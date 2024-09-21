@@ -114,8 +114,8 @@ func (c *PostController) GetUserFeed(context *gin.Context) {
 	}
 
 	result := gin.H{
-		"posts": posts,
-		"count": len(posts),
+		"data": posts,
+		"pagination": len(posts),
 	}
 
 	context.JSON(http.StatusOK, result)
@@ -138,7 +138,8 @@ func (c *PostController) HashtagsSearch(context *gin.Context) {
 	}
 
 	result := gin.H{
-		"posts": posts,
+		"data": posts,
+		"pagination": len(posts),
 	}
 
 	context.JSON(http.StatusOK, result)
@@ -161,7 +162,8 @@ func (c *PostController) WordsSearch(context *gin.Context) {
 	}
 
 	result := gin.H{
-		"posts": posts,
+		"data": posts,
+		"pagination": len(posts),
 	}
 
 	context.JSON(http.StatusOK, result)

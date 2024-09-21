@@ -3,7 +3,6 @@ package database
 import (
 	"log"
 	"server/src/models"
-	"sort"
 	"strings"
 
 	postErrors "server/src/all_errors"
@@ -145,9 +144,9 @@ func (d *TestDatabase) GetUserFeedFollowing(following []string, limitConfig mode
 		posts = append(posts, dbPost)
 	}
 
-	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].Time > posts[j].Time
-	})
+	// sort.Slice(posts, func(i, j int) bool {
+	// 	// return posts[i].Time > posts[j].Time
+	// })
 
 	feed := []models.DBPost{}
 
@@ -180,9 +179,9 @@ func (d *TestDatabase) GetUserHashtags(interests []string, following []string, l
 		}
 	}
 
-	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].Time > posts[j].Time
-	})
+	// sort.Slice(posts, func(i, j int) bool {
+	// 	return posts[i].Time > posts[j].Time
+	// })
 
 	feed := []models.DBPost{}
 
@@ -229,9 +228,9 @@ func (d *TestDatabase) WordSearchPosts(words string, following []string, limitCo
 		}
 	}
 
-	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].Time > posts[j].Time
-	})
+	// sort.Slice(posts, func(i, j int) bool {
+	// 	return posts[i].Time > posts[j].Time
+	// })
 
 	result := []models.DBPost{}
 
