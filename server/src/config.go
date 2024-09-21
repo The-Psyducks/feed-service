@@ -2,14 +2,15 @@ package src
 
 import (
 	"log"
-	"github.com/spf13/viper"
+	"os"
 
+	"github.com/spf13/viper"
 )
 
 type Config struct {
 	Enviroment string
 	Port       string
-	Host	   string
+	Host       string
 	Gin_Mode   string
 	Mongo_URI  string
 }
@@ -34,6 +35,10 @@ func ConfigEnv() *Config {
 		Host:       viper.GetString("HOST"),
 		Gin_Mode:   viper.GetString("GIN_MODE"),
 		Mongo_URI:  viper.GetString("MONGO_URI"),
+	}
+
+	if os.Getenv("ENVIROMENT") == "HEROKU" {
+		config.Mongo_URI = os.Getenv("DATABASE_URL")
 	}
 
 	return config
