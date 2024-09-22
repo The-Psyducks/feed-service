@@ -118,7 +118,7 @@ func (d *AppDatabase) updatePostTags(postID string, newTags []string) error {
 	return err
 }
 
-func (d *AppDatabase) GetUserFeedFollowing(following []string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
+func (d *AppDatabase) GetUserFeedFollowing(following []string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	parsedTime, err := time.Parse(time.RFC3339, limitConfig.FromTime)
@@ -130,7 +130,7 @@ func (d *AppDatabase) GetUserFeedFollowing(following []string, limitConfig model
 	filter := bson.M{AUTHOR_ID_FIELD: bson.M{"$in": following}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
-		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)))
+		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
 	if err != nil {
 		log.Println(err)
 	}
@@ -138,14 +138,18 @@ func (d *AppDatabase) GetUserFeedFollowing(following []string, limitConfig model
 
 	posts, err := createPostList(cursor, following)
 
+	hasMore := len(posts) > limitConfig.Limit
+
+	if hasMore{
+		posts = posts[:len(posts)-1]
+	}
+
 	frontPosts := allPostIntoFrontPost(posts)
 
-	paginatedPosts := models.ReturnPaginatedPosts{Data: frontPosts, Limit: limitConfig.Limit}
-
-	return paginatedPosts, err
+	return frontPosts, hasMore, err
 }
 
-func (d *AppDatabase) GetUserFeedInterests(interests []string, following []string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
+func (d *AppDatabase) GetUserFeedInterests(interests []string, following []string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	parsedTime, err := time.Parse(time.RFC3339, limitConfig.FromTime)
@@ -165,14 +169,18 @@ func (d *AppDatabase) GetUserFeedInterests(interests []string, following []strin
 
 	posts, err := createPostList(cursor, following)
 
+	hasMore := len(posts) > limitConfig.Limit
+
+	if hasMore{
+		posts = posts[:len(posts)-1]
+	}
+
 	frontPosts := allPostIntoFrontPost(posts)
 
-	paginatedPosts := models.ReturnPaginatedPosts{Data: frontPosts, Limit: limitConfig.Limit}
-
-	return paginatedPosts, err
+	return frontPosts, hasMore, err
 }
 
-func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
+func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var posts []models.DBPost
 
@@ -200,18 +208,22 @@ func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitC
 		posts = append(posts, dbPost)
 	}
 
+	hasMore := len(posts) > limitConfig.Limit
+
+	if hasMore{
+		posts = posts[:len(posts)-1]
+	}
+
 	frontPosts := allPostIntoFrontPost(posts)
 
-	paginatedPosts := models.ReturnPaginatedPosts{Data: frontPosts, Limit: limitConfig.Limit}
-
-	return paginatedPosts, err
+	return frontPosts, hasMore, err
 }
 
-func (d *AppDatabase) GetUserHashtags(interests []string, following []string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
+func (d *AppDatabase) GetUserHashtags(interests []string, following []string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	if len(interests) == 0 {
-		return models.ReturnPaginatedPosts{}, postErrors.NoTagsFound()
+		return []models.FrontPost{}, false, postErrors.NoTagsFound()
 	}
 
 	parsedTime, err := time.Parse(time.RFC3339, limitConfig.FromTime)
@@ -231,14 +243,18 @@ func (d *AppDatabase) GetUserHashtags(interests []string, following []string, li
 
 	posts, err := createPostList(cursor, following)
 
+	hasMore := len(posts) > limitConfig.Limit
+
+	if hasMore{
+		posts = posts[:len(posts)-1]
+	}
+
 	frontPosts := allPostIntoFrontPost(posts)
 
-	paginatedPosts := models.ReturnPaginatedPosts{Data: frontPosts, Limit: limitConfig.Limit}
-
-	return paginatedPosts, err
+	return frontPosts, hasMore, err
 }
 
-func (d *AppDatabase) WordSearchPosts(words string, following []string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
+func (d *AppDatabase) WordSearchPosts(words string, following []string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
 
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
@@ -273,11 +289,15 @@ func (d *AppDatabase) WordSearchPosts(words string, following []string, limitCon
 		err = postErrors.NoWordssFound()
 	}
 
+	hasMore := len(posts) > limitConfig.Limit
+
+	if hasMore{
+		posts = posts[:len(posts)-1]
+	}
+
 	frontPosts := allPostIntoFrontPost(posts)
 
-	paginatedPosts := models.ReturnPaginatedPosts{Data: frontPosts, Limit: limitConfig.Limit}
-
-	return paginatedPosts, err
+	return frontPosts, hasMore, err
 }
 
 func (d *AppDatabase) LikeAPost(postID string) error {

@@ -1,10 +1,14 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
+	"io"
+	"net/http"
 	postErrors "server/src/all_errors"
 	"server/src/database"
 	"server/src/models"
+	"strconv"
 
 	validator "github.com/go-playground/validator/v10"
 )
@@ -85,67 +89,67 @@ func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpected
 	return &modPost, nil
 }
 
-func (c *Service) FetchUserFeed(userID string, feedType string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
+func (c *Service) FetchUserFeed(username string, feedType string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
 	switch feedType {
 	case FOLLOWING:
-		return c.fetchFollowingFeed(userID, limitConfig)
+		return c.fetchFollowingFeed(username, limitConfig)
 	case FORYOU:
-		return c.fetchForyouFeed(userID, limitConfig)
+		return c.fetchForyouFeed(username, limitConfig)
 	case SINGLE:
-		return c.fetchForyouSingle(userID, limitConfig)
+		return c.fetchForyouSingle(username, limitConfig)
 	}
-	return models.ReturnPaginatedPosts{}, postErrors.BadFeedRequest()
+	return []models.FrontPost{}, false, postErrors.BadFeedRequest()
 }
 
-func (c *Service) fetchFollowingFeed(userID string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
-	_ = userID
+func (c *Service) fetchFollowingFeed(username string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
+	_ = username
 	following := []string{"3", "1"}
-	posts, err := c.db.GetUserFeedFollowing(following, limitConfig)
-	return posts, err
+	posts, hasMore, err := c.db.GetUserFeedFollowing(following, limitConfig)
+	return posts, hasMore, err
 }
 
-func (c *Service) fetchForyouFeed(userID string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
-	_ = userID
+func (c *Service) fetchForyouFeed(username string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
+	_ = username
 	interests := []string{"apple", "1"}
 	following := []string{"3", "1"}
-	posts, err := c.db.GetUserFeedInterests(interests, following, limitConfig)
-	return posts, err
+	posts, hasMore, err := c.db.GetUserFeedInterests(interests, following, limitConfig)
+	return posts, hasMore, err
 }
 
-func (c *Service) fetchForyouSingle(userID string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
-	posts, err := c.db.GetUserFeedSingle(userID, limitConfig)
-	return posts, err
+func (c *Service) fetchForyouSingle(userID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
+	posts, hasMore, err := c.db.GetUserFeedSingle(userID, limitConfig)
+	return posts, hasMore, err
 }
 
-func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
+func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
 	following := []string{"3", "1"}
 
-	posts, err := c.db.GetUserHashtags(hashtags, following, limitConfig)
+	posts, hasMore, err := c.db.GetUserHashtags(hashtags, following, limitConfig)
 
 	if err != nil {
-		return models.ReturnPaginatedPosts{}, err
+		return []models.FrontPost{}, false, err
 	}
 
-	if posts.Data == nil {
-		return models.ReturnPaginatedPosts{}, postErrors.NoTagsFound()
+	if len(posts) == 0 {
+		return []models.FrontPost{}, false, postErrors.NoTagsFound()
 	}
 
-	return posts, nil
+	return posts, hasMore, nil
 }
 
-func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
+func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
 	following := []string{"3", "1"}
-	posts, err := c.db.WordSearchPosts(words, following, limitConfig)
+	posts, hasMore, err := c.db.WordSearchPosts(words, following, limitConfig)
 
 	if err != nil {
-		return models.ReturnPaginatedPosts{}, err
+		return []models.FrontPost{}, false, err
 	}
 
-	if posts.Data == nil {
-		return models.ReturnPaginatedPosts{}, postErrors.NoWordssFound()
+	if len(posts) == 0 {
+		return []models.FrontPost{}, false, postErrors.NoWordssFound()
 	}
 
-	return posts, nil
+	return posts, hasMore, nil
 }
 
 func (c *Service) LikePost(postID string) error {
@@ -166,4 +170,54 @@ func (c *Service) UnLikePost(postID string) error {
 	}
 
 	return nil
+}
+
+func getUserFollowingWp(username string, limitConfig models.LimitConfig) []string {
+	return getUserFollowing(username, []string{}, limitConfig)
+	
+}
+
+func getUserFollowing(username string, following []string, limitConfig models.LimitConfig) []string {
+
+	limit := strconv.Itoa(limitConfig.Limit)
+	skip := strconv.Itoa(limitConfig.Skip)
+	
+	url := "http://localhost:8080/users/" + username + "?time=" + limitConfig.FromTime + "&skip="+ skip +"&limit=" + limit
+
+	req, err := http.Get(url)
+
+	if err != nil {
+		return following
+	}
+
+	body, err := io.ReadAll(req.Body)
+
+	if err != nil {
+		return following
+	}
+
+	user := struct {
+		Data []models.UserFollowingExpectedFormat `json:"data"`
+		Pagination models.Pagination `json:"pagination"`
+	}{}
+	err = json.Unmarshal(body, &user)
+
+	if err != nil {
+		return following
+	}
+
+	for _, data := range user.Data {
+		following = append(following, data.Profile.ID)
+	}
+
+
+
+	if user.Pagination.Next_Offset != 0 {
+
+		newLimit := models.NewLimitConfig(limitConfig.FromTime, limit, strconv.Itoa(user.Pagination.Next_Offset + limitConfig.Skip))
+
+		return getUserFollowing(username, following, newLimit)
+	}
+
+	return following
 }

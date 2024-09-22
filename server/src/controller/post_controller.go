@@ -97,7 +97,7 @@ func (c *PostController) UpdatePostByID(context *gin.Context) {
 
 func (c *PostController) GetUserFeed(context *gin.Context) {
 
-	userID := context.Param("id")
+	username := context.Param("username")
 
 	feedType := context.Query("feed_type")
 	time := context.Query("from_time")
@@ -106,14 +106,19 @@ func (c *PostController) GetUserFeed(context *gin.Context) {
 
 	limitParams := models.NewLimitConfig(time, skip, limit)
 
-	result, err := c.sv.FetchUserFeed(userID, feedType, limitParams)
+	posts, hasMore, err := c.sv.FetchUserFeed(username, feedType, limitParams)
 
 	if err != nil {
 		_ = context.Error(err)
 		return
 	}
 
-	if len(result.Data) == limitParams.Limit {
+	result := models.ReturnPaginatedPosts{
+		Data: posts,
+		Limit: limitParams.Limit,
+	}
+
+	if hasMore {
 		result.Next_Offset =limitParams.Skip + limitParams.Limit
 	}
 
@@ -129,16 +134,22 @@ func (c *PostController) HashtagsSearch(context *gin.Context) {
 
 	limitParams := models.NewLimitConfig(time, skip, limit)
 
-	result, err := c.sv.FetchUserPostsByHashtags(hashtags, limitParams)
+	posts, hasMore, err := c.sv.FetchUserPostsByHashtags(hashtags, limitParams)
 
 	if err != nil {
 		_ = context.Error(err)
 		return
 	}
 
-	if len(result.Data) == limitParams.Limit {
+	result := models.ReturnPaginatedPosts{
+		Data: posts,
+		Limit: limitParams.Limit,
+	}
+
+	if hasMore {
 		result.Next_Offset =limitParams.Skip + limitParams.Limit
 	}
+
 
 	context.JSON(http.StatusOK, result)
 }
@@ -152,16 +163,22 @@ func (c *PostController) WordsSearch(context *gin.Context) {
 
 	limitParams := models.NewLimitConfig(time, skip, limit)
 
-	result, err := c.sv.WordsSearch(words, limitParams)
+	posts, hasMore, err := c.sv.WordsSearch(words, limitParams)
 
 	if err != nil {
 		_ = context.Error(err)
 		return
 	}
 
-	if len(result.Data) == limitParams.Limit {
+	result := models.ReturnPaginatedPosts{
+		Data: posts,
+		Limit: limitParams.Limit,
+	}
+
+	if hasMore {
 		result.Next_Offset =limitParams.Skip + limitParams.Limit
 	}
+
 
 	context.JSON(http.StatusOK, result)
 }

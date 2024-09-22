@@ -18,6 +18,6 @@ type EditPostExpectedFormat struct {
 
 type ReturnPaginatedPosts struct {
 	Data        []FrontPost `json:"data"`
-	Next_Offset int         `json:"next_offset"`
+	Next_Offset int         `json:"next_offset,omitempty"`
 	Limit       int         `json:"limit"`
 }

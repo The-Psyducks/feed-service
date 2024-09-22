@@ -16,7 +16,7 @@ type Config struct {
 func ConfigEnv() *Config {
 	config := &Config{
 		Enviroment: getEnvOrDefault("ENVIROMENT", "development"),
-		Port:      	getEnvOrDefault("PORT", "8080"),
+		Port:      	getEnvOrDefault("PORT", "4343"),
 		Host:       getEnvOrDefault("HOST", "0.0.0.0"),
 		Gin_Mode:   getEnvOrDefault("GIN_MODE", "debug"),
 		Mongo_URI:  getEnvOrDefault("MONGO_URI", "mongodb://mongo:27017"),
