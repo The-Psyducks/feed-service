@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"log"
 	postErrors "server/src/all_errors"
 	"server/src/database"
 	"server/src/models"
@@ -23,7 +24,7 @@ func NewService(db database.Database) *Service {
 	return &Service{db: db}
 }
 
-func (c *Service) CreatePost(newPost *models.PostExpectedFormat) (*models.FrontPost, error) {
+func (c *Service) CreatePost(newPost *models.PostExpectedFormat, author_id string, token string) (*models.FrontPost, error) {
 
 	validate := validator.New()
 	if err := validate.Struct(newPost); err != nil {
@@ -34,7 +35,7 @@ func (c *Service) CreatePost(newPost *models.PostExpectedFormat) (*models.FrontP
 		return nil, postErrors.TwitsnapTooLong()
 	}
 
-	postNew := models.NewDBPost(newPost.Author_ID, newPost.Content, newPost.Tags, newPost.Public)
+	postNew := models.NewDBPost(author_id, newPost.Content, newPost.Tags, newPost.Public)
 
 	newPosted, err := c.db.AddNewPost(postNew)
 
@@ -42,15 +43,27 @@ func (c *Service) CreatePost(newPost *models.PostExpectedFormat) (*models.FrontP
 		return nil, postErrors.DatabaseError()
 	}
 
+	newPosted, err = addAuthorInfoToPost(newPosted, token)
+
+	if err != nil {
+		return nil, postErrors.UserInfoError(err.Error())
+	}
+
 	return &newPosted, nil
 }
 
-func (c *Service) FetchPostByID(postID string) (*models.FrontPost, error) {
+func (c *Service) FetchPostByID(postID string, token string) (*models.FrontPost, error) {
 
 	post, err := c.db.GetPostByID(postID)
 
 	if err != nil {
 		return nil, postErrors.TwitsnapNotFound(postID)
+	}
+
+	post, err = addAuthorInfoToPost(post, token)
+
+	if err != nil {
+		return nil, postErrors.UserInfoError(err.Error())
 	}
 
 	return &post, nil
@@ -66,7 +79,7 @@ func (c *Service) RemovePostByID(postID string) error {
 	return nil
 }
 
-func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpectedFormat) (*models.FrontPost, error) {
+func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpectedFormat, token string) (*models.FrontPost, error) {
 	validate := validator.New()
 	if err := validate.Struct(editInfo); err != nil {
 		return nil, postErrors.TwitSnapImportantFieldsMissing(err)
@@ -82,70 +95,115 @@ func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpected
 		}
 	}
 
+	modPost, err = addAuthorInfoToPost(modPost, token)
+
+	if err != nil {
+		return nil, postErrors.UserInfoError(err.Error())
+	}
+
 	return &modPost, nil
 }
 
-func (c *Service) FetchUserFeed(userID string, feedType string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
+func (c *Service) FetchUserFeed(username string, feedType string, limitConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
 	switch feedType {
 	case FOLLOWING:
-		return c.fetchFollowingFeed(userID, limitConfig)
+		return c.fetchFollowingFeed(username, limitConfig, token)
 	case FORYOU:
-		return c.fetchForyouFeed(userID, limitConfig)
+		return c.fetchForyouFeed(username, limitConfig, token)
 	case SINGLE:
-		return c.fetchForyouSingle(userID, limitConfig)
+		return c.fetchForyouSingle(limitConfig, username, token)
 	}
-	return models.ReturnPaginatedPosts{}, postErrors.BadFeedRequest()
+	return []models.FrontPost{}, false, postErrors.BadFeedRequest()
 }
 
-func (c *Service) fetchFollowingFeed(userID string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
-	_ = userID
-	following := []string{"3", "1"}
-	posts, err := c.db.GetUserFeedFollowing(following, limitConfig)
-	return posts, err
+func (c *Service) fetchFollowingFeed(username string, limitConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
+	_ = username
+	following, err := getUserFollowingWp(username, limitConfig, token)
+	if err != nil {
+		return []models.FrontPost{}, false, err
+	}
+	log.Println(following)
+	posts, hasMore, err := c.db.GetUserFeedFollowing(following, limitConfig)
+
+	if err != nil {
+		return []models.FrontPost{}, false, err
+	}
+
+	posts, err = addAuthorInfoToPosts(posts, token)
+	return posts, hasMore, err
 }
 
-func (c *Service) fetchForyouFeed(userID string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
-	_ = userID
+func (c *Service) fetchForyouFeed(username string, limitConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
+	_ = username
 	interests := []string{"apple", "1"}
-	following := []string{"3", "1"}
-	posts, err := c.db.GetUserFeedInterests(interests, following, limitConfig)
-	return posts, err
-}
-
-func (c *Service) fetchForyouSingle(userID string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
-	posts, err := c.db.GetUserFeedSingle(userID, limitConfig)
-	return posts, err
-}
-
-func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
-	following := []string{"3", "1"}
-
-	posts, err := c.db.GetUserHashtags(hashtags, following, limitConfig)
+	following, err := getUserFollowingWp(username, limitConfig, token)
+	if err != nil {
+		return []models.FrontPost{}, false, err
+	}
+	posts, hasMore, err := c.db.GetUserFeedInterests(interests, following, limitConfig)
 
 	if err != nil {
-		return models.ReturnPaginatedPosts{}, err
+		return []models.FrontPost{}, false, err
 	}
 
-	if posts.Data == nil {
-		return models.ReturnPaginatedPosts{}, postErrors.NoTagsFound()
-	}
-
-	return posts, nil
+	posts, err = addAuthorInfoToPosts(posts, token)
+	return posts, hasMore, err
 }
 
-func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig) (models.ReturnPaginatedPosts, error) {
-	following := []string{"3", "1"}
-	posts, err := c.db.WordSearchPosts(words, following, limitConfig)
+func (c *Service) fetchForyouSingle(limitConfig models.LimitConfig, username string, token string) ([]models.FrontPost, bool, error) {
+	userID, err := getUserID(username, token)
+	if err != nil {
+		return []models.FrontPost{}, false, postErrors.UserInfoError(err.Error())
+	}
+	posts, hasMore, err := c.db.GetUserFeedSingle(userID, limitConfig)
 
 	if err != nil {
-		return models.ReturnPaginatedPosts{}, err
+		return []models.FrontPost{}, false, err
 	}
 
-	if posts.Data == nil {
-		return models.ReturnPaginatedPosts{}, postErrors.NoWordssFound()
+	posts, err = addAuthorInfoToPosts(posts, token)
+	return posts, hasMore, err
+}
+
+func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models.LimitConfig, username string, token string) ([]models.FrontPost, bool, error) {
+	following, err := getUserFollowingWp(username, limitConfig, token)
+	if err != nil {
+		return []models.FrontPost{}, false, err
 	}
 
-	return posts, nil
+	posts, hasMore, err := c.db.GetUserHashtags(hashtags, following, limitConfig)
+
+	if err != nil {
+		return []models.FrontPost{}, false, err
+	}
+
+	if len(posts) == 0 {
+		return []models.FrontPost{}, false, postErrors.NoTagsFound()
+	}
+
+	posts, err = addAuthorInfoToPosts(posts, token)
+
+	return posts, hasMore, err
+}
+
+func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig, username string, token string) ([]models.FrontPost, bool, error) {
+	following, err := getUserFollowingWp(username, limitConfig, token)
+	if err != nil {
+		return []models.FrontPost{}, false, err
+	}
+	posts, hasMore, err := c.db.WordSearchPosts(words, following, limitConfig)
+
+	if err != nil {
+		return []models.FrontPost{}, false, err
+	}
+
+	if len(posts) == 0 {
+		return []models.FrontPost{}, false, postErrors.NoWordssFound()
+	}
+
+	posts, err = addAuthorInfoToPosts(posts, token)
+
+	return posts, hasMore, err
 }
 
 func (c *Service) LikePost(postID string) error {
@@ -167,3 +225,4 @@ func (c *Service) UnLikePost(postID string) error {
 
 	return nil
 }
+
