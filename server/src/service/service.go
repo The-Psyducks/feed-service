@@ -1,14 +1,11 @@
 package service
 
 import (
-	"encoding/json"
 	"errors"
-	"io"
-	"net/http"
+	"log"
 	postErrors "server/src/all_errors"
 	"server/src/database"
 	"server/src/models"
-	"strconv"
 
 	validator "github.com/go-playground/validator/v10"
 )
@@ -27,7 +24,7 @@ func NewService(db database.Database) *Service {
 	return &Service{db: db}
 }
 
-func (c *Service) CreatePost(newPost *models.PostExpectedFormat) (*models.FrontPost, error) {
+func (c *Service) CreatePost(newPost *models.PostExpectedFormat, author_id string, token string) (*models.FrontPost, error) {
 
 	validate := validator.New()
 	if err := validate.Struct(newPost); err != nil {
@@ -38,7 +35,7 @@ func (c *Service) CreatePost(newPost *models.PostExpectedFormat) (*models.FrontP
 		return nil, postErrors.TwitsnapTooLong()
 	}
 
-	postNew := models.NewDBPost(newPost.Author_ID, newPost.Content, newPost.Tags, newPost.Public)
+	postNew := models.NewDBPost(author_id, newPost.Content, newPost.Tags, newPost.Public)
 
 	newPosted, err := c.db.AddNewPost(postNew)
 
@@ -46,15 +43,27 @@ func (c *Service) CreatePost(newPost *models.PostExpectedFormat) (*models.FrontP
 		return nil, postErrors.DatabaseError()
 	}
 
+	newPosted, err = addAuthorInfoToPost(newPosted, token)
+
+	if err != nil {
+		return nil, postErrors.UserInfoError(err.Error())
+	}
+
 	return &newPosted, nil
 }
 
-func (c *Service) FetchPostByID(postID string) (*models.FrontPost, error) {
+func (c *Service) FetchPostByID(postID string, token string) (*models.FrontPost, error) {
 
 	post, err := c.db.GetPostByID(postID)
 
 	if err != nil {
 		return nil, postErrors.TwitsnapNotFound(postID)
+	}
+
+	post, err = addAuthorInfoToPost(post, token)
+
+	if err != nil {
+		return nil, postErrors.UserInfoError(err.Error())
 	}
 
 	return &post, nil
@@ -70,7 +79,7 @@ func (c *Service) RemovePostByID(postID string) error {
 	return nil
 }
 
-func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpectedFormat) (*models.FrontPost, error) {
+func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpectedFormat, token string) (*models.FrontPost, error) {
 	validate := validator.New()
 	if err := validate.Struct(editInfo); err != nil {
 		return nil, postErrors.TwitSnapImportantFieldsMissing(err)
@@ -86,43 +95,81 @@ func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpected
 		}
 	}
 
+	modPost, err = addAuthorInfoToPost(modPost, token)
+
+	if err != nil {
+		return nil, postErrors.UserInfoError(err.Error())
+	}
+
 	return &modPost, nil
 }
 
-func (c *Service) FetchUserFeed(username string, feedType string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
+func (c *Service) FetchUserFeed(username string, feedType string, limitConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
 	switch feedType {
 	case FOLLOWING:
-		return c.fetchFollowingFeed(username, limitConfig)
+		return c.fetchFollowingFeed(username, limitConfig, token)
 	case FORYOU:
-		return c.fetchForyouFeed(username, limitConfig)
+		return c.fetchForyouFeed(username, limitConfig, token)
 	case SINGLE:
-		return c.fetchForyouSingle(username, limitConfig)
+		return c.fetchForyouSingle(limitConfig, username, token)
 	}
 	return []models.FrontPost{}, false, postErrors.BadFeedRequest()
 }
 
-func (c *Service) fetchFollowingFeed(username string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
+func (c *Service) fetchFollowingFeed(username string, limitConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
 	_ = username
-	following := []string{"3", "1"}
+	following, err := getUserFollowingWp(username, limitConfig, token)
+	if err != nil {
+		return []models.FrontPost{}, false, err
+	}
+	log.Println(following)
 	posts, hasMore, err := c.db.GetUserFeedFollowing(following, limitConfig)
+
+	if err != nil {
+		return []models.FrontPost{}, false, err
+	}
+
+	posts, err = addAuthorInfoToPosts(posts, token)
 	return posts, hasMore, err
 }
 
-func (c *Service) fetchForyouFeed(username string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
+func (c *Service) fetchForyouFeed(username string, limitConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
 	_ = username
 	interests := []string{"apple", "1"}
-	following := []string{"3", "1"}
+	following, err := getUserFollowingWp(username, limitConfig, token)
+	if err != nil {
+		return []models.FrontPost{}, false, err
+	}
 	posts, hasMore, err := c.db.GetUserFeedInterests(interests, following, limitConfig)
+
+	if err != nil {
+		return []models.FrontPost{}, false, err
+	}
+
+	posts, err = addAuthorInfoToPosts(posts, token)
 	return posts, hasMore, err
 }
 
-func (c *Service) fetchForyouSingle(userID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
+func (c *Service) fetchForyouSingle(limitConfig models.LimitConfig, username string, token string) ([]models.FrontPost, bool, error) {
+	userID, err := getUserID(username, token)
+	if err != nil {
+		return []models.FrontPost{}, false, postErrors.UserInfoError(err.Error())
+	}
 	posts, hasMore, err := c.db.GetUserFeedSingle(userID, limitConfig)
+
+	if err != nil {
+		return []models.FrontPost{}, false, err
+	}
+
+	posts, err = addAuthorInfoToPosts(posts, token)
 	return posts, hasMore, err
 }
 
-func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
-	following := []string{"3", "1"}
+func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models.LimitConfig, username string, token string) ([]models.FrontPost, bool, error) {
+	following, err := getUserFollowingWp(username, limitConfig, token)
+	if err != nil {
+		return []models.FrontPost{}, false, err
+	}
 
 	posts, hasMore, err := c.db.GetUserHashtags(hashtags, following, limitConfig)
 
@@ -134,11 +181,16 @@ func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models
 		return []models.FrontPost{}, false, postErrors.NoTagsFound()
 	}
 
-	return posts, hasMore, nil
+	posts, err = addAuthorInfoToPosts(posts, token)
+
+	return posts, hasMore, err
 }
 
-func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
-	following := []string{"3", "1"}
+func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig, username string, token string) ([]models.FrontPost, bool, error) {
+	following, err := getUserFollowingWp(username, limitConfig, token)
+	if err != nil {
+		return []models.FrontPost{}, false, err
+	}
 	posts, hasMore, err := c.db.WordSearchPosts(words, following, limitConfig)
 
 	if err != nil {
@@ -149,7 +201,9 @@ func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig) ([]m
 		return []models.FrontPost{}, false, postErrors.NoWordssFound()
 	}
 
-	return posts, hasMore, nil
+	posts, err = addAuthorInfoToPosts(posts, token)
+
+	return posts, hasMore, err
 }
 
 func (c *Service) LikePost(postID string) error {
@@ -172,52 +226,3 @@ func (c *Service) UnLikePost(postID string) error {
 	return nil
 }
 
-func getUserFollowingWp(username string, limitConfig models.LimitConfig) []string {
-	return getUserFollowing(username, []string{}, limitConfig)
-	
-}
-
-func getUserFollowing(username string, following []string, limitConfig models.LimitConfig) []string {
-
-	limit := strconv.Itoa(limitConfig.Limit)
-	skip := strconv.Itoa(limitConfig.Skip)
-	
-	url := "http://localhost:8080/users/" + username + "?time=" + limitConfig.FromTime + "&skip="+ skip +"&limit=" + limit
-
-	req, err := http.Get(url)
-
-	if err != nil {
-		return following
-	}
-
-	body, err := io.ReadAll(req.Body)
-
-	if err != nil {
-		return following
-	}
-
-	user := struct {
-		Data []models.UserFollowingExpectedFormat `json:"data"`
-		Pagination models.Pagination `json:"pagination"`
-	}{}
-	err = json.Unmarshal(body, &user)
-
-	if err != nil {
-		return following
-	}
-
-	for _, data := range user.Data {
-		following = append(following, data.Profile.ID)
-	}
-
-
-
-	if user.Pagination.Next_Offset != 0 {
-
-		newLimit := models.NewLimitConfig(limitConfig.FromTime, limit, strconv.Itoa(user.Pagination.Next_Offset + limitConfig.Skip))
-
-		return getUserFollowing(username, following, newLimit)
-	}
-
-	return following
-}

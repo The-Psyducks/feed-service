@@ -1,8 +1,8 @@
 package models
 
 type PostExpectedFormat struct {
+	Username string   `json:"username"`
 	Content   string   `json:"content" validate:"required"`
-	Author_ID string   `json:"author_id" validate:"required"`
 	Public    bool     `json:"public"`
 	Tags      []string `json:"tags" validate:"dive,required"`
 }

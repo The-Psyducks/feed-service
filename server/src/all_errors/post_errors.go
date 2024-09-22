@@ -116,6 +116,17 @@ func NoWordssFound() TwitSnapError {
 	return error
 }
 
+func UserInfoError(err string) TwitSnapError {
+	error := TwitSnapError{
+		"about:blank",
+		"Error getting user info",
+		http.StatusInternalServerError,
+		err,
+		"/twitsnap",
+	}
+	return error
+}
+
 func AuthenticationErrorHeaderRequired() TwitSnapError {
 	error := TwitSnapError{
 		"about:blank",
@@ -143,7 +154,7 @@ func AuthenticationErrorInvalidToken(err string) TwitSnapError {
 		"about:blank",
 		"Invalid token",
 		http.StatusUnauthorized,
-		"err",
+		err,
 		"/twitsnap",
 	}
 	return error
