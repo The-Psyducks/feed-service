@@ -10,6 +10,11 @@ import (
 	"strconv"
 )
 
+const (
+	USER_PROFILE_PATH = "/users/profile/"
+	USER_SIMPLE = "/users/"
+)
+
 func getUserFollowingWp(username string, limitConfig models.LimitConfig, token string) ([]string, error) {
 	return getUserFollowing(username, []string{}, limitConfig, token)
 
@@ -67,9 +72,9 @@ func getUserFollowing(username string, following []string, limitConfig models.Li
 	return following, nil
 }
 
-func getUserData(userID string, token string) (models.AuthorInfo, error) {
 
-	url := "http://" + os.Getenv("USERS_HOST") + "/users/profile/" + userID
+func getUserPublicInfo(path string, user string, token string ) (models.AuthorInfo, error) {
+	url := "http://" + os.Getenv("USERS_HOST") + path + user
 
 	req, err := http.NewRequest("GET", url, nil)
 
@@ -92,60 +97,29 @@ func getUserData(userID string, token string) (models.AuthorInfo, error) {
 		return models.AuthorInfo{}, errors.New("error reading request, " + err.Error())
 	}
 
-	user := struct {
+	userInfo := struct {
 		Following bool                               `json:"following"`
 		Profile   models.PublicProfileExpectedFormat `json:"profile"`
 	}{}
-	err = json.Unmarshal(body, &user)
+	err = json.Unmarshal(body, &userInfo)
 
 	if err != nil {
 		return models.AuthorInfo{}, errors.New("error unmarshaling request, " + err.Error())
 	}
 
-	authorInfo := models.AuthorInfo{Author_ID: user.Profile.ID, Username: user.Profile.Username,
-		Alias: user.Profile.FisrtName + " " + user.Profile.LastName, PthotoURL: ""}
+	authorInfo := models.AuthorInfo{Author_ID: userInfo.Profile.ID, Username: userInfo.Profile.Username,
+		Alias: userInfo.Profile.FisrtName + " " + userInfo.Profile.LastName, PthotoURL: ""}
 
 	return authorInfo, nil
 }
 
+func getUserData(userID string, token string) (models.AuthorInfo, error) {
+
+	return getUserPublicInfo(USER_PROFILE_PATH, userID, token)
+}
+
 func getUsernameData(username string, token string) (models.AuthorInfo, error) {
-	url := "http://" + os.Getenv("USERS_HOST") + "/users/" + username
-
-	req, err := http.NewRequest("GET", url, nil)
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
-
-	if err != nil {
-		return models.AuthorInfo{}, errors.New("error creating request")
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-
-	if err != nil {
-		return models.AuthorInfo{}, errors.New("error sending request, " + err.Error())
-	}
-
-	body, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		return models.AuthorInfo{}, errors.New("error reading request, " + err.Error())
-	}
-
-	user := struct {
-		Following bool                               `json:"following"`
-		Profile   models.PublicProfileExpectedFormat `json:"profile"`
-	}{}
-	err = json.Unmarshal(body, &user)
-
-	if err != nil {
-		return models.AuthorInfo{}, errors.New("error unmarshaling request, " + err.Error())
-	}
-
-	authorInfo := models.AuthorInfo{Author_ID: user.Profile.ID, Username: user.Profile.Username,
-		Alias: user.Profile.FisrtName + " " + user.Profile.LastName, PthotoURL: ""}
-
-	return authorInfo, nil
+	return getUserPublicInfo(USER_SIMPLE, username, token)
 }
 
 func addAuthorInfoToPost(post models.FrontPost, token string) (models.FrontPost, error) {
