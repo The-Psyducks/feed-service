@@ -1,5 +1,6 @@
 services:
-  feed:
+  # feed:
+  service:
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,8 +12,8 @@ services:
       - mongo
     environment:
       - MONGO_URI=mongodb://mongo:27017
-    networks:
-      - my-network
+    # networks:
+    #   - my-network
 
   mongo:
     image: mongo:jammy
@@ -22,20 +23,28 @@ services:
       - MONGO_LOG_LEVEL=crit
     volumes:
       - mongo_data:/data/db
-    networks:
-      - my-network
+    # networks:
+    #   - my-network
   
   test:
     build:
       context: .
       dockerfile: Dockerfile
       target: test-stage
-
+    env_file:
+     - ./server/.env
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017
+      - ENVIROMENT=test
+    # networks:
+    #   - my-network
 
 volumes:
   mongo_data:
 
-networks:
-  my-network:
-    name: my-network
-    external: true
+# networks:
+#   my-network:
+#     name: my-network
+#     external: true

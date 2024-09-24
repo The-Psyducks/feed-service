@@ -150,7 +150,15 @@ func getUsernameData(username string, token string) (models.AuthorInfo, error) {
 
 func addAuthorInfoToPost(post models.FrontPost, token string) (models.FrontPost, error) {
 
-	authorInfo, err := getUserData(post.Author_Info.Author_ID, token)
+	var authorInfo models.AuthorInfo
+	var err error
+
+	if os.Getenv("ENVIROMENT") == "test" {
+		authorInfo, err = getUserDataForTests(post)
+	} else {
+		
+		authorInfo, err = getUserData(post.Author_Info.Author_ID, token)
+	}
 
 	if err != nil {
 		return models.FrontPost{}, errors.New("error getting info on the user, " + err.Error())
@@ -177,8 +185,14 @@ func addAuthorInfoToPosts(posts []models.FrontPost, token string) ([]models.Fron
 }
 
 func getUserID(username string, token string) (string, error) {
-
 	userData, err := getUsernameData(username, token)
-
 	return userData.Author_ID, err
+}
+
+func getUserDataForTests(post models.FrontPost) (models.AuthorInfo, error) {
+
+	authorInfo := models.AuthorInfo{Author_ID: post.Author_Info.Author_ID, Username: "username",
+		Alias: "alias", PthotoURL: ""}
+
+	return authorInfo, nil
 }

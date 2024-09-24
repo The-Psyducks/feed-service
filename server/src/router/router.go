@@ -29,9 +29,9 @@ func CreateRouter(db database.Database) *gin.Engine {
 
 	r.DELETE("/twitsnap/:id", postController.DeletePostByID)
 
-	r.PUT("/twitsnap/like/:id", postController.LikePost)
+	r.POST("/twitsnap/like/:id", postController.LikePost)
 
-	r.PUT("/twitsnap/unlike/:id", postController.UnLikePost)
+	r.DELETE("/twitsnap/like/:id", postController.UnLikePost)
 
 	return r
 }

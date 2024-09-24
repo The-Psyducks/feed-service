@@ -3,22 +3,25 @@ package test
 import (
 	"log"
 	"testing"
+
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+
 	"github.com/stretchr/testify/assert"
+
 	"server/src/auth"
 	"server/src/models"
 	"server/src/router"
 )
 
-func TestDeletePost(t *testing.T) {
+func TestGetPostWithValidID(t *testing.T) {
 
-	log.Println("TestDeletePost")
+	log.Println("TestGetPostWithValidID")
 
 	db := ConnectToDatabase()
 
-    r := router.CreateRouter(db)
+	r := router.CreateRouter(db)
 
 	author_id := "1"
 	postBody := PostBody{Content: "content", Tags: []string{"tag1", "tag2"}, Public: true}
@@ -42,32 +45,33 @@ func TestDeletePost(t *testing.T) {
 	assert.Equal(t, err, nil)
 	MakeResponseAsserions(t, http.StatusCreated, result, postBody, author_id, first.Code)
 
-
-	deletePost, _ := http.NewRequest("DELETE", "/twitsnap/"+result.Post_ID, nil)
-	AddAuthorization(deletePost, token)
-
-	third := httptest.NewRecorder()
-	r.ServeHTTP(third, deletePost)
-
-	assert.Equal(t, http.StatusNoContent, third.Code)
 
 	getPost, _ := http.NewRequest("GET", "/twitsnap/"+result.Post_ID, nil)
 	AddAuthorization(getPost, token)
 
-	fourth := httptest.NewRecorder()
-	r.ServeHTTP(fourth, getPost)
-	assert.Equal(t, http.StatusNotFound, fourth.Code)
+	second := httptest.NewRecorder()
+	r.ServeHTTP(second, getPost)
+
+	result_post := models.FrontPost{}
+
+	err = json.Unmarshal(second.Body.Bytes(), &result_post)
+
+	log.Println(result_post)
+
+	assert.Equal(t, err, nil)
+	assert.Equal(t, http.StatusOK, second.Code)
+	MakeResponseAsserions(t, http.StatusOK, result_post, postBody, author_id, second.Code)
 }
 
-func TestDeleteUnexistentPost(t *testing.T) {
+func TestGetPostWithInvalidID(t *testing.T) {
 
-	log.Println("TestDeleteUnexistentPost")
+	log.Println("TestGetPostWithInvalidID")
 
 	db := ConnectToDatabase()
 
-    r := router.CreateRouter(db)
+	r := router.CreateRouter(db)
 
-	author_id := "1"
+	author_id := "54"
 	postBody := PostBody{Content: "content", Tags: []string{"tag1", "tag2"}, Public: true}
 	req := NewPostRequest(postBody, r)
 
@@ -86,14 +90,20 @@ func TestDeleteUnexistentPost(t *testing.T) {
 
 	err = json.Unmarshal(first.Body.Bytes(), &result)
 
-	assert.Equal(t, err, nil)
 	MakeResponseAsserions(t, http.StatusCreated, result, postBody, author_id, first.Code)
 
-	deletePost, _ := http.NewRequest("DELETE", "/twitsnap/"+result.Post_ID+"invalid", nil)
-	AddAuthorization(deletePost, token)
+	assert.Equal(t, err, nil)
 
-	third := httptest.NewRecorder()
-	r.ServeHTTP(third, deletePost)
+	getPost, _ := http.NewRequest("GET", "/twitsnap/"+result.Post_ID+"invalid", nil)
+	AddAuthorization(getPost, token)
 
-	assert.Equal(t, http.StatusNotFound, third.Code)
+	second := httptest.NewRecorder()
+	r.ServeHTTP(second, getPost)
+
+	result_post := models.FrontPost{}
+
+	err = json.Unmarshal(second.Body.Bytes(), &result_post)
+
+	assert.Equal(t, err, nil)
+	assert.Equal(t, http.StatusNotFound, second.Code)
 }

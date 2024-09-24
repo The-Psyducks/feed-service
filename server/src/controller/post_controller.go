@@ -45,11 +45,7 @@ func (c *PostController) NewPost(context *gin.Context) {
 		return
 	}
 
-	result := gin.H{
-		"post": postNew,
-	}
-
-	context.JSON(http.StatusCreated, result)
+	context.JSON(http.StatusCreated, postNew)
 }
 
 func (c *PostController) GetPostByID(context *gin.Context) {
@@ -64,10 +60,7 @@ func (c *PostController) GetPostByID(context *gin.Context) {
 		return
 	}
 
-	result := gin.H{
-		"post": post,
-	}
-	context.JSON(http.StatusOK, result)
+	context.JSON(http.StatusOK, post)
 }
 
 func (c *PostController) DeletePostByID(context *gin.Context) {
@@ -103,11 +96,7 @@ func (c *PostController) UpdatePostByID(context *gin.Context) {
 		return
 	}
 
-	result := gin.H{
-		"post": modPost,
-	}
-
-	context.JSON(http.StatusOK, result)
+	context.JSON(http.StatusOK, modPost)
 }
 
 func (c *PostController) GetUserFeed(context *gin.Context) {
