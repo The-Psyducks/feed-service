@@ -12,4 +12,5 @@ const (
 	TIME_FIELD = "time"
 	TAGS_FIELD = "tags"
 	LIKES_FIELD = "likes"
+	PUBLIC_FIELD = "public"
 )

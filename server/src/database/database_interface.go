@@ -17,7 +17,7 @@ type Database interface {
 
 	GetUserFeedInterests(interests []string, following []string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
 
-	GetUserFeedSingle(userID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
+	GetUserFeedSingle(userID string, limitConfig models.LimitConfig, following []string) ([]models.FrontPost, bool, error)
 
 	WordSearchPosts(words string, following []string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
 

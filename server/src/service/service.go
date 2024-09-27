@@ -155,12 +155,14 @@ func (c *Service) fetchForyouSingle(limitConfig models.LimitConfig, username str
 	if err != nil {
 		return []models.FrontPost{}, false, postErrors.UserInfoError(err.Error())
 	}
-	posts, hasMore, err := c.db.GetUserFeedSingle(userID, limitConfig)
-
+	following, err := getUserFollowingWp(username, limitConfig, token)
 	if err != nil {
 		return []models.FrontPost{}, false, err
 	}
-
+	posts, hasMore, err := c.db.GetUserFeedSingle(userID, limitConfig, following)
+	if err != nil {
+		return []models.FrontPost{}, false, err
+	}
 	posts, err = addAuthorInfoToPosts(posts, token)
 	return posts, hasMore, err
 }

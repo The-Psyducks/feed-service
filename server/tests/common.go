@@ -10,8 +10,6 @@ import (
 	"server/src/database"
 	"server/src/models"
 	"testing"
-
-	// "server/src/router"
 	"time"
 
 	"github.com/gin-gonic/gin"

@@ -10,9 +10,19 @@ import (
 	"strconv"
 )
 
-func getUserFollowingWp(username string, limitConfig models.LimitConfig, token string) ([]string, error) {
-	return getUserFollowing(username, []string{}, limitConfig, token)
+const (
+	TEST_USER_ONE = "1"
+	TEST_USER_TWO = "2"
+	TEST_USER_THREE = "3"
+)
 
+func getUserFollowingWp(username string, limitConfig models.LimitConfig, token string) ([]string, error) {
+	if os.Getenv("ENVIROMENT") == "test" {
+		return []string{TEST_USER_ONE, TEST_USER_TWO, TEST_USER_THREE}, nil
+	} else {
+		
+		return getUserFollowing(username, []string{}, limitConfig, token)
+	}
 }
 
 func getUserFollowing(username string, following []string, limitConfig models.LimitConfig, token string) ([]string, error) {
