@@ -19,7 +19,7 @@ func CreateRouter(db database.Database) *gin.Engine {
 
 	r.PUT("/twitsnap/edit/:id", postController.UpdatePostByID)
 
-	r.GET("/twitsnap/feed/:username", postController.GetUserFeed)
+	r.GET("/twitsnap/feed", postController.GetUserFeed)
 
 	r.GET("/twitsnap/:id", postController.GetPostByID)
 

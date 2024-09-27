@@ -17,6 +17,7 @@ const (
 	FEED = "feed_type"
 	WORDS = "words"
 	HASTAGS = "tags"
+	WANTED_ID = "wanted_user_id"
 )
 
 type PostController struct {
@@ -102,21 +103,19 @@ func (c *PostController) UpdatePostByID(context *gin.Context) {
 func (c *PostController) GetUserFeed(context *gin.Context) {
 	token, _ := context.Get("tokenString")
 	author_id, _ := context.Get("session_user_id")
-
-	// feedType := context.Query(FEED)
+	
 	time := context.Query(TIME)
 	skip := context.Query(SKIP)
 	limit := context.Query(LIMIT)
+	feed_type := context.Query(FEED)
+	wanted_id := context.Query(WANTED_ID)
 
-	var feedRequest models.FeedRequesst
-	if err := context.ShouldBind(&feedRequest); err != nil {
-		_ = context.Error(postErrors.UnexpectedFormat())
-		return
-	}
+	feedRequest := models.FeedRequesst{FeedType: feed_type, WantedUserID: wanted_id}
+
 
 	limitParams := models.NewLimitConfig(time, skip, limit)
 
-	posts, hasMore, err := c.sv.FetchUserFeed(feedRequest, author_id.(string), limitParams, token.(string))
+	posts, hasMore, err := c.sv.FetchUserFeed(&feedRequest, author_id.(string), limitParams, token.(string))
 
 	if err != nil {
 		_ = context.Error(err)

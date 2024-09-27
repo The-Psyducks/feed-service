@@ -104,31 +104,24 @@ func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpected
 	return &modPost, nil
 }
 
-func (c *Service) FetchUserFeed(feedRequest models.FeedRequesst, username string, limitConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
-
-	validate := validator.New()
-	if err := validate.Struct(feedRequest); err != nil {
-		return nil, false, postErrors.TwitSnapImportantFieldsMissing(err)
-	}
-
+func (c *Service) FetchUserFeed(feedRequest *models.FeedRequesst, user_id string, limitConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
 	switch feedRequest.FeedType {
 	case FOLLOWING:
-		return c.fetchFollowingFeed(username, limitConfig, token)
+		return c.fetchFollowingFeed(limitConfig, user_id, token)
 	case FORYOU:
-		return c.fetchForyouFeed(username, limitConfig, token)
+		return c.fetchForyouFeed(limitConfig, user_id, token)
 	case SINGLE:
-		return c.fetchForyouSingle(limitConfig, username, token)
+		return c.fetchForyouSingle(limitConfig, feedRequest.WantedUserID, user_id, token)
 	}
-	return []models.FrontPost{}, false, postErrors.BadFeedRequest()
+	return []models.FrontPost{}, false, postErrors.BadFeedRequest(feedRequest.FeedType)
 }
 
-func (c *Service) fetchFollowingFeed(username string, limitConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
-	_ = username
-	following, err := getUserFollowingWp(username, limitConfig, token)
+func (c *Service) fetchFollowingFeed(limitConfig models.LimitConfig, userID string, token string) ([]models.FrontPost, bool, error) {
+	following, err := getUserFollowingWp(userID, limitConfig, token)
 	if err != nil {
 		return []models.FrontPost{}, false, err
 	}
-	log.Println(following)
+	log.Println("following: ", following)
 	posts, hasMore, err := c.db.GetUserFeedFollowing(following, limitConfig)
 
 	if err != nil {
@@ -139,10 +132,13 @@ func (c *Service) fetchFollowingFeed(username string, limitConfig models.LimitCo
 	return posts, hasMore, err
 }
 
-func (c *Service) fetchForyouFeed(username string, limitConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
-	_ = username
-	interests := []string{"apple", "1"}
-	following, err := getUserFollowingWp(username, limitConfig, token)
+func (c *Service) fetchForyouFeed(limitConfig models.LimitConfig, userID string, token string) ([]models.FrontPost, bool, error) {
+
+	interests, err := getUsersInterests(userID, token)
+	if err != nil {
+		return []models.FrontPost{}, false, err
+	}
+	following, err := getUserFollowingWp(userID, limitConfig, token)
 	if err != nil {
 		return []models.FrontPost{}, false, err
 	}
@@ -156,16 +152,14 @@ func (c *Service) fetchForyouFeed(username string, limitConfig models.LimitConfi
 	return posts, hasMore, err
 }
 
-func (c *Service) fetchForyouSingle(limitConfig models.LimitConfig, username string, token string) ([]models.FrontPost, bool, error) {
-	userID, err := getUserID(username, token)
-	if err != nil {
-		return []models.FrontPost{}, false, postErrors.UserInfoError(err.Error())
-	}
-	following, err := getUserFollowingWp(username, limitConfig, token)
+func (c *Service) fetchForyouSingle(limitConfig models.LimitConfig, wantedUserID string, userID string, token string) ([]models.FrontPost, bool, error) {
+
+	following, err := getUserFollowingWp(userID, limitConfig, token)
 	if err != nil {
 		return []models.FrontPost{}, false, err
 	}
-	posts, hasMore, err := c.db.GetUserFeedSingle(userID, limitConfig, following)
+
+	posts, hasMore, err := c.db.GetUserFeedSingle(wantedUserID, limitConfig, following)
 	if err != nil {
 		return []models.FrontPost{}, false, err
 	}
@@ -174,6 +168,7 @@ func (c *Service) fetchForyouSingle(limitConfig models.LimitConfig, username str
 }
 
 func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models.LimitConfig, username string, token string) ([]models.FrontPost, bool, error) {
+
 	following, err := getUserFollowingWp(username, limitConfig, token)
 	if err != nil {
 		return []models.FrontPost{}, false, err
@@ -233,4 +228,3 @@ func (c *Service) UnLikePost(postID string) error {
 
 	return nil
 }
-

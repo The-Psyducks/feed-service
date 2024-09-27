@@ -138,6 +138,8 @@ func (d *AppDatabase) GetUserFeedFollowing(following []string, limitConfig model
 
 	posts, err := createPostList(cursor)
 
+	log.Println("posts: ", len(posts))
+
 	hasMore := len(posts) > limitConfig.Limit
 
 	if hasMore{

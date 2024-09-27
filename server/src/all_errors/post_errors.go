@@ -83,12 +83,12 @@ func UnexpectedFormat() TwitSnapError {
 	return error
 }
 
-func BadFeedRequest() TwitSnapError {
+func BadFeedRequest(feed string) TwitSnapError {
 	error := TwitSnapError{
 		"about:blank",
 		"Unexpected Format",
 		http.StatusBadRequest,
-		"There is no feed like that",
+		"There is no feed like that: " + feed,
 		"/twitsnap",
 	}
 	return error

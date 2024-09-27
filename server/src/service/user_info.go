@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"server/src/models"
@@ -14,23 +15,27 @@ const (
 	TEST_USER_ONE = "1"
 	TEST_USER_TWO = "2"
 	TEST_USER_THREE = "3"
+	INITIAL_SKIP = 0
 )
 
-func getUserFollowingWp(username string, limitConfig models.LimitConfig, token string) ([]string, error) {
+func getUserFollowingWp(userID string, limitConfig models.LimitConfig, token string) ([]string, error) {
 	if os.Getenv("ENVIROMENT") == "test" {
 		return []string{TEST_USER_ONE, TEST_USER_TWO, TEST_USER_THREE}, nil
 	} else {
 		
-		return getUserFollowing(username, []string{}, limitConfig, token)
+		return getUserFollowing(userID, []string{}, limitConfig, INITIAL_SKIP , token)
 	}
 }
 
-func getUserFollowing(username string, following []string, limitConfig models.LimitConfig, token string) ([]string, error) {
+func getUserFollowing(userID string, following []string, limitConfig models.LimitConfig, skip int, token string) ([]string, error) {
 
 	limit := strconv.Itoa(limitConfig.Limit)
-	skip := strconv.Itoa(limitConfig.Skip)
+	skipStr := strconv.Itoa(skip)
 
-	url := "http://" + os.Getenv("USERS_HOST") + "/users/" + username + "/following" + "?timestamp=" + limitConfig.FromTime + "&skip=" + skip + "&limit=" + limit
+	log.Println("userID: ", userID)
+	log.Println("token: ", token)
+
+	url := "http://" + os.Getenv("USERS_HOST") + "/users/" + userID + "/following" + "?timestamp=" + limitConfig.FromTime + "&skip=" + skipStr + "&limit=" + limit
 
 	req, err := http.NewRequest("GET", url, nil)
 
@@ -71,7 +76,7 @@ func getUserFollowing(username string, following []string, limitConfig models.Li
 
 		newLimit := models.NewLimitConfig(limitConfig.FromTime, limit, strconv.Itoa(user.Pagination.Next_Offset+limitConfig.Skip))
 
-		return getUserFollowing(username, following, newLimit, token)
+		return getUserFollowing(userID, following, newLimit, skip + limitConfig.Skip, token)
 	}
 
 	return following, nil
@@ -79,7 +84,7 @@ func getUserFollowing(username string, following []string, limitConfig models.Li
 
 func getUserData(userID string, token string) (models.AuthorInfo, error) {
 
-	url := "http://" + os.Getenv("USERS_HOST") + "/users/profile/" + userID
+	url := "http://" + os.Getenv("USERS_HOST") + "/users/" + userID
 
 	req, err := http.NewRequest("GET", url, nil)
 
@@ -118,8 +123,9 @@ func getUserData(userID string, token string) (models.AuthorInfo, error) {
 	return authorInfo, nil
 }
 
-func getUsernameData(username string, token string) (models.AuthorInfo, error) {
-	url := "http://" + os.Getenv("USERS_HOST") + "/users/" + username
+
+func getUsersInterests(userID string, token string) ([]string, error) {
+	url := "http://" + os.Getenv("USERS_HOST") + "/users/" + userID
 
 	req, err := http.NewRequest("GET", url, nil)
 
@@ -127,36 +133,34 @@ func getUsernameData(username string, token string) (models.AuthorInfo, error) {
 	req.Header.Set("Authorization", "Bearer "+token)
 
 	if err != nil {
-		return models.AuthorInfo{}, errors.New("error creating request")
+		return []string{}, errors.New("error creating request")
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 
 	if err != nil {
-		return models.AuthorInfo{}, errors.New("error sending request, " + err.Error())
+		return []string{}, errors.New("error sending request, " + err.Error())
 	}
 
 	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
-		return models.AuthorInfo{}, errors.New("error reading request, " + err.Error())
+		return []string{}, errors.New("error reading request, " + err.Error())
 	}
 
 	user := struct {
 		Following bool                               `json:"following"`
-		Profile   models.PublicProfileExpectedFormat `json:"profile"`
+		Profile   models.PrivateProfileExpectedFormat `json:"profile"`
 	}{}
 	err = json.Unmarshal(body, &user)
 
 	if err != nil {
-		return models.AuthorInfo{}, errors.New("error unmarshaling request, " + err.Error())
+		return []string{}, errors.New("error unmarshaling request, " + err.Error())
 	}
 
-	authorInfo := models.AuthorInfo{Author_ID: user.Profile.ID, Username: user.Profile.Username,
-		Alias: user.Profile.FisrtName + " " + user.Profile.LastName, PthotoURL: ""}
-
-	return authorInfo, nil
+	return user.Profile.Interests, nil
 }
+
 
 func addAuthorInfoToPost(post models.FrontPost, token string) (models.FrontPost, error) {
 
@@ -192,11 +196,6 @@ func addAuthorInfoToPosts(posts []models.FrontPost, token string) ([]models.Fron
 	}
 
 	return posts, nil
-}
-
-func getUserID(username string, token string) (string, error) {
-	userData, err := getUsernameData(username, token)
-	return userData.Author_ID, err
 }
 
 func getUserDataForTests(post models.FrontPost) (models.AuthorInfo, error) {

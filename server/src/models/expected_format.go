@@ -1,9 +1,9 @@
 package models
 
 type PostExpectedFormat struct {
-	Content   string   `json:"content" validate:"required"`
-	Public    bool     `json:"public"`
-	Tags      []string `json:"tags" validate:"dive,required"`
+	Content string   `json:"content" validate:"required"`
+	Public  bool     `json:"public"`
+	Tags    []string `json:"tags" validate:"dive,required"`
 }
 
 type LikeExpectedFormat struct {
@@ -22,6 +22,6 @@ type ReturnPaginatedPosts struct {
 }
 
 type FeedRequesst struct {
-	FeedType string `json:"feed_type" validate:"required"`
-	UserID    string `json:"user_id,omitempty"`
+	FeedType     string `json:"feed_type"`
+	WantedUserID string `json:"wanted_user_id"`
 }
