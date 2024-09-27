@@ -275,12 +275,17 @@ func (d *AppDatabase) WordSearchPosts(words string, following []string, limitCon
 		log.Println(err)
 	}
 
-	filter := bson.M{"$or": filters, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}}
+	// filter := bson.M{"$or": filters, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}}
 
 	// filter := bson.M{TAGS_FIELD: bson.M{"$all": interests}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
 	// 	{PUBLIC_FIELD: true},
 	// 	{PUBLIC_FIELD: false, AUTHOR_ID_FIELD: bson.M{"$in": following}},
 	// },}
+
+	filter := bson.M{"$and": []bson.M{{"$or": filters}, {TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}}, {"$or": []bson.M{
+		{PUBLIC_FIELD: true},
+		{PUBLIC_FIELD: false, AUTHOR_ID_FIELD: bson.M{"$in": following}},
+	}}}}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
 		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)))

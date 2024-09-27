@@ -100,18 +100,23 @@ func (c *PostController) UpdatePostByID(context *gin.Context) {
 }
 
 func (c *PostController) GetUserFeed(context *gin.Context) {
-
-	username := context.Param("username")
 	token, _ := context.Get("tokenString")
+	author_id, _ := context.Get("session_user_id")
 
-	feedType := context.Query(FEED)
+	// feedType := context.Query(FEED)
 	time := context.Query(TIME)
 	skip := context.Query(SKIP)
 	limit := context.Query(LIMIT)
 
+	var feedRequest models.FeedRequesst
+	if err := context.ShouldBind(&feedRequest); err != nil {
+		_ = context.Error(postErrors.UnexpectedFormat())
+		return
+	}
+
 	limitParams := models.NewLimitConfig(time, skip, limit)
 
-	posts, hasMore, err := c.sv.FetchUserFeed(username, feedType, limitParams, token.(string))
+	posts, hasMore, err := c.sv.FetchUserFeed(feedRequest, author_id.(string), limitParams, token.(string))
 
 	if err != nil {
 		_ = context.Error(err)

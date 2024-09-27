@@ -104,8 +104,14 @@ func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpected
 	return &modPost, nil
 }
 
-func (c *Service) FetchUserFeed(username string, feedType string, limitConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
-	switch feedType {
+func (c *Service) FetchUserFeed(feedRequest models.FeedRequesst, username string, limitConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
+
+	validate := validator.New()
+	if err := validate.Struct(feedRequest); err != nil {
+		return nil, false, postErrors.TwitSnapImportantFieldsMissing(err)
+	}
+
+	switch feedRequest.FeedType {
 	case FOLLOWING:
 		return c.fetchFollowingFeed(username, limitConfig, token)
 	case FORYOU:

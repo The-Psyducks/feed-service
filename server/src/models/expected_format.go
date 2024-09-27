@@ -20,3 +20,8 @@ type ReturnPaginatedPosts struct {
 	Next_Offset int         `json:"next_offset,omitempty"`
 	Limit       int         `json:"limit"`
 }
+
+type FeedRequesst struct {
+	FeedType string `json:"feed_type" validate:"required"`
+	UserID    string `json:"user_id,omitempty"`
+}
