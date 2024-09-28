@@ -11,6 +11,7 @@ import (
 	"server/src/auth"
 	"server/src/database"
 	"server/src/models"
+	"server/src/service"
 	"testing"
 	"time"
 
@@ -103,5 +104,13 @@ func compareOrderAsExpected(expected []models.FrontPost, result []models.FrontPo
 func assertOnlyPublicPosts(result []models.FrontPost, t *testing.T) {
 	for i := range result {
 		assert.Equal(t, true, result[i].Public)
+	}
+}
+
+func assertOnlyPublicPostsForNotFollowing(result []models.FrontPost, t *testing.T) {
+	for i := range result {
+		if result[i].Author_Info.Author_ID == service.TEST_NOT_FOLLOWING_ID {
+			assert.Equal(t, true, result[i].Public)
+		}
 	}
 }

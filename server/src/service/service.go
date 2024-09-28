@@ -170,9 +170,9 @@ func (c *Service) fetchForyouSingle(limitConfig models.LimitConfig, wantedUserID
 	return posts, hasMore, err
 }
 
-func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models.LimitConfig, username string, token string) ([]models.FrontPost, bool, error) {
+func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models.LimitConfig, userID string, token string) ([]models.FrontPost, bool, error) {
 
-	following, err := getUserFollowingWp(username, limitConfig, token)
+	following, err := getUserFollowingWp(userID, limitConfig, token)
 	if err != nil {
 		return []models.FrontPost{}, false, err
 	}

@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"log"
+	allerrors "server/src/all_errors"
 	"server/src/models"
 	"strings"
 	"time"
@@ -376,5 +377,9 @@ func (d *AppDatabase) findPost(postID string, postCollection *mongo.Collection) 
 }
 
 func (d *AppDatabase) ClearDB() error {
-	return d.db.Collection(FEED_COLLECTION).Drop(context.Background())
+	err := d.db.Collection(FEED_COLLECTION).Drop(context.Background())
+	if err != nil {
+		return allerrors.DatabaseError()
+	}
+	return nil
 }

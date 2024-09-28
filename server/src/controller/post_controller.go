@@ -135,8 +135,9 @@ func (c *PostController) GetUserFeed(context *gin.Context) {
 }
 
 func (c *PostController) HashtagsSearch(context *gin.Context) {
-	username := context.Param("username")
 	token, _ := context.Get("tokenString")
+	userID, _ := context.Get("session_user_id")
+
 
 	hashtags := context.QueryArray(HASTAGS)
 	time := context.Query(TIME)
@@ -145,7 +146,7 @@ func (c *PostController) HashtagsSearch(context *gin.Context) {
 
 	limitParams := models.NewLimitConfig(time, skip, limit)
 
-	posts, hasMore, err := c.sv.FetchUserPostsByHashtags(hashtags, limitParams, username, token.(string))
+	posts, hasMore, err := c.sv.FetchUserPostsByHashtags(hashtags, limitParams, userID.(string), token.(string))
 
 	if err != nil {
 		_ = context.Error(err)
