@@ -1,215 +1,132 @@
 package test
 
-// import (
-// 	"log"
-// 	"testing"
-// 	"time"
+import (
+	"log"
+	"testing"
+	"time"
 
-// 	"encoding/json"
-// 	"net/http"
-// 	"net/http/httptest"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 
-// 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 
-// 	"server/src/database"
-// 	"server/src/router"
-// )
+	"server/src/auth"
+	"server/src/models"
+	"server/src/router"
+)
 
 
-// func TestGetFeed(t *testing.T) {
-// 	db := database.NewTestDatabase()
+func TestGetFeedFollowing(t *testing.T) {
+	log.Println("TestGetFeedFollowing")
 
-//     r := router.CreateRouter(db)
+	db := ConnectToDatabase()
 
-// 	author_id := "1"
-// 	content := "content"
-// 	tags := []string{"pencil", "kiwi"}
-// 	public := true
-
-//     _ = NewPostRequest(author_id, content,tags,public, r)
-// 	author_id_second := "2"
-// 	content_second  := "second twitsnap content"
-// 	tags_second  := []string{"apple", "pie"}
-// 	public_second  := false
-
-// 	time.Sleep(1 * time.Second)
-
-//     _  = NewPostRequest(author_id_second, content_second,tags_second,public_second, r)
-
-//     result := struct {
-// 		Posts []struct {
-// 			Posts_ID   string    `bson:"post_id"`
-// 			Content   string    `bson:"content"`
-// 			Author_ID string    `bson:"author_id"`
-// 			Time      time.Time `bson:"time"`
-// 			Public   bool    `bson:"public"`
-// 			Tags     []string  `bson:"tags"`
-// 		}
-// 	}{}
+	r := router.CreateRouter(db)
 	
-// 	getFeed, _ := http.NewRequest("GET", "/twitsnap/feed?following="+author_id+"&following="+author_id_second, nil)
+	post1 := MakeAndAssertPost("2", "content", []string{"tag1", "tag2"}, true, r, t)
+
+	time.Sleep(1 * time.Second)
+
+	post2 := MakeAndAssertPost("1", "content2", []string{"tag3", "tag4"}, true, r, t)
+
+	time.Sleep(1 * time.Second)
+
+	post3 := MakeAndAssertPost("3", "content3", []string{"tag5", "tag6"}, true, r, t)
+
+	token, err := auth.GenerateToken("1", "username", true)
+
+	assert.Equal(t, err, nil)
+
+	expectedPosts := []models.FrontPost{post3, post2, post1}
+
+    result := models.ReturnPaginatedPosts{}
+
+	time.Sleep(1 * time.Second)
+	time := time.Now().Format(time.RFC3339)
+
+	skip := "0"
+	feed_type := "following"
+	limit := "6"
 	
-// 	feedRecorder := httptest.NewRecorder()
-// 	r.ServeHTTP(feedRecorder, getFeed)
+	getFeed, _ := http.NewRequest("GET", "/twitsnap/feed?time=" + time + "&skip="+skip+"&limit="+limit+"&feed_type="+ feed_type + "&wanted_user_id="+"", nil)
+	AddAuthorization(getFeed, token)
+
+	feedRecorder := httptest.NewRecorder()
+	r.ServeHTTP(feedRecorder, getFeed)
 	
-// 	err := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
+	err_2 := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
 
-// 	log.Println(result)
+	log.Println(result)
 	
-// 	assert.Equal(t, err, nil)
-// 	assert.Equal(t, http.StatusOK, feedRecorder.Code)
-// 	assert.Equal(t, result.Posts[0].Content, content_second)
-// 	assert.Equal(t, result.Posts[0].Author_ID, author_id_second)
-// 	assert.Equal(t, result.Posts[0].Tags, tags_second)
-// 	assert.Equal(t, result.Posts[0].Public, public_second)
-// 	assert.Equal(t, result.Posts[1].Content, content)
-// 	assert.Equal(t, result.Posts[1].Author_ID, author_id)
-// 	assert.Equal(t, result.Posts[1].Tags, tags)
-// 	assert.Equal(t, result.Posts[1].Public, public)
-// }
+	assert.Equal(t, err_2, nil)
+	assert.Equal(t, http.StatusOK, feedRecorder.Code)
 
-// func TestGetFeedWithFollowingThatHaveNotPosted(t *testing.T) {
-// 	db := database.NewTestDatabase()
-
-//     r := router.CreateRouter(db)
-
-// 	author_id := "1"
-// 	content := "content"
-// 	tags := []string{"pencil", "kiwi"}
-// 	public := true
-
-//     _ = NewPostRequest(author_id, content,tags,public, r)
-// 	author_id_second := "2"
-// 	content_second  := "second twitsnap content"
-// 	tags_second  := []string{"apple", "pie"}
-// 	public_second  := false
-
-// 	time.Sleep(1 * time.Second)
-
-//     _  = NewPostRequest(author_id_second, content_second,tags_second,public_second, r)
-
-//     result := struct {
-// 		Posts []struct {
-// 			Posts_ID   string    `bson:"post_id"`
-// 			Content   string    `bson:"content"`
-// 			Author_ID string    `bson:"author_id"`
-// 			Time      time.Time `bson:"time"`
-// 			Public   bool    `bson:"public"`
-// 			Tags     []string  `bson:"tags"`
-// 		}
-// 	}{}
-
-// 	following := []string{"3", "4"}
 	
-// 	getFeed, _ := http.NewRequest("GET", "/twitsnap/feed?following="+following[0]+"&following="+following[1], nil)
+	assert.Equal(t, true, compareOrderAsExpected(expectedPosts, result.Data))
+	assert.Equal(t, 6, result.Limit)
+	assert.Equal(t, 0, result.Next_Offset)
+}
+
+func compareOrderAsExpected(expected []models.FrontPost, result []models.FrontPost) bool {
+	if len(expected) != len(result) {
+		return false
+	}
+	for i := range expected {
+		if expected[i].Content != result[i].Content {
+			return false
+		}
+	}
+	return true
+}
+
+func TestGetFeedSingle(t *testing.T) {
+	log.Println("TestGetFeedSingle")
+
+	db := ConnectToDatabase()
+
+	r := router.CreateRouter(db)
 	
-// 	feedRecorder := httptest.NewRecorder()
-// 	r.ServeHTTP(feedRecorder, getFeed)
+	post1 := MakeAndAssertPost("1", "content", []string{"tag1", "tag2"}, true, r, t)
+
+	time.Sleep(1 * time.Second)
+
+	MakeAndAssertPost("2", "content2", []string{"tag3", "tag4"}, true, r, t)
+
+	time.Sleep(1 * time.Second)
+
+	MakeAndAssertPost("3", "content3", []string{"tag5", "tag6"}, true, r, t)
+
+	token, err := auth.GenerateToken("1", "username", true)
+
+	assert.Equal(t, err, nil)
+
+	expectedPosts := []models.FrontPost{post1}
+
+    result := models.ReturnPaginatedPosts{}
+
+	time.Sleep(1 * time.Second)
+	time := time.Now().Format(time.RFC3339)
 	
-// 	err := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
-
-// 	log.Println(result)
+	skip := "0"
+	feed_type := "single"
+	limit := "6"
 	
-// 	assert.Equal(t, err, nil)
-// 	assert.Equal(t, http.StatusOK, feedRecorder.Code)
-// 	assert.Equal(t, len(result.Posts), 0)
+	getFeed, _ := http.NewRequest("GET", "/twitsnap/feed?time=" + time + "&skip="+skip+"&limit="+limit+"&feed_type="+ feed_type + "&wanted_user_id="+"1", nil)
+	AddAuthorization(getFeed, token)
 
-// }
-
-// func TestGetInterests(t *testing.T) {
-// 	db := database.NewTestDatabase()
-
-//     r := router.CreateRouter(db)
-
-// 	author_id := "1"
-// 	content := "content"
-// 	tags := []string{"pencil", "kiwi"}
-// 	public := true
-
-//     _ = NewPostRequest(author_id, content,tags,public, r)
-// 	author_id_second := "2"
-// 	content_second  := "second twitsnap content"
-// 	tags_second  := []string{"apple", "pie"}
-// 	public_second  := true
-
-// 	time.Sleep(1 * time.Second)
-
-//     _  = NewPostRequest(author_id_second, content_second,tags_second,public_second, r)
-
-//     result := struct {
-// 		Posts []struct {
-// 			Posts_ID   string    `bson:"post_id"`
-// 			Content   string    `bson:"content"`
-// 			Author_ID string    `bson:"author_id"`
-// 			Time      time.Time `bson:"time"`
-// 			Public   bool    `bson:"public"`
-// 			Tags     []string  `bson:"tags"`
-// 		}
-// 	}{}
+	feedRecorder := httptest.NewRecorder()
+	r.ServeHTTP(feedRecorder, getFeed)
 	
-// 	getFeed, _ := http.NewRequest("GET", "/twitsnap/hashtags?tags=apple", nil)
+	err_2 := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
+
+	log.Println(result)
 	
-// 	feedRecorder := httptest.NewRecorder()
-// 	r.ServeHTTP(feedRecorder, getFeed)
+	assert.Equal(t, err_2, nil)
+	assert.Equal(t, http.StatusOK, feedRecorder.Code)
+
 	
-// 	err := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
-
-// 	log.Println(result)
-	
-// 	assert.Equal(t, err, nil)
-// 	assert.Equal(t, http.StatusOK, feedRecorder.Code)
-// 	assert.Equal(t, result.Posts[0].Content, content_second)
-// 	assert.Equal(t, result.Posts[0].Author_ID, author_id_second)
-// 	assert.Equal(t, result.Posts[0].Tags, tags_second)
-// 	assert.Equal(t, result.Posts[0].Public, public_second)
-// 	assert.Equal(t, len(result.Posts), 1)
-// }
-
-// func TestGetWordSearch(t *testing.T) {
-// 	db := database.NewTestDatabase()
-
-//     r := router.CreateRouter(db)
-
-// 	author_id := "1"
-// 	content := "content"
-// 	tags := []string{"pencil", "kiwi"}
-// 	public := true
-
-//     _ = NewPostRequest(author_id, content,tags,public, r)
-// 	author_id_second := "2"
-// 	content_second  := "the best apple tart recipe with amazing caramel"
-// 	tags_second  := []string{"apple", "pie"}
-// 	public_second  := true
-
-// 	time.Sleep(1 * time.Second)
-
-//     _  = NewPostRequest(author_id_second, content_second,tags_second,public_second, r)
-
-//     result := struct {
-// 		Posts []struct {
-// 			Posts_ID   string    `bson:"post_id"`
-// 			Content   string    `bson:"content"`
-// 			Author_ID string    `bson:"author_id"`
-// 			Time      time.Time `bson:"time"`
-// 			Public   bool    `bson:"public"`
-// 			Tags     []string  `bson:"tags"`
-// 		}
-// 	}{}
-	
-// 	getFeed, _ := http.NewRequest("GET", "/twitsnap/wordsearch?words=caramel story", nil)
-	
-// 	feedRecorder := httptest.NewRecorder()
-// 	r.ServeHTTP(feedRecorder, getFeed)
-	
-// 	err := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
-
-// 	log.Println(result)
-	
-// 	assert.Equal(t, err, nil)
-// 	assert.Equal(t, http.StatusOK, feedRecorder.Code)
-// 	assert.Equal(t, result.Posts[0].Content, content_second)
-// 	assert.Equal(t, result.Posts[0].Author_ID, author_id_second)
-// 	assert.Equal(t, result.Posts[0].Tags, tags_second)
-// 	assert.Equal(t, result.Posts[0].Public, public_second)
-// 	assert.Equal(t, len(result.Posts), 1)
-// }
+	assert.Equal(t, true, compareOrderAsExpected(expectedPosts, result.Data))
+	assert.Equal(t, 6, result.Limit)
+	assert.Equal(t, 0, result.Next_Offset)
+}

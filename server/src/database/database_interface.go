@@ -27,4 +27,6 @@ type Database interface {
 
 	UnLikeAPost(postID string) error
 
+	ClearDB() error
+
 }

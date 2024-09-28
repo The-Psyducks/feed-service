@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"net/http/httptest"
 	"os"
+	"server/src/auth"
 	"server/src/database"
 	"server/src/models"
 	"testing"
@@ -49,7 +51,10 @@ func ConnectToDatabase() database.Database {
 	if err != nil {
 		log.Fatal("Error connecting to MongoDB: ", err)
 	}
+
 	db := database.NewAppDatabase(client)
+
+	db.ClearDB()
 
 	return db
 }
@@ -60,4 +65,31 @@ func MakeResponseAsserions(t *testing.T, response int, result_post models.FrontP
 	assert.Equal(t, result_post.Author_Info.Author_ID, author_id)
 	assert.Equal(t, result_post.Tags, postBody.Tags)
 	assert.Equal(t, result_post.Public, postBody.Public)
+}
+
+
+func MakeAndAssertPost(authorId string, content string, tags []string, public bool, r *gin.Engine, t *testing.T) models.FrontPost {
+
+	postBody := PostBody{Content: content, Tags: tags, Public: public}
+	req := NewPostRequest(postBody, r)
+
+	token, err := auth.GenerateToken(authorId, "username", true)
+
+	if err != nil {
+		log.Fatal("Error generating token: ", err)
+	}
+
+	AddAuthorization(req, token)
+
+	first := httptest.NewRecorder()
+	r.ServeHTTP(first, req)
+
+	result := models.FrontPost{}
+
+	err = json.Unmarshal(first.Body.Bytes(), &result)
+
+	assert.Equal(t, err, nil)
+	MakeResponseAsserions(t, http.StatusCreated, result, postBody, authorId, first.Code)
+
+	return result
 }

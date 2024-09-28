@@ -152,8 +152,11 @@ func (d *AppDatabase) GetUserFeedFollowing(following []string, limitConfig model
 }
 
 func (d *AppDatabase) GetUserFeedInterests(interests []string, following []string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
-	postCollection := d.db.Collection(FEED_COLLECTION)
+	if len(interests) == 0 {
+		return []models.FrontPost{}, false, postErrors.NoTagsFound()
+	}
 
+	postCollection := d.db.Collection(FEED_COLLECTION)
 	parsedTime, err := time.Parse(time.RFC3339, limitConfig.FromTime)
 
 	if err != nil {
@@ -368,4 +371,8 @@ func (d *AppDatabase) findPost(postID string, postCollection *mongo.Collection) 
 		err = postErrors.ErrTwitsnapNotFound
 	}
 	return post, err
+}
+
+func (d *AppDatabase) ClearDB() error {
+	return d.db.Collection(FEED_COLLECTION).Drop(context.Background())
 }
