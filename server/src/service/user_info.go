@@ -15,7 +15,14 @@ const (
 	TEST_USER_ONE = "1"
 	TEST_USER_TWO = "2"
 	TEST_USER_THREE = "3"
+
 	INITIAL_SKIP = 0
+
+	TEST_TAG_ONE = "tag1"
+	TEST_TAG_TWO = "tag2"
+	TEST_TAG_THREE = "tag3"
+
+	TEST_NOT_FOLLOWING_ID = "4"
 )
 
 func getUserFollowingWp(userID string, limitConfig models.LimitConfig, token string) ([]string, error) {
@@ -123,6 +130,13 @@ func getUserData(userID string, token string) (models.AuthorInfo, error) {
 	return authorInfo, nil
 }
 
+func getUserInterestsWp(userID string, token string) ([]string, error) {
+	if os.Getenv("ENVIROMENT") == "test" {
+		return []string{TEST_TAG_ONE, TEST_TAG_TWO, TEST_TAG_THREE}, nil
+	} else {
+		return getUsersInterests(userID, token)
+	}
+}
 
 func getUsersInterests(userID string, token string) ([]string, error) {
 	url := "http://" + os.Getenv("USERS_HOST") + "/users/" + userID

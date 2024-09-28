@@ -163,7 +163,11 @@ func (d *AppDatabase) GetUserFeedInterests(interests []string, following []strin
 		log.Println(err)
 	}
 
-	filter := bson.M{TAGS_FIELD: bson.M{"$in": interests}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}}
+
+	filter := bson.M{TAGS_FIELD: bson.M{"$in": interests}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
+		{PUBLIC_FIELD: true},
+		{PUBLIC_FIELD: false, AUTHOR_ID_FIELD: bson.M{"$in": following}},
+	},}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
 		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)))
@@ -193,10 +197,8 @@ func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitC
 		log.Println(err)
 	}
 
-	var filter bson.M
-
 	log.Println("User does not follow")
-	filter = bson.M{AUTHOR_ID_FIELD: userId, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
+	filter := bson.M{AUTHOR_ID_FIELD: userId, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
 		{PUBLIC_FIELD: true},
 		{PUBLIC_FIELD: false, AUTHOR_ID_FIELD: bson.M{"$in": following}},
 	},}
