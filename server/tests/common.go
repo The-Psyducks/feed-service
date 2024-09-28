@@ -26,7 +26,7 @@ type PostBody struct {
 	Public  bool     `json:"public"`
 }
 
-func NewPostRequest(post PostBody, r *gin.Engine) *http.Request {
+func newPostRequest(post PostBody) *http.Request {
 	marshalledData, _ := json.Marshal(post)
 	req, _ := http.NewRequest("POST", "/twitsnap", bytes.NewReader(marshalledData))
 
@@ -35,11 +35,11 @@ func NewPostRequest(post PostBody, r *gin.Engine) *http.Request {
 	return req
 }
 
-func AddAuthorization(req *http.Request, token string) {
+func addAuthorization(req *http.Request, token string) {
 	req.Header.Add("Authorization", "Bearer "+token)
 }
 
-func ConnectToDatabase() database.Database {
+func connectToDatabase() database.Database {
 
 	log.Println("Connect to database")
 
@@ -59,7 +59,7 @@ func ConnectToDatabase() database.Database {
 	return db
 }
 
-func MakeResponseAsserions(t *testing.T, response int, result_post models.FrontPost, postBody PostBody, author_id string, code int) {
+func makeResponseAsserions(t *testing.T, response int, result_post models.FrontPost, postBody PostBody, author_id string, code int) {
 	assert.Equal(t, response, code)
 	assert.Equal(t, result_post.Content, postBody.Content)
 	assert.Equal(t, result_post.Author_Info.Author_ID, author_id)
@@ -67,11 +67,10 @@ func MakeResponseAsserions(t *testing.T, response int, result_post models.FrontP
 	assert.Equal(t, result_post.Public, postBody.Public)
 }
 
-
-func MakeAndAssertPost(authorId string, content string, tags []string, public bool, r *gin.Engine, t *testing.T) models.FrontPost {
+func makeAndAssertPost(authorId string, content string, tags []string, public bool, r *gin.Engine, t *testing.T) models.FrontPost {
 
 	postBody := PostBody{Content: content, Tags: tags, Public: public}
-	req := NewPostRequest(postBody, r)
+	req := newPostRequest(postBody)
 
 	token, err := auth.GenerateToken(authorId, "username", true)
 
@@ -79,7 +78,7 @@ func MakeAndAssertPost(authorId string, content string, tags []string, public bo
 		log.Fatal("Error generating token: ", err)
 	}
 
-	AddAuthorization(req, token)
+	addAuthorization(req, token)
 
 	first := httptest.NewRecorder()
 	r.ServeHTTP(first, req)
@@ -89,7 +88,20 @@ func MakeAndAssertPost(authorId string, content string, tags []string, public bo
 	err = json.Unmarshal(first.Body.Bytes(), &result)
 
 	assert.Equal(t, err, nil)
-	MakeResponseAsserions(t, http.StatusCreated, result, postBody, authorId, first.Code)
+	makeResponseAsserions(t, http.StatusCreated, result, postBody, authorId, first.Code)
 
 	return result
+}
+
+func compareOrderAsExpected(expected []models.FrontPost, result []models.FrontPost, t *testing.T) {
+	assert.Equal(t, len(expected), len(result))
+	for i := range expected {
+		assert.Equal(t, expected[i].Content, result[i].Content)
+	}
+}
+
+func assertOnlyPublicPosts(result []models.FrontPost, t *testing.T) {
+	for i := range result {
+		assert.Equal(t, true, result[i].Public)
+	}
 }

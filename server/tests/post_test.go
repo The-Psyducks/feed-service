@@ -8,26 +8,26 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	
-	"github.com/stretchr/testify/assert"
-	validator "github.com/go-playground/validator/v10"
 	postErrors "server/src/all_errors"
 	"server/src/auth"
 	"server/src/models"
 	"server/src/router"
+
+	validator "github.com/go-playground/validator/v10"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewPost(t *testing.T) {
 
 	log.Println("TestNewPost")
 
-	db := ConnectToDatabase()
+	db := connectToDatabase()
 
 	r := router.CreateRouter(db)
 
 	author_id := "1234"
 	postBody := PostBody{Content: "content", Tags: []string{"tag1", "tag2"}, Public: true}
-	req := NewPostRequest(postBody, r)
+	req := newPostRequest(postBody)
 
 	token, err := auth.GenerateToken(author_id, "username", true)
 
@@ -35,7 +35,7 @@ func TestNewPost(t *testing.T) {
 		log.Fatal("Error generating token: ", err)
 	}
 
-	AddAuthorization(req, token)
+	addAuthorization(req, token)
 
 	first := httptest.NewRecorder()
 	r.ServeHTTP(first, req)
@@ -45,20 +45,20 @@ func TestNewPost(t *testing.T) {
 	err = json.Unmarshal(first.Body.Bytes(), &result)
 
 	assert.Equal(t, err, nil)
-	MakeResponseAsserions(t, http.StatusCreated, result, postBody, author_id, first.Code)
+	makeResponseAsserions(t, http.StatusCreated, result, postBody, author_id, first.Code)
 }
 
 func TestNewPostWithMissInf(t *testing.T) {
 
 	log.Println("TestNewPost")
 
-	db := ConnectToDatabase()
+	db := connectToDatabase()
 
 	r := router.CreateRouter(db)
 
 	author_id := "1234"
 	postBody := PostBody{Content: "", Tags: []string{"tag1", "tag2"}, Public: true}
-	req := NewPostRequest(postBody, r)
+	req := newPostRequest(postBody)
 
 	token, err := auth.GenerateToken(author_id, "username", true)
 
@@ -66,7 +66,7 @@ func TestNewPostWithMissInf(t *testing.T) {
 		log.Fatal("Error generating token: ", err)
 	}
 
-	AddAuthorization(req, token)
+	addAuthorization(req, token)
 
 	first := httptest.NewRecorder()
 	r.ServeHTTP(first, req)

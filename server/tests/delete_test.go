@@ -1,28 +1,29 @@
 package test
 
 import (
-	"log"
-	"testing"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
-	"github.com/stretchr/testify/assert"
 	"server/src/auth"
 	"server/src/models"
 	"server/src/router"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDeletePost(t *testing.T) {
 
 	log.Println("TestDeletePost")
 
-	db := ConnectToDatabase()
+	db := connectToDatabase()
 
-    r := router.CreateRouter(db)
+	r := router.CreateRouter(db)
 
 	author_id := "1"
 	postBody := PostBody{Content: "content", Tags: []string{"tag1", "tag2"}, Public: true}
-	req := NewPostRequest(postBody, r)
+	req := newPostRequest(postBody)
 
 	token, err := auth.GenerateToken(author_id, "username", true)
 
@@ -30,7 +31,7 @@ func TestDeletePost(t *testing.T) {
 		log.Fatal("Error generating token: ", err)
 	}
 
-	AddAuthorization(req, token)
+	addAuthorization(req, token)
 
 	first := httptest.NewRecorder()
 	r.ServeHTTP(first, req)
@@ -40,11 +41,10 @@ func TestDeletePost(t *testing.T) {
 	err = json.Unmarshal(first.Body.Bytes(), &result)
 
 	assert.Equal(t, err, nil)
-	MakeResponseAsserions(t, http.StatusCreated, result, postBody, author_id, first.Code)
-
+	makeResponseAsserions(t, http.StatusCreated, result, postBody, author_id, first.Code)
 
 	deletePost, _ := http.NewRequest("DELETE", "/twitsnap/"+result.Post_ID, nil)
-	AddAuthorization(deletePost, token)
+	addAuthorization(deletePost, token)
 
 	third := httptest.NewRecorder()
 	r.ServeHTTP(third, deletePost)
@@ -52,7 +52,7 @@ func TestDeletePost(t *testing.T) {
 	assert.Equal(t, http.StatusNoContent, third.Code)
 
 	getPost, _ := http.NewRequest("GET", "/twitsnap/"+result.Post_ID, nil)
-	AddAuthorization(getPost, token)
+	addAuthorization(getPost, token)
 
 	fourth := httptest.NewRecorder()
 	r.ServeHTTP(fourth, getPost)
@@ -63,13 +63,13 @@ func TestDeleteUnexistentPost(t *testing.T) {
 
 	log.Println("TestDeleteUnexistentPost")
 
-	db := ConnectToDatabase()
+	db := connectToDatabase()
 
-    r := router.CreateRouter(db)
+	r := router.CreateRouter(db)
 
 	author_id := "1"
 	postBody := PostBody{Content: "content", Tags: []string{"tag1", "tag2"}, Public: true}
-	req := NewPostRequest(postBody, r)
+	req := newPostRequest(postBody)
 
 	token, err := auth.GenerateToken(author_id, "username", true)
 
@@ -77,7 +77,7 @@ func TestDeleteUnexistentPost(t *testing.T) {
 		log.Fatal("Error generating token: ", err)
 	}
 
-	AddAuthorization(req, token)
+	addAuthorization(req, token)
 
 	first := httptest.NewRecorder()
 	r.ServeHTTP(first, req)
@@ -87,10 +87,10 @@ func TestDeleteUnexistentPost(t *testing.T) {
 	err = json.Unmarshal(first.Body.Bytes(), &result)
 
 	assert.Equal(t, err, nil)
-	MakeResponseAsserions(t, http.StatusCreated, result, postBody, author_id, first.Code)
+	makeResponseAsserions(t, http.StatusCreated, result, postBody, author_id, first.Code)
 
 	deletePost, _ := http.NewRequest("DELETE", "/twitsnap/"+result.Post_ID+"invalid", nil)
-	AddAuthorization(deletePost, token)
+	addAuthorization(deletePost, token)
 
 	third := httptest.NewRecorder()
 	r.ServeHTTP(third, deletePost)
