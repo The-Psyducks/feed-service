@@ -138,6 +138,9 @@ func (c *Service) fetchForyouFeed(limitConfig models.LimitConfig, userID string,
 	if err != nil {
 		return []models.FrontPost{}, false, err
 	}
+
+	log.Println("interests: ", interests)
+
 	following, err := getUserFollowingWp(userID, limitConfig, token)
 	if err != nil {
 		return []models.FrontPost{}, false, err

@@ -24,28 +24,14 @@ func TestGetPostWithValidID(t *testing.T) {
 	r := router.CreateRouter(db)
 
 	author_id := "1"
-	postBody := PostBody{Content: "content", Tags: []string{"tag1", "tag2"}, Public: true}
-	req := newPostRequest(postBody)
 
 	token, err := auth.GenerateToken(author_id, "username", true)
 
-	if err != nil {
-		log.Fatal("Error generating token: ", err)
-	}
-
-	addAuthorization(req, token)
-
-	first := httptest.NewRecorder()
-	r.ServeHTTP(first, req)
-
-	result := models.FrontPost{}
-
-	err = json.Unmarshal(first.Body.Bytes(), &result)
-
 	assert.Equal(t, err, nil)
-	makeResponseAsserions(t, http.StatusCreated, result, postBody, author_id, first.Code)
 
-	getPost, _ := http.NewRequest("GET", "/twitsnap/"+result.Post_ID, nil)
+	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, r, t)
+
+	getPost, _ := http.NewRequest("GET", "/twitsnap/"+ogPost.Post_ID, nil)
 	addAuthorization(getPost, token)
 
 	second := httptest.NewRecorder()
@@ -59,7 +45,7 @@ func TestGetPostWithValidID(t *testing.T) {
 
 	assert.Equal(t, err, nil)
 	assert.Equal(t, http.StatusOK, second.Code)
-	makeResponseAsserions(t, http.StatusOK, result_post, postBody, author_id, second.Code)
+	makeResponseAsserions(t, http.StatusOK, result_post, PostBody{Content: ogPost.Content, Tags: ogPost.Tags, Public: ogPost.Public}, author_id, second.Code)
 }
 
 func TestGetPostWithInvalidID(t *testing.T) {
@@ -71,29 +57,13 @@ func TestGetPostWithInvalidID(t *testing.T) {
 	r := router.CreateRouter(db)
 
 	author_id := "54"
-	postBody := PostBody{Content: "content", Tags: []string{"tag1", "tag2"}, Public: true}
-	req := newPostRequest(postBody)
-
 	token, err := auth.GenerateToken(author_id, "username", true)
-
-	if err != nil {
-		log.Fatal("Error generating token: ", err)
-	}
-
-	addAuthorization(req, token)
-
-	first := httptest.NewRecorder()
-	r.ServeHTTP(first, req)
-
-	result := models.FrontPost{}
-
-	err = json.Unmarshal(first.Body.Bytes(), &result)
-
-	makeResponseAsserions(t, http.StatusCreated, result, postBody, author_id, first.Code)
 
 	assert.Equal(t, err, nil)
 
-	getPost, _ := http.NewRequest("GET", "/twitsnap/"+result.Post_ID+"invalid", nil)
+	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, r, t)
+
+	getPost, _ := http.NewRequest("GET", "/twitsnap/"+ogPost.Post_ID+"invalid", nil)
 	addAuthorization(getPost, token)
 
 	second := httptest.NewRecorder()

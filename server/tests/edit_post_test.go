@@ -25,26 +25,12 @@ func TestEditPostContent(t *testing.T) {
 	r := router.CreateRouter(db)
 
 	author_id := "1"
-	postBody := PostBody{Content: "content", Tags: []string{"tag1", "tag2"}, Public: true}
-	req := newPostRequest(postBody)
 
 	token, err := auth.GenerateToken(author_id, "username", true)
 
-	if err != nil {
-		log.Fatal("Error generating token: ", err)
-	}
-
-	addAuthorization(req, token)
-
-	first := httptest.NewRecorder()
-	r.ServeHTTP(first, req)
-
-	result := models.FrontPost{}
-
-	err = json.Unmarshal(first.Body.Bytes(), &result)
-
 	assert.Equal(t, err, nil)
-	makeResponseAsserions(t, http.StatusCreated, result, postBody, author_id, first.Code)
+
+	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, r, t)
 
 	newContent := "new content"
 	newTags := []string{}
@@ -57,11 +43,11 @@ func TestEditPostContent(t *testing.T) {
 		Tags:    newTags,
 	}
 
-	newPostBody := PostBody{Content: newContent, Tags: postBody.Tags, Public: postBody.Public}
+	newPostBody := PostBody{Content: newContent, Tags: ogPost.Tags, Public: ogPost.Public}
 
 	marshalledData, _ := json.Marshal(editInfo)
 
-	getPost, _ := http.NewRequest("PUT", "/twitsnap/edit/"+result.Post_ID, bytes.NewBuffer(marshalledData))
+	getPost, _ := http.NewRequest("PUT", "/twitsnap/edit/"+ogPost.Post_ID, bytes.NewBuffer(marshalledData))
 	getPost.Header.Add("content-type", "application/json")
 	addAuthorization(getPost, token)
 
@@ -85,26 +71,12 @@ func TestEditPostTags(t *testing.T) {
 	r := router.CreateRouter(db)
 
 	author_id := "1"
-	postBody := PostBody{Content: "content", Tags: []string{"tag1", "tag2"}, Public: true}
-	req := newPostRequest(postBody)
 
 	token, err := auth.GenerateToken(author_id, "username", true)
 
-	if err != nil {
-		log.Fatal("Error generating token: ", err)
-	}
-
-	addAuthorization(req, token)
-
-	first := httptest.NewRecorder()
-	r.ServeHTTP(first, req)
-
-	result := models.FrontPost{}
-
-	err = json.Unmarshal(first.Body.Bytes(), &result)
-
 	assert.Equal(t, err, nil)
-	makeResponseAsserions(t, http.StatusCreated, result, postBody, author_id, first.Code)
+
+	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, r, t)
 
 	newContent := ""
 	newTags := []string{"New", "Tags"}
@@ -117,11 +89,11 @@ func TestEditPostTags(t *testing.T) {
 		Tags:    newTags,
 	}
 
-	newPostBody := PostBody{Content: postBody.Content, Tags: newTags, Public: postBody.Public}
+	newPostBody := PostBody{Content: ogPost.Content, Tags: newTags, Public: ogPost.Public}
 
 	marshalledData, _ := json.Marshal(editInfo)
 
-	getPost, _ := http.NewRequest("PUT", "/twitsnap/edit/"+result.Post_ID, bytes.NewBuffer(marshalledData))
+	getPost, _ := http.NewRequest("PUT", "/twitsnap/edit/"+ogPost.Post_ID, bytes.NewBuffer(marshalledData))
 	getPost.Header.Add("content-type", "application/json")
 	addAuthorization(getPost, token)
 
