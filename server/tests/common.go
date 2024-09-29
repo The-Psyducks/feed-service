@@ -12,6 +12,8 @@ import (
 	"server/src/database"
 	"server/src/models"
 	"server/src/service"
+	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -116,5 +118,19 @@ func assertOnlyPublicPostsForNotFollowing(result []models.FrontPost, t *testing.
 		if result[i].Author_Info.Author_ID == service.TEST_NOT_FOLLOWING_ID {
 			assert.Equal(t, true, result[i].Public)
 		}
+	}
+}
+
+func postsHaveAtLeastOneWord(result []models.FrontPost, words_wanted_list []string, t *testing.T) {
+	for i := range result {
+		content_list := strings.Split(result[i].Content, " ")
+		found := false
+		for _, word := range words_wanted_list {
+			if slices.Contains(content_list, word) {
+				found = true
+				break
+			}
+		}
+		assert.Equal(t, true, found)
 	}
 }
