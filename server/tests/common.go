@@ -55,7 +55,11 @@ func connectToDatabase() database.Database {
 
 	db := database.NewAppDatabase(client)
 
-	db.ClearDB()
+	err_2 := db.ClearDB()
+
+	if err_2 != nil {
+		log.Fatal("Error clearing database: ", err)
+	}
 
 	return db
 }

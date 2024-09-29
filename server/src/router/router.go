@@ -25,7 +25,7 @@ func CreateRouter(db database.Database) *gin.Engine {
 
 	r.GET("/twitsnap/hashtags", postController.HashtagsSearch)
 
-	r.GET("/twitsnap/wordsearch/:username",postController.WordsSearch)
+	r.GET("/twitsnap/wordsearch",postController.WordsSearch)
 
 	r.DELETE("/twitsnap/:id", postController.DeletePostByID)
 

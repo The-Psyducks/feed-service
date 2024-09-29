@@ -64,8 +64,8 @@ func TestGetFeedFollowing(t *testing.T) {
 	assert.Equal(t, http.StatusOK, feedRecorder.Code)
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
-	assert.Equal(t, 6, result.Limit)
-	assert.Equal(t, 0, result.Next_Offset)
+	assert.Equal(t, 6, result.Pagination.Limit)
+	assert.Equal(t, 0, result.Pagination.Next_Offset)
 }
 
 func TestGetFeedFollowingNextOffset(t *testing.T) {
@@ -114,13 +114,13 @@ func TestGetFeedFollowingNextOffset(t *testing.T) {
 	assert.Equal(t, http.StatusOK, feedRecorder.Code)
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
-	assert.Equal(t, 2, result.Limit)
-	assert.Equal(t, 2, result.Next_Offset)
+	assert.Equal(t, 2, result.Pagination.Limit)
+	assert.Equal(t, 2, result.Pagination.Next_Offset)
 
 	result2 := models.ReturnPaginatedPosts{}
 	expectedPosts2 := []models.FrontPost{post1}
 
-	skip_2 := strconv.Itoa(result.Next_Offset)
+	skip_2 := strconv.Itoa(result.Pagination.Next_Offset)
 
 	getFeed2, _ := http.NewRequest("GET", "/twitsnap/feed?time="+time+"&skip="+skip_2+"&limit="+limit+"&feed_type="+feed_type+"&wanted_user_id="+"", nil)
 	addAuthorization(getFeed2, token)
@@ -134,6 +134,6 @@ func TestGetFeedFollowingNextOffset(t *testing.T) {
 	assert.Equal(t, http.StatusOK, feedRecorder2.Code)
 
 	compareOrderAsExpected(expectedPosts2, result2.Data, t)
-	assert.Equal(t, 2, result2.Limit)
-	assert.Equal(t, 0, result2.Next_Offset)
+	assert.Equal(t, 2, result2.Pagination.Limit)
+	assert.Equal(t, 0, result2.Pagination.Next_Offset)
 }

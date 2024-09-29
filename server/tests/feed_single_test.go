@@ -63,8 +63,8 @@ func TestGetFeedSingle(t *testing.T) {
 	assert.Equal(t, http.StatusOK, feedRecorder.Code)
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
-	assert.Equal(t, 6, result.Limit)
-	assert.Equal(t, 0, result.Next_Offset)
+	assert.Equal(t, 6, result.Pagination.Limit)
+	assert.Equal(t, 0, result.Pagination.Next_Offset)
 }
 
 func TestGetFeedSingleNotFollowing(t *testing.T) {
@@ -116,8 +116,8 @@ func TestGetFeedSingleNotFollowing(t *testing.T) {
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
 	assertOnlyPublicPosts(result.Data, t)
-	assert.Equal(t, 6, result.Limit)
-	assert.Equal(t, 0, result.Next_Offset)
+	assert.Equal(t, 6, result.Pagination.Limit)
+	assert.Equal(t, 0, result.Pagination.Next_Offset)
 }
 
 func TestFeedSingleWithFollowing(t *testing.T) {
@@ -168,6 +168,6 @@ func TestFeedSingleWithFollowing(t *testing.T) {
 	assert.Equal(t, http.StatusOK, feedRecorder.Code)
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
-	assert.Equal(t, 6, result.Limit)
-	assert.Equal(t, 0, result.Next_Offset)
+	assert.Equal(t, 6, result.Pagination.Limit)
+	assert.Equal(t, 0, result.Pagination.Next_Offset)
 }

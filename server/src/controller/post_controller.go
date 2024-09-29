@@ -124,11 +124,11 @@ func (c *PostController) GetUserFeed(context *gin.Context) {
 
 	result := models.ReturnPaginatedPosts{
 		Data: posts,
-		Limit: limitParams.Limit,
+		Pagination: models.Pagination{Limit: limitParams.Limit},
 	}
 
 	if hasMore {
-		result.Next_Offset =limitParams.Skip + limitParams.Limit
+		result.Pagination.Next_Offset =limitParams.Skip + limitParams.Limit
 	}
 
 	context.JSON(http.StatusOK, result)
@@ -155,11 +155,11 @@ func (c *PostController) HashtagsSearch(context *gin.Context) {
 
 	result := models.ReturnPaginatedPosts{
 		Data: posts,
-		Limit: limitParams.Limit,
+		Pagination: models.Pagination{Limit: limitParams.Limit},
 	}
 
 	if hasMore {
-		result.Next_Offset =limitParams.Skip + limitParams.Limit
+		result.Pagination.Next_Offset =limitParams.Skip + limitParams.Limit
 	}
 
 
@@ -167,8 +167,8 @@ func (c *PostController) HashtagsSearch(context *gin.Context) {
 }
 
 func (c *PostController) WordsSearch(context *gin.Context) {
-	username := context.Param("username")
 	token, _ := context.Get("tokenString")
+	userID, _ := context.Get("session_user_id")
 
 	words := context.Query(WORDS)
 
@@ -178,7 +178,7 @@ func (c *PostController) WordsSearch(context *gin.Context) {
 
 	limitParams := models.NewLimitConfig(time, skip, limit)
 
-	posts, hasMore, err := c.sv.WordsSearch(words, limitParams, username, token.(string))
+	posts, hasMore, err := c.sv.WordsSearch(words, limitParams, userID.(string), token.(string))
 
 	if err != nil {
 		_ = context.Error(err)
@@ -187,11 +187,11 @@ func (c *PostController) WordsSearch(context *gin.Context) {
 
 	result := models.ReturnPaginatedPosts{
 		Data: posts,
-		Limit: limitParams.Limit,
+		Pagination: models.Pagination{Limit: limitParams.Limit},
 	}
 
 	if hasMore {
-		result.Next_Offset =limitParams.Skip + limitParams.Limit
+		result.Pagination.Next_Offset =limitParams.Skip + limitParams.Limit
 	}
 
 

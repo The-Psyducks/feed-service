@@ -192,8 +192,8 @@ func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models
 	return posts, hasMore, err
 }
 
-func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig, username string, token string) ([]models.FrontPost, bool, error) {
-	following, err := getUserFollowingWp(username, limitConfig, token)
+func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig, userID string, token string) ([]models.FrontPost, bool, error) {
+	following, err := getUserFollowingWp(userID, limitConfig, token)
 	if err != nil {
 		return []models.FrontPost{}, false, err
 	}
