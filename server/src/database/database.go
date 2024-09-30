@@ -171,7 +171,7 @@ func (d *AppDatabase) GetUserFeedInterests(interests []string, following []strin
 	},}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
-		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)))
+		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
 	if err != nil {
 		log.Println(err)
 	}
@@ -205,7 +205,7 @@ func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitC
 	},}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
-		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)))
+		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
 	if err != nil {
 		log.Println(err)
 	}
@@ -245,7 +245,7 @@ func (d *AppDatabase) GetUserHashtags(interests []string, following []string, li
 	},}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
-		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)))
+		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
 	if err != nil {
 		log.Println(err)
 	}
@@ -289,7 +289,7 @@ func (d *AppDatabase) WordSearchPosts(words string, following []string, limitCon
 	}}}}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
-		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)))
+		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
 
 	if err != nil {
 		log.Println(err)

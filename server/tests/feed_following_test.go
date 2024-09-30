@@ -18,7 +18,11 @@ import (
 	"server/src/service"
 )
 
-func TestGetFeedFollowing(t *testing.T) {
+const (
+	FEED_TYPE_F = "following"
+)
+
+func TestFeedFollowing(t *testing.T) {
 	log.Println("TestGetFeedFollowing")
 
 	db := connectToDatabase()
@@ -47,10 +51,9 @@ func TestGetFeedFollowing(t *testing.T) {
 	time := time.Now().Format(time.RFC3339)
 
 	skip := "0"
-	feed_type := "following"
 	limit := "6"
 
-	getFeed, _ := http.NewRequest("GET", "/twitsnap/feed?time="+time+"&skip="+skip+"&limit="+limit+"&feed_type="+feed_type+"&wanted_user_id="+"", nil)
+	getFeed, _ := http.NewRequest("GET", "/twitsnap/feed?time="+time+"&skip="+skip+"&limit="+limit+"&feed_type="+FEED_TYPE_F+"&wanted_user_id="+"", nil)
 	addAuthorization(getFeed, token)
 
 	feedRecorder := httptest.NewRecorder()
@@ -68,7 +71,7 @@ func TestGetFeedFollowing(t *testing.T) {
 	assert.Equal(t, 0, result.Pagination.Next_Offset)
 }
 
-func TestGetFeedFollowingNextOffset(t *testing.T) {
+func TestFeedFollowingNextOffset(t *testing.T) {
 	log.Println("TestGetFeedFollowingNextOffset")
 
 	db := connectToDatabase()
@@ -97,10 +100,9 @@ func TestGetFeedFollowingNextOffset(t *testing.T) {
 	time := time.Now().Format(time.RFC3339)
 
 	skip := "0"
-	feed_type := "following"
 	limit := "2"
 
-	getFeed, _ := http.NewRequest("GET", "/twitsnap/feed?time="+time+"&skip="+skip+"&limit="+limit+"&feed_type="+feed_type+"&wanted_user_id="+"", nil)
+	getFeed, _ := http.NewRequest("GET", "/twitsnap/feed?time="+time+"&skip="+skip+"&limit="+limit+"&feed_type="+FEED_TYPE_F+"&wanted_user_id="+"", nil)
 	addAuthorization(getFeed, token)
 
 	feedRecorder := httptest.NewRecorder()
@@ -122,7 +124,7 @@ func TestGetFeedFollowingNextOffset(t *testing.T) {
 
 	skip_2 := strconv.Itoa(result.Pagination.Next_Offset)
 
-	getFeed2, _ := http.NewRequest("GET", "/twitsnap/feed?time="+time+"&skip="+skip_2+"&limit="+limit+"&feed_type="+feed_type+"&wanted_user_id="+"", nil)
+	getFeed2, _ := http.NewRequest("GET", "/twitsnap/feed?time="+time+"&skip="+skip_2+"&limit="+limit+"&feed_type="+FEED_TYPE_F+"&wanted_user_id="+"", nil)
 	addAuthorization(getFeed2, token)
 
 	feedRecorder2 := httptest.NewRecorder()
