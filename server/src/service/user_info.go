@@ -198,17 +198,14 @@ func addAuthorInfoToPost(post models.FrontPost, token string) (models.FrontPost,
 }
 
 func addAuthorInfoToPosts(posts []models.FrontPost, token string) ([]models.FrontPost, error) {
-
 	for i, post := range posts {
 		post, err := addAuthorInfoToPost(post, token)
 
 		if err != nil {
 			return nil, err
 		}
-
 		posts[i] = post
 	}
-
 	return posts, nil
 }
 

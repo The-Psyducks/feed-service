@@ -7,25 +7,25 @@ import (
 type Database interface {
 	AddNewPost(newPost models.DBPost) (models.FrontPost, error)
 
-	GetPostByID(postID string) (models.FrontPost, error)
+	GetPostByID(postID string, askerID string) (models.FrontPost, error)
 
 	DeletePostByID(postID string) error
 
-	EditPost(postID string, editInfo models.EditPostExpectedFormat) (models.FrontPost, error)
+	EditPost(postID string, editInfo models.EditPostExpectedFormat, askerID string) (models.FrontPost, error)
 
-	GetUserFeedFollowing(following []string,  limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
+	GetUserFeedFollowing(following []string, askerID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
 
-	GetUserFeedInterests(interests []string, following []string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
+	GetUserFeedInterests(interests []string, following []string, askerID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
 
-	GetUserFeedSingle(userID string, limitConfig models.LimitConfig, following []string) ([]models.FrontPost, bool, error)
+	GetUserFeedSingle(userID string, limitConfig models.LimitConfig, askerID string, following []string) ([]models.FrontPost, bool, error)
 
-	WordSearchPosts(words string, following []string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
+	WordSearchPosts(words string, following []string, askerID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
 
-	GetUserHashtags(hashtags []string, following []string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
+	GetUserHashtags(hashtags []string, following []string, askerID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
 
-	LikeAPost(postID string) error
+	LikeAPost(postID string, likerID string) error
 
-	UnLikeAPost(postID string) error
+	UnLikeAPost(postID string, likerID string) error
 
 	ClearDB() error
 

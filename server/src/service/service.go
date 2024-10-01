@@ -40,7 +40,7 @@ func (c *Service) CreatePost(newPost *models.PostExpectedFormat, author_id strin
 	newPosted, err := c.db.AddNewPost(postNew)
 
 	if err != nil {
-		return nil, postErrors.DatabaseError()
+		return nil, postErrors.DatabaseError(err.Error())
 	}
 
 	newPosted, err = addAuthorInfoToPost(newPosted, token)
@@ -52,9 +52,9 @@ func (c *Service) CreatePost(newPost *models.PostExpectedFormat, author_id strin
 	return &newPosted, nil
 }
 
-func (c *Service) FetchPostByID(postID string, token string) (*models.FrontPost, error) {
+func (c *Service) FetchPostByID(postID string, token string, userID string) (*models.FrontPost, error) {
 
-	post, err := c.db.GetPostByID(postID)
+	post, err := c.db.GetPostByID(postID, userID)
 
 	if err != nil {
 		return nil, postErrors.TwitsnapNotFound(postID)
@@ -79,19 +79,19 @@ func (c *Service) RemovePostByID(postID string) error {
 	return nil
 }
 
-func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpectedFormat, token string) (*models.FrontPost, error) {
+func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpectedFormat, token string, userID string) (*models.FrontPost, error) {
 	validate := validator.New()
 	if err := validate.Struct(editInfo); err != nil {
 		return nil, postErrors.TwitSnapImportantFieldsMissing(err)
 	}
 
-	modPost, err := c.db.EditPost(postID, editInfo)
+	modPost, err := c.db.EditPost(postID, editInfo, userID)
 
 	if err != nil {
 		if errors.Is(err, postErrors.ErrTwitsnapNotFound) {
 			return nil, postErrors.TwitsnapNotFound(postID)
 		} else {
-			return nil, postErrors.DatabaseError()
+			return nil, postErrors.DatabaseError(err.Error())
 		}
 	}
 
@@ -122,7 +122,7 @@ func (c *Service) fetchFollowingFeed(limitConfig models.LimitConfig, userID stri
 		return []models.FrontPost{}, false, err
 	}
 	log.Println("following: ", following)
-	posts, hasMore, err := c.db.GetUserFeedFollowing(following, limitConfig)
+	posts, hasMore, err := c.db.GetUserFeedFollowing(following, userID, limitConfig)
 
 	if err != nil {
 		return []models.FrontPost{}, false, err
@@ -145,7 +145,7 @@ func (c *Service) fetchForyouFeed(limitConfig models.LimitConfig, userID string,
 	if err != nil {
 		return []models.FrontPost{}, false, err
 	}
-	posts, hasMore, err := c.db.GetUserFeedInterests(interests, following, limitConfig)
+	posts, hasMore, err := c.db.GetUserFeedInterests(interests, following, userID, limitConfig)
 
 	if err != nil {
 		return []models.FrontPost{}, false, err
@@ -162,7 +162,7 @@ func (c *Service) fetchForyouSingle(limitConfig models.LimitConfig, wantedUserID
 		return []models.FrontPost{}, false, err
 	}
 
-	posts, hasMore, err := c.db.GetUserFeedSingle(wantedUserID, limitConfig, following)
+	posts, hasMore, err := c.db.GetUserFeedSingle(wantedUserID, limitConfig, userID, following)
 	if err != nil {
 		return []models.FrontPost{}, false, err
 	}
@@ -177,7 +177,7 @@ func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models
 		return []models.FrontPost{}, false, err
 	}
 
-	posts, hasMore, err := c.db.GetUserHashtags(hashtags, following, limitConfig)
+	posts, hasMore, err := c.db.GetUserHashtags(hashtags, following, userID, limitConfig)
 
 	if err != nil {
 		return []models.FrontPost{}, false, err
@@ -197,7 +197,7 @@ func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig, user
 	if err != nil {
 		return []models.FrontPost{}, false, err
 	}
-	posts, hasMore, err := c.db.WordSearchPosts(words, following, limitConfig)
+	posts, hasMore, err := c.db.WordSearchPosts(words, following, userID, limitConfig)
 
 	if err != nil {
 		return []models.FrontPost{}, false, err
@@ -212,8 +212,8 @@ func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig, user
 	return posts, hasMore, err
 }
 
-func (c *Service) LikePost(postID string) error {
-	err := c.db.LikeAPost(postID)
+func (c *Service) LikePost(postID string, userID string) error {
+	err := c.db.LikeAPost(postID, userID)
 
 	if err != nil {
 		return postErrors.TwitsnapNotFound(postID)
@@ -222,8 +222,8 @@ func (c *Service) LikePost(postID string) error {
 	return nil
 }
 
-func (c *Service) UnLikePost(postID string) error {
-	err := c.db.UnLikeAPost(postID)
+func (c *Service) UnLikePost(postID string, userID string) error {
+	err := c.db.UnLikeAPost(postID, userID)
 
 	if err != nil {
 		return postErrors.TwitsnapNotFound(postID)

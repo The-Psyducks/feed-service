@@ -28,36 +28,45 @@ func (d *AppDatabase) AddNewPost(newPost models.DBPost) (models.FrontPost, error
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	_, err := postCollection.InsertOne(context.Background(), newPost)
 
-	frontPost := makeDBPostIntoFrontPost(newPost)
+	frontPost := makeDBPostIntoFrontPost(newPost, false)
 	return frontPost, err
 }
 
-func (d *AppDatabase) GetPostByID(postID string) (models.FrontPost, error) {
+func (d *AppDatabase) GetPostByID(postID string, askerID string) (models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	post, err := d.findPost(postID, postCollection)
 
-	frontPost := makeDBPostIntoFrontPost(post)
+	if err != nil {
+		return models.FrontPost{}, err
+	}
+
+	liked, err := d.hasLiked(postID, askerID)
+
+	frontPost := makeDBPostIntoFrontPost(post, liked)
 	return frontPost, err
 }
 
 func (d *AppDatabase) DeletePostByID(postID string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
+	likesCollection := d.db.Collection(LIKES_COLLECTION)
 
 	filter := bson.M{POST_ID_FIELD: postID}
 
 	result, err := postCollection.DeleteOne(context.Background(), filter)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 
 	if result.DeletedCount == 0 {
-		err = postErrors.ErrTwitsnapNotFound
+		return postErrors.ErrTwitsnapNotFound
 	}
+
+	_, err = likesCollection.DeleteOne(context.Background(), filter)
 
 	return err
 }
 
-func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFormat) (models.FrontPost, error) {
+func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFormat, askerID string) (models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	var post models.FrontPost
 	var dbPost models.DBPost
@@ -76,9 +85,15 @@ func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFo
 
 	dbPost, err = d.findPost(postID, postCollection)
 
-	frontPost := makeDBPostIntoFrontPost(dbPost)
+	if err != nil {
+		return post, err
+	}
 
-	return frontPost, err
+	liked, err_3 := d.hasLiked(postID, askerID)
+
+	frontPost := makeDBPostIntoFrontPost(dbPost, liked)
+
+	return frontPost, err_3
 }
 
 func (d *AppDatabase) updatePostContent(postID string, newContent string) error {
@@ -119,7 +134,7 @@ func (d *AppDatabase) updatePostTags(postID string, newTags []string) error {
 	return err
 }
 
-func (d *AppDatabase) GetUserFeedFollowing(following []string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
+func (d *AppDatabase) GetUserFeedFollowing(following []string, askerID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	parsedTime, err := time.Parse(time.RFC3339, limitConfig.FromTime)
@@ -137,9 +152,11 @@ func (d *AppDatabase) GetUserFeedFollowing(following []string, limitConfig model
 	}
 	defer cursor.Close(context.Background())
 
-	posts, err := createPostList(cursor)
+	posts, err := d.createPostList(cursor, askerID)
 
-	log.Println("posts: ", len(posts))
+	if err != nil {
+		return nil, false, allerrors.DatabaseError(err.Error())
+	}
 
 	hasMore := len(posts) > limitConfig.Limit
 
@@ -147,12 +164,10 @@ func (d *AppDatabase) GetUserFeedFollowing(following []string, limitConfig model
 		posts = posts[:len(posts)-1]
 	}
 
-	frontPosts := allPostIntoFrontPost(posts)
-
-	return frontPosts, hasMore, err
+	return posts, hasMore, err
 }
 
-func (d *AppDatabase) GetUserFeedInterests(interests []string, following []string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
+func (d *AppDatabase) GetUserFeedInterests(interests []string, following []string, askerID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
 	if len(interests) == 0 {
 		return []models.FrontPost{}, false, postErrors.NoTagsFound()
 	}
@@ -177,7 +192,12 @@ func (d *AppDatabase) GetUserFeedInterests(interests []string, following []strin
 	}
 	defer cursor.Close(context.Background())
 
-	posts, err := createPostList(cursor)
+	posts, err := d.createPostList(cursor, askerID)
+
+	if err != nil {
+		log.Println(err)
+		return nil, false, allerrors.DatabaseError(err.Error())
+	}
 
 	hasMore := len(posts) > limitConfig.Limit
 
@@ -185,12 +205,10 @@ func (d *AppDatabase) GetUserFeedInterests(interests []string, following []strin
 		posts = posts[:len(posts)-1]
 	}
 
-	frontPosts := allPostIntoFrontPost(posts)
-
-	return frontPosts, hasMore, err
+	return posts, hasMore, err
 }
 
-func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitConfig, following []string) ([]models.FrontPost, bool, error) {
+func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitConfig, askerID string, following []string) ([]models.FrontPost, bool, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	parsedTime, err := time.Parse(time.RFC3339, limitConfig.FromTime)
 
@@ -211,7 +229,12 @@ func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitC
 	}
 	defer cursor.Close(context.Background())
 
-	posts, err := createPostList(cursor)
+	posts, err := d.createPostList(cursor, askerID)
+
+	if err != nil {
+		log.Println(err)
+		return nil, false, allerrors.DatabaseError(err.Error())
+	}
 
 	hasMore := len(posts) > limitConfig.Limit
 
@@ -219,12 +242,10 @@ func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitC
 		posts = posts[:len(posts)-1]
 	}
 
-	frontPosts := allPostIntoFrontPost(posts)
-
-	return frontPosts, hasMore, err
+	return posts, hasMore, err
 }
 
-func (d *AppDatabase) GetUserHashtags(interests []string, following []string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
+func (d *AppDatabase) GetUserHashtags(interests []string, following []string, askerID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	if len(interests) == 0 {
@@ -236,8 +257,6 @@ func (d *AppDatabase) GetUserHashtags(interests []string, following []string, li
 	if err != nil {
 		log.Println(err)
 	}
-
-	// filter := bson.M{TAGS_FIELD: bson.M{"$all": interests}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}}
 
 	filter := bson.M{TAGS_FIELD: bson.M{"$all": interests}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
 		{PUBLIC_FIELD: true},
@@ -251,7 +270,12 @@ func (d *AppDatabase) GetUserHashtags(interests []string, following []string, li
 	}
 	defer cursor.Close(context.Background())
 
-	posts, err := createPostList(cursor)
+	posts, err := d.createPostList(cursor, askerID)
+
+	if err != nil {
+		log.Println(err)
+		return nil, false, allerrors.DatabaseError(err.Error())
+	}
 
 	hasMore := len(posts) > limitConfig.Limit
 
@@ -259,12 +283,10 @@ func (d *AppDatabase) GetUserHashtags(interests []string, following []string, li
 		posts = posts[:len(posts)-1]
 	}
 
-	frontPosts := allPostIntoFrontPost(posts)
-
-	return frontPosts, hasMore, err
+	return posts, hasMore, err
 }
 
-func (d *AppDatabase) WordSearchPosts(words string, following []string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
+func (d *AppDatabase) WordSearchPosts(words string, following []string, askerID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
 
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
@@ -296,10 +318,11 @@ func (d *AppDatabase) WordSearchPosts(words string, following []string, limitCon
 	}
 	defer cursor.Close(context.Background())
 
-	posts, err := createPostList(cursor)
+	posts, err := d.createPostList(cursor, askerID)
 
-	if posts == nil {
-		err = postErrors.NoWordssFound()
+	if err != nil {
+		log.Println(err)
+		return nil, false, allerrors.DatabaseError(err.Error())
 	}
 
 	hasMore := len(posts) > limitConfig.Limit
@@ -308,18 +331,26 @@ func (d *AppDatabase) WordSearchPosts(words string, following []string, limitCon
 		posts = posts[:len(posts)-1]
 	}
 
-	frontPosts := allPostIntoFrontPost(posts)
-
-	return frontPosts, hasMore, err
+	return posts, hasMore, err
 }
 
-func (d *AppDatabase) LikeAPost(postID string) error {
+func (d *AppDatabase) LikeAPost(postID string, likerID string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
+	likesCollection := d.db.Collection(LIKES_COLLECTION)
 
 	filter := bson.M{POST_ID_FIELD: postID}
 	update := bson.M{"$inc": bson.M{LIKES_FIELD: 1}}
 
+	filter = bson.M{POST_ID_FIELD: postID}
+	liker := bson.M{"$addToSet": bson.M{LIKERS_FIELD: likerID}}
+
 	_, err := postCollection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	_, err = likesCollection.UpdateOne(context.Background(), filter, liker, options.Update().SetUpsert(true))
 	if err != nil {
 		log.Println(err)
 	}
@@ -327,35 +358,28 @@ func (d *AppDatabase) LikeAPost(postID string) error {
 	return err
 }
 
-func (d *AppDatabase) UnLikeAPost(postID string) error {
+func (d *AppDatabase) UnLikeAPost(postID string, likerID string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
+	likesCollection := d.db.Collection(LIKES_COLLECTION)
 
 	filter := bson.M{POST_ID_FIELD: postID}
 	update := bson.M{"$inc": bson.M{LIKES_FIELD: -1}}
 
+	liker := bson.M{"$pull": bson.M{LIKERS_FIELD: likerID}}
+
 	_, err := postCollection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	_, err = likesCollection.UpdateOne(context.Background(), filter, liker)
+
 	if err != nil {
 		log.Println(err)
 	}
 
 	return err
-}
-
-func createPostList(cursor *mongo.Cursor) ([]models.DBPost, error) {
-	var posts []models.DBPost
-	var err error
-
-
-	for cursor.Next(context.Background()) {
-		var dbPost models.DBPost
-		err = cursor.Decode(&dbPost)
-		if err != nil {
-			log.Println(err)
-		}
-		posts = append(posts, dbPost)
-	}
-
-	return posts, err
 }
 
 func (d *AppDatabase) findPost(postID string, postCollection *mongo.Collection) (models.DBPost, error) {
@@ -372,7 +396,54 @@ func (d *AppDatabase) findPost(postID string, postCollection *mongo.Collection) 
 func (d *AppDatabase) ClearDB() error {
 	err := d.db.Collection(FEED_COLLECTION).Drop(context.Background())
 	if err != nil {
-		return allerrors.DatabaseError()
+		return allerrors.DatabaseError(err.Error())
 	}
 	return nil
+}
+
+func (d *AppDatabase) createPostList(cursor *mongo.Cursor, askerID string) ([]models.FrontPost, error) {
+	var posts []models.FrontPost
+	var err error
+
+	for cursor.Next(context.Background()) {
+		var dbPost models.DBPost
+		err = cursor.Decode(&dbPost)
+		if err != nil{
+			return nil, err
+		}
+		liked, err_2 := d.hasLiked(dbPost.Post_ID, askerID)
+		if err_2 != nil {
+			return nil, err_2
+		}
+		frontPost := makeDBPostIntoFrontPost(dbPost, liked)
+		posts = append(posts, frontPost)
+	}
+
+	return posts, err
+}
+
+func makeDBPostIntoFrontPost(post models.DBPost, liked bool) models.FrontPost {
+	author := models.AuthorInfo{
+		Author_ID: post.Author_ID,
+		Username:  "username",
+		Alias:     "alias",
+		PthotoURL: "photourl",
+	}
+	return models.NewFrontPost(post, author, liked)
+}
+
+func (d *AppDatabase) hasLiked(postID string, likerID string) (bool, error) {
+	likesCollection := d.db.Collection(LIKES_COLLECTION)
+
+	filter := bson.M{POST_ID_FIELD: postID, LIKERS_FIELD: likerID}
+
+	var res bson.M
+
+	err := likesCollection.FindOne(context.Background(), filter).Decode(&res)
+
+	if err != nil && err != mongo.ErrNoDocuments {
+		return false, err
+	}
+
+	return err != mongo.ErrNoDocuments, nil
 }

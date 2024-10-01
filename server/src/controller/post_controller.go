@@ -53,8 +53,9 @@ func (c *PostController) GetPostByID(context *gin.Context) {
 
 	postID := context.Param("id")
 	token, _ := context.Get("tokenString")
+	author_id, _ := context.Get("session_user_id")
 
-	post, err := c.sv.FetchPostByID(postID, token.(string))
+	post, err := c.sv.FetchPostByID(postID, token.(string), author_id.(string))
 
 	if err != nil {
 		_ = context.Error(err)
@@ -82,6 +83,7 @@ func (c *PostController) UpdatePostByID(context *gin.Context) {
 	
 	postID := context.Param("id")
 	token, _ := context.Get("tokenString")
+	author_id, _ := context.Get("session_user_id")
 
 	var editInfo models.EditPostExpectedFormat
 	if err := context.ShouldBind(&editInfo); err != nil {
@@ -89,7 +91,7 @@ func (c *PostController) UpdatePostByID(context *gin.Context) {
 		return
 	}
 
-	modPost, err := c.sv.ModifyPostByID(postID, editInfo, token.(string))
+	modPost, err := c.sv.ModifyPostByID(postID, editInfo, token.(string), author_id.(string))
 
 
 	if err != nil {
@@ -200,8 +202,9 @@ func (c *PostController) WordsSearch(context *gin.Context) {
 
 func (c *PostController) LikePost(context *gin.Context) {
 	postID := context.Param("id")
+	userID, _ := context.Get("session_user_id")
 
-	err := c.sv.LikePost(postID)
+	err := c.sv.LikePost(postID, userID.(string))
 
 	if err != nil {
 		_ = context.Error(err)
@@ -213,8 +216,9 @@ func (c *PostController) LikePost(context *gin.Context) {
 
 func (c *PostController) UnLikePost(context *gin.Context) {
 	postID := context.Param("id")
+	userID, _ := context.Get("session_user_id")
 
-	err := c.sv.UnLikePost(postID)
+	err := c.sv.UnLikePost(postID, userID.(string))
 
 	if err != nil {
 		_ = context.Error(err)

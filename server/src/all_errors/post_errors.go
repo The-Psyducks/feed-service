@@ -160,12 +160,12 @@ func AuthenticationErrorInvalidToken(err string) TwitSnapError {
 	return error
 }
 
-func DatabaseError() TwitSnapError {
+func DatabaseError(err string) TwitSnapError {
 	error := TwitSnapError{
 		"about:blank",
 		"Database Error",
 		http.StatusInternalServerError,
-		"There was an error with the database",
+		"There was an error with the database: " + err,
 		"/twitsnap",
 	}
 	return error

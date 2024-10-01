@@ -104,7 +104,7 @@ func TestEditPostTags(t *testing.T) {
 
 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
 
-	log.Println(result_post)
+	// log.Println(result_post)
 
 	assert.Equal(t, err, nil)
 	assert.Equal(t, http.StatusOK, second.Code)
@@ -164,7 +164,7 @@ func TestEditPost(t *testing.T) {
 
 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
 
-	log.Println(result_post)
+	// log.Println(result_post)
 
 	assert.Equal(t, err, nil)
 	assert.Equal(t, http.StatusOK, second.Code)
