@@ -43,7 +43,7 @@ type FrontPost struct {
 	Public   bool    `json:"public"`
 	Tags     []string  `json:"tags"`
 	Likes   int  `json:"likes"`
-	UserLiked  bool  `json:"user_liked"`
+	UserLiked  bool  `json:"liked_by_user"`
 }
 
 func NewFrontPost(post DBPost, author AuthorInfo, liked bool) FrontPost {
