@@ -341,7 +341,6 @@ func (d *AppDatabase) LikeAPost(postID string, likerID string) error {
 	filter := bson.M{POST_ID_FIELD: postID}
 	update := bson.M{"$inc": bson.M{LIKES_FIELD: 1}}
 
-	filter = bson.M{POST_ID_FIELD: postID}
 	liker := bson.M{"$addToSet": bson.M{LIKERS_FIELD: likerID}}
 
 	_, err := postCollection.UpdateOne(context.Background(), filter, update)
