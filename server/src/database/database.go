@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"log"
-	allerrors "server/src/all_errors"
 	"server/src/models"
 	"strings"
 	"time"
@@ -13,7 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	// "golang.org/x/exp/slices"
 )
 
 type AppDatabase struct {
@@ -155,7 +153,7 @@ func (d *AppDatabase) GetUserFeedFollowing(following []string, askerID string, l
 	posts, err := d.createPostList(cursor, askerID)
 
 	if err != nil {
-		return nil, false, allerrors.DatabaseError(err.Error())
+		return nil, false, postErrors.DatabaseError(err.Error())
 	}
 
 	hasMore := len(posts) > limitConfig.Limit
@@ -196,7 +194,7 @@ func (d *AppDatabase) GetUserFeedInterests(interests []string, following []strin
 
 	if err != nil {
 		log.Println(err)
-		return nil, false, allerrors.DatabaseError(err.Error())
+		return nil, false, postErrors.DatabaseError(err.Error())
 	}
 
 	hasMore := len(posts) > limitConfig.Limit
@@ -233,7 +231,7 @@ func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitC
 
 	if err != nil {
 		log.Println(err)
-		return nil, false, allerrors.DatabaseError(err.Error())
+		return nil, false, postErrors.DatabaseError(err.Error())
 	}
 
 	hasMore := len(posts) > limitConfig.Limit
@@ -274,7 +272,7 @@ func (d *AppDatabase) GetUserHashtags(interests []string, following []string, as
 
 	if err != nil {
 		log.Println(err)
-		return nil, false, allerrors.DatabaseError(err.Error())
+		return nil, false, postErrors.DatabaseError(err.Error())
 	}
 
 	hasMore := len(posts) > limitConfig.Limit
@@ -322,7 +320,7 @@ func (d *AppDatabase) WordSearchPosts(words string, following []string, askerID 
 
 	if err != nil {
 		log.Println(err)
-		return nil, false, allerrors.DatabaseError(err.Error())
+		return nil, false, postErrors.DatabaseError(err.Error())
 	}
 
 	hasMore := len(posts) > limitConfig.Limit
@@ -395,7 +393,7 @@ func (d *AppDatabase) findPost(postID string, postCollection *mongo.Collection) 
 func (d *AppDatabase) ClearDB() error {
 	err := d.db.Collection(FEED_COLLECTION).Drop(context.Background())
 	if err != nil {
-		return allerrors.DatabaseError(err.Error())
+		return postErrors.DatabaseError(err.Error())
 	}
 	return nil
 }
