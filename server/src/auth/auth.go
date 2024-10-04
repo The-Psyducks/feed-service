@@ -25,6 +25,7 @@ func init() {
 
 type Claims struct {
 	UserId    string `json:"user_id"`
+	UserAdmin bool `json:"user_admin"`
 	jwt.RegisteredClaims
 }
 
@@ -38,6 +39,7 @@ func GenerateToken(userId string, username string, userAdmin bool) (string, erro
 
 	claims := Claims{
 		UserId:    userId,
+		UserAdmin: userAdmin,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(jwtExpirationHours) * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
