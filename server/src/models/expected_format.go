@@ -1,10 +1,9 @@
 package models
 
 type PostExpectedFormat struct {
-	Username string   `json:"username"`
-	Content   string   `json:"content" validate:"required"`
-	Public    bool     `json:"public"`
-	Tags      []string `json:"tags" validate:"dive,required"`
+	Content string   `json:"content" validate:"required"`
+	Public  bool     `json:"public"`
+	Tags    []string `json:"tags" validate:"dive,required"`
 }
 
 type LikeExpectedFormat struct {
@@ -18,6 +17,10 @@ type EditPostExpectedFormat struct {
 
 type ReturnPaginatedPosts struct {
 	Data        []FrontPost `json:"data"`
-	Next_Offset int         `json:"next_offset,omitempty"`
-	Limit       int         `json:"limit"`
+	Pagination  Pagination  `json:"pagination"`
+}
+
+type FeedRequesst struct {
+	FeedType     string `json:"feed_type"`
+	WantedUserID string `json:"wanted_user_id"`
 }

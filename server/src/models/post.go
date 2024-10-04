@@ -43,9 +43,10 @@ type FrontPost struct {
 	Public   bool    `json:"public"`
 	Tags     []string  `json:"tags"`
 	Likes   int  `json:"likes"`
+	UserLiked  bool  `json:"liked_by_user"`
 }
 
-func NewFrontPost(post DBPost, author AuthorInfo) FrontPost {
+func NewFrontPost(post DBPost, author AuthorInfo, liked bool) FrontPost {
 	return FrontPost{
 		Post_ID:   post.Post_ID,
 		Content:   post.Content,
@@ -54,5 +55,6 @@ func NewFrontPost(post DBPost, author AuthorInfo) FrontPost {
 		Tags:      post.Tags,
 		Public:   post.Public,
 		Likes:   post.Likes,
+		UserLiked:  liked,
 	}
 }

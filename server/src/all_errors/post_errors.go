@@ -83,12 +83,12 @@ func UnexpectedFormat() TwitSnapError {
 	return error
 }
 
-func BadFeedRequest() TwitSnapError {
+func BadFeedRequest(feed string) TwitSnapError {
 	error := TwitSnapError{
 		"about:blank",
 		"Unexpected Format",
 		http.StatusBadRequest,
-		"There is no feed like that",
+		"There is no feed like that: " + feed,
 		"/twitsnap",
 	}
 	return error
@@ -160,12 +160,12 @@ func AuthenticationErrorInvalidToken(err string) TwitSnapError {
 	return error
 }
 
-func DatabaseError() TwitSnapError {
+func DatabaseError(err string) TwitSnapError {
 	error := TwitSnapError{
 		"about:blank",
 		"Database Error",
 		http.StatusInternalServerError,
-		"There was an error with the database",
+		"There was an error with the database: " + err,
 		"/twitsnap",
 	}
 	return error

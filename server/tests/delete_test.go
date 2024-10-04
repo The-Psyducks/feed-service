@@ -1,152 +1,65 @@
 package test
 
-// import (
-// 	"log"
-// 	"testing"
-// 	"time"
+import (
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"server/src/auth"
+	"server/src/router"
+	"testing"
 
-// 	"encoding/json"
-// 	"net/http"
-// 	"net/http/httptest"
+	"github.com/stretchr/testify/assert"
+)
 
-// 	// "github.com/mjarkk/mongomock"
-// 	"github.com/stretchr/testify/assert"
+func TestDeletePost(t *testing.T) {
 
-// 	"server/src/database"
-// 	"server/src/router"
-// )
+	log.Println("TestDeletePost")
 
-// func TestDeletePost(t *testing.T) {
-// 	db := database.NewTestDatabase()
+	db := connectToDatabase()
 
-//     r := router.CreateRouter(db)
+	r := router.CreateRouter(db)
 
-// 	author_id := "1"
-// 	content := "content"
-// 	tags := []string{"tag1", "tag2"}
-// 	public := true
+	token, err := auth.GenerateToken("1", "username", true)
 
-//     first := NewPostRequest(author_id, content,tags,public, r)
+	assert.Equal(t, err, nil)
 
-//     result := struct {
-// 		Post struct {
-// 			Post_ID   string    `bson:"post_id"`
-// 			Content   string    `bson:"content"`
-// 			Author_ID string    `bson:"author_id"`
-// 			Time      time.Time `bson:"time"`
-// 			Public   bool    `bson:"public"`
-// 			Tags     []string  `bson:"tags"`
-// 		}
-// 	}{}
+	post := makeAndAssertPost("1", "content", []string{"tag1", "tag2"}, true, r, t)
 
-// 	err := json.Unmarshal(first.Body.Bytes(), &result)
+	deletePost, _ := http.NewRequest("DELETE", "/twitsnap/"+post.Post_ID, nil)
+	addAuthorization(deletePost, token)
 
-// 	log.Println(result)
+	third := httptest.NewRecorder()
+	r.ServeHTTP(third, deletePost)
 
-// 	assert.Equal(t, err, nil)
+	assert.Equal(t, http.StatusNoContent, third.Code)
 
-// 	getPost, _ := http.NewRequest("GET", "/twitsnap/"+result.Post.Post_ID, nil)
+	getPost, _ := http.NewRequest("GET", "/twitsnap/"+post.Post_ID, nil)
+	addAuthorization(getPost, token)
 
-// 	second := httptest.NewRecorder()
-// 	r.ServeHTTP(second, getPost)
+	fourth := httptest.NewRecorder()
+	r.ServeHTTP(fourth, getPost)
+	assert.Equal(t, http.StatusNotFound, fourth.Code)
+}
 
-// 	result_post := struct {
-// 		Post struct {
-// 			Post_ID   string    `bson:"post_id"`
-// 			Content   string    `bson:"content"`
-// 			Author_ID string    `bson:"author_id"`
-// 			Time      time.Time `bson:"time"`
-// 			Public   bool    `bson:"public"`
-// 			Tags     []string  `bson:"tags"`
-// 		}
-// 	}{}
+func TestDeleteUnexistentPost(t *testing.T) {
 
-// 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
+	log.Println("TestDeleteUnexistentPost")
 
-// 	log.Println(result_post)
+	db := connectToDatabase()
 
-// 	assert.Equal(t, err, nil)
-// 	assert.Equal(t, http.StatusOK, second.Code)
-// 	assert.Equal(t, result_post.Post.Content, content)
-// 	assert.Equal(t, result_post.Post.Author_ID, author_id)
-// 	assert.Equal(t, result_post.Post.Tags, tags)
-// 	assert.Equal(t, result_post.Post.Public, public)
+	r := router.CreateRouter(db)
 
-// 	deletePost, _ := http.NewRequest("DELETE", "/twitsnap/"+result.Post.Post_ID, nil)
+	token, err := auth.GenerateToken("1", "username", true)
 
-// 	third := httptest.NewRecorder()
-// 	r.ServeHTTP(third, deletePost)
+	assert.Equal(t, err, nil)
 
-// 	assert.Equal(t, http.StatusNoContent, third.Code)
+	post := makeAndAssertPost("1", "content", []string{"tag1", "tag2"}, true, r, t)
 
-// 	getPost, _ = http.NewRequest("GET", "/twitsnap/"+result.Post.Post_ID, nil)
+	deletePost, _ := http.NewRequest("DELETE", "/twitsnap/"+post.Post_ID+"invalid", nil)
+	addAuthorization(deletePost, token)
 
-// 	fourth := httptest.NewRecorder()
-// 	r.ServeHTTP(fourth, getPost)
+	third := httptest.NewRecorder()
+	r.ServeHTTP(third, deletePost)
 
-// 	assert.Equal(t, http.StatusNotFound, fourth.Code)
-// }
-
-// func TestDeleteUnexistentPost(t *testing.T) {
-// 	db := database.NewTestDatabase()
-
-//     r := router.CreateRouter(db)
-
-// 	author_id := "1"
-// 	content := "content"
-// 	tags := []string{"tag1", "tag2"}
-// 	public := true
-
-//     first := NewPostRequest(author_id, content,tags,public, r)
-
-//     result := struct {
-// 		Post struct {
-// 			Post_ID   string    `bson:"post_id"`
-// 			Content   string    `bson:"content"`
-// 			Author_ID string    `bson:"author_id"`
-// 			Time      time.Time `bson:"time"`
-// 			Public   bool    `bson:"public"`
-// 			Tags     []string  `bson:"tags"`
-// 		}
-// 	}{}
-
-// 	err := json.Unmarshal(first.Body.Bytes(), &result)
-
-// 	log.Println(result)
-
-// 	assert.Equal(t, err, nil)
-
-// 	getPost, _ := http.NewRequest("GET", "/twitsnap/"+result.Post.Post_ID, nil)
-
-// 	second := httptest.NewRecorder()
-// 	r.ServeHTTP(second, getPost)
-
-// 	result_post := struct {
-// 		Post struct {
-// 			Post_ID   string    `bson:"post_id"`
-// 			Content   string    `bson:"content"`
-// 			Author_ID string    `bson:"author_id"`
-// 			Time      time.Time `bson:"time"`
-// 			Public   bool    `bson:"public"`
-// 			Tags     []string  `bson:"tags"`
-// 		}
-// 	}{}
-
-// 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
-
-// 	log.Println(result_post)
-
-// 	assert.Equal(t, err, nil)
-// 	assert.Equal(t, http.StatusOK, second.Code)
-// 	assert.Equal(t, result_post.Post.Content, content)
-// 	assert.Equal(t, result_post.Post.Author_ID, author_id)
-// 	assert.Equal(t, result_post.Post.Tags, tags)
-// 	assert.Equal(t, result_post.Post.Public, public)
-
-// 	deletePost, _ := http.NewRequest("DELETE", "/twitsnap/"+result.Post.Post_ID+"invalid", nil)
-
-// 	third := httptest.NewRecorder()
-// 	r.ServeHTTP(third, deletePost)
-
-// 	assert.Equal(t, http.StatusNotFound, third.Code)
-// }
+	assert.Equal(t, http.StatusNotFound, third.Code)
+}

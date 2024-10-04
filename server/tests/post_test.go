@@ -1,48 +1,91 @@
 package test
 
-// import (
-// 	"testing"
-// 	"time"
+import (
+	"log"
+	"testing"
 
-// 	"encoding/json"
-// 	"net/http"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 
-// 	"github.com/stretchr/testify/assert"
+	postErrors "server/src/all_errors"
+	"server/src/auth"
+	"server/src/models"
+	"server/src/router"
 
-// 	"server/src/database"
-// 	"server/src/router"
-// )
+	validator "github.com/go-playground/validator/v10"
+	"github.com/stretchr/testify/assert"
+)
 
-// func TestNewPost(t *testing.T) {
+func TestNewPost(t *testing.T) {
 
-//     db := database.NewTestDatabase()
+	log.Println("TestNewPost")
 
-//     r := router.CreateRouter(db)
+	db := connectToDatabase()
 
-// 	author_id := "1"
-// 	content := "content"
-// 	tags := []string{"tag1", "tag2"}
-// 	public := true
+	r := router.CreateRouter(db)
 
-//     first := NewPostRequest(author_id, content,tags,public, r)
+	author_id := "1234"
+	postBody := PostBody{Content: "content", Tags: []string{"tag1", "tag2"}, Public: true}
+	req := newPostRequest(postBody)
 
-//     result := struct {
-// 		Post struct {
-// 			Post_ID   string    `bson:"post_id"`
-// 			Content   string    `bson:"content"`
-// 			Author_ID string    `bson:"author_id"`
-// 			Time      time.Time `bson:"time"`
-// 			Public   bool    `bson:"public"`
-// 			Tags     []string  `bson:"tags"`
-// 		}
-// 	}{}
+	token, err := auth.GenerateToken(author_id, "username", true)
 
-// 	err := json.Unmarshal(first.Body.Bytes(), &result)
+	if err != nil {
+		log.Fatal("Error generating token: ", err)
+	}
 
-// 	assert.Equal(t, err, nil)
-// 	assert.Equal(t, http.StatusCreated, first.Code)
-// 	assert.Equal(t, result.Post.Content, content)
-// 	assert.Equal(t, result.Post.Author_ID, author_id)
-// 	assert.Equal(t, result.Post.Tags, tags)
-// 	assert.Equal(t, result.Post.Public, public)
-// }
+	addAuthorization(req, token)
+
+	first := httptest.NewRecorder()
+	r.ServeHTTP(first, req)
+
+	result := models.FrontPost{}
+
+	err = json.Unmarshal(first.Body.Bytes(), &result)
+
+	assert.Equal(t, err, nil)
+	makeResponseAsserions(t, http.StatusCreated, result, postBody, author_id, first.Code)
+}
+
+func TestNewPostWithMissInf(t *testing.T) {
+
+	log.Println("TestNewPost")
+
+	db := connectToDatabase()
+
+	r := router.CreateRouter(db)
+
+	author_id := "1234"
+	postBody := PostBody{Content: "", Tags: []string{"tag1", "tag2"}, Public: true}
+	req := newPostRequest(postBody)
+
+	token, err := auth.GenerateToken(author_id, "username", true)
+
+	if err != nil {
+		log.Fatal("Error generating token: ", err)
+	}
+
+	addAuthorization(req, token)
+
+	first := httptest.NewRecorder()
+	r.ServeHTTP(first, req)
+
+	result := postErrors.TwitSnapError{}
+
+	err = json.Unmarshal(first.Body.Bytes(), &result)
+
+	newPost := models.PostExpectedFormat{Content: "", Tags: []string{"tag1", "tag2"}, Public: true}
+	validate := validator.New()
+	var errFMT postErrors.TwitSnapError
+	if wrongFmtErr := validate.Struct(newPost); wrongFmtErr != nil {
+		errFMT = postErrors.TwitSnapImportantFieldsMissing(wrongFmtErr)
+	}
+
+	log.Println("errFMT: ", errFMT)
+	log.Println("err: ", err)
+
+	assert.Equal(t, err, nil)
+	assert.Equal(t, errFMT, result)
+	assert.Equal(t, http.StatusBadRequest, first.Code)
+}

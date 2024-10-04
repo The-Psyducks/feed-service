@@ -17,6 +17,7 @@ const (
 	FEED = "feed_type"
 	WORDS = "words"
 	HASTAGS = "tags"
+	WANTED_ID = "wanted_user_id"
 )
 
 type PostController struct {
@@ -45,29 +46,23 @@ func (c *PostController) NewPost(context *gin.Context) {
 		return
 	}
 
-	result := gin.H{
-		"post": postNew,
-	}
-
-	context.JSON(http.StatusCreated, result)
+	context.JSON(http.StatusCreated, postNew)
 }
 
 func (c *PostController) GetPostByID(context *gin.Context) {
 
 	postID := context.Param("id")
 	token, _ := context.Get("tokenString")
+	author_id, _ := context.Get("session_user_id")
 
-	post, err := c.sv.FetchPostByID(postID, token.(string))
+	post, err := c.sv.FetchPostByID(postID, token.(string), author_id.(string))
 
 	if err != nil {
 		_ = context.Error(err)
 		return
 	}
 
-	result := gin.H{
-		"post": post,
-	}
-	context.JSON(http.StatusOK, result)
+	context.JSON(http.StatusOK, post)
 }
 
 func (c *PostController) DeletePostByID(context *gin.Context) {
@@ -88,6 +83,7 @@ func (c *PostController) UpdatePostByID(context *gin.Context) {
 	
 	postID := context.Param("id")
 	token, _ := context.Get("tokenString")
+	author_id, _ := context.Get("session_user_id")
 
 	var editInfo models.EditPostExpectedFormat
 	if err := context.ShouldBind(&editInfo); err != nil {
@@ -95,7 +91,7 @@ func (c *PostController) UpdatePostByID(context *gin.Context) {
 		return
 	}
 
-	modPost, err := c.sv.ModifyPostByID(postID, editInfo, token.(string))
+	modPost, err := c.sv.ModifyPostByID(postID, editInfo, token.(string), author_id.(string))
 
 
 	if err != nil {
@@ -103,26 +99,25 @@ func (c *PostController) UpdatePostByID(context *gin.Context) {
 		return
 	}
 
-	result := gin.H{
-		"post": modPost,
-	}
-
-	context.JSON(http.StatusOK, result)
+	context.JSON(http.StatusOK, modPost)
 }
 
 func (c *PostController) GetUserFeed(context *gin.Context) {
-
-	username := context.Param("username")
 	token, _ := context.Get("tokenString")
-
-	feedType := context.Query(FEED)
+	author_id, _ := context.Get("session_user_id")
+	
 	time := context.Query(TIME)
 	skip := context.Query(SKIP)
 	limit := context.Query(LIMIT)
+	feed_type := context.Query(FEED)
+	wanted_id := context.Query(WANTED_ID)
+
+	feedRequest := models.FeedRequesst{FeedType: feed_type, WantedUserID: wanted_id}
+
 
 	limitParams := models.NewLimitConfig(time, skip, limit)
 
-	posts, hasMore, err := c.sv.FetchUserFeed(username, feedType, limitParams, token.(string))
+	posts, hasMore, err := c.sv.FetchUserFeed(&feedRequest, author_id.(string), limitParams, token.(string))
 
 	if err != nil {
 		_ = context.Error(err)
@@ -131,19 +126,20 @@ func (c *PostController) GetUserFeed(context *gin.Context) {
 
 	result := models.ReturnPaginatedPosts{
 		Data: posts,
-		Limit: limitParams.Limit,
+		Pagination: models.Pagination{Limit: limitParams.Limit},
 	}
 
 	if hasMore {
-		result.Next_Offset =limitParams.Skip + limitParams.Limit
+		result.Pagination.Next_Offset =limitParams.Skip + limitParams.Limit
 	}
 
 	context.JSON(http.StatusOK, result)
 }
 
 func (c *PostController) HashtagsSearch(context *gin.Context) {
-	username := context.Param("username")
 	token, _ := context.Get("tokenString")
+	userID, _ := context.Get("session_user_id")
+
 
 	hashtags := context.QueryArray(HASTAGS)
 	time := context.Query(TIME)
@@ -152,7 +148,7 @@ func (c *PostController) HashtagsSearch(context *gin.Context) {
 
 	limitParams := models.NewLimitConfig(time, skip, limit)
 
-	posts, hasMore, err := c.sv.FetchUserPostsByHashtags(hashtags, limitParams, username, token.(string))
+	posts, hasMore, err := c.sv.FetchUserPostsByHashtags(hashtags, limitParams, userID.(string), token.(string))
 
 	if err != nil {
 		_ = context.Error(err)
@@ -161,11 +157,11 @@ func (c *PostController) HashtagsSearch(context *gin.Context) {
 
 	result := models.ReturnPaginatedPosts{
 		Data: posts,
-		Limit: limitParams.Limit,
+		Pagination: models.Pagination{Limit: limitParams.Limit},
 	}
 
 	if hasMore {
-		result.Next_Offset =limitParams.Skip + limitParams.Limit
+		result.Pagination.Next_Offset =limitParams.Skip + limitParams.Limit
 	}
 
 
@@ -173,8 +169,8 @@ func (c *PostController) HashtagsSearch(context *gin.Context) {
 }
 
 func (c *PostController) WordsSearch(context *gin.Context) {
-	username := context.Param("username")
 	token, _ := context.Get("tokenString")
+	userID, _ := context.Get("session_user_id")
 
 	words := context.Query(WORDS)
 
@@ -184,7 +180,7 @@ func (c *PostController) WordsSearch(context *gin.Context) {
 
 	limitParams := models.NewLimitConfig(time, skip, limit)
 
-	posts, hasMore, err := c.sv.WordsSearch(words, limitParams, username, token.(string))
+	posts, hasMore, err := c.sv.WordsSearch(words, limitParams, userID.(string), token.(string))
 
 	if err != nil {
 		_ = context.Error(err)
@@ -193,11 +189,11 @@ func (c *PostController) WordsSearch(context *gin.Context) {
 
 	result := models.ReturnPaginatedPosts{
 		Data: posts,
-		Limit: limitParams.Limit,
+		Pagination: models.Pagination{Limit: limitParams.Limit},
 	}
 
 	if hasMore {
-		result.Next_Offset =limitParams.Skip + limitParams.Limit
+		result.Pagination.Next_Offset =limitParams.Skip + limitParams.Limit
 	}
 
 
@@ -206,8 +202,9 @@ func (c *PostController) WordsSearch(context *gin.Context) {
 
 func (c *PostController) LikePost(context *gin.Context) {
 	postID := context.Param("id")
+	userID, _ := context.Get("session_user_id")
 
-	err := c.sv.LikePost(postID)
+	err := c.sv.LikePost(postID, userID.(string))
 
 	if err != nil {
 		_ = context.Error(err)
@@ -219,8 +216,9 @@ func (c *PostController) LikePost(context *gin.Context) {
 
 func (c *PostController) UnLikePost(context *gin.Context) {
 	postID := context.Param("id")
+	userID, _ := context.Get("session_user_id")
 
-	err := c.sv.UnLikePost(postID)
+	err := c.sv.UnLikePost(postID, userID.(string))
 
 	if err != nil {
 		_ = context.Error(err)

@@ -19,19 +19,19 @@ func CreateRouter(db database.Database) *gin.Engine {
 
 	r.PUT("/twitsnap/edit/:id", postController.UpdatePostByID)
 
-	r.GET("/twitsnap/feed/:username", postController.GetUserFeed)
+	r.GET("/twitsnap/feed", postController.GetUserFeed)
 
 	r.GET("/twitsnap/:id", postController.GetPostByID)
 
-	r.GET("/twitsnap/hashtags/:username", postController.HashtagsSearch)
+	r.GET("/twitsnap/hashtag-search", postController.HashtagsSearch)
 
-	r.GET("/twitsnap/wordsearch/:username",postController.WordsSearch)
+	r.GET("/twitsnap/word-search",postController.WordsSearch)
 
 	r.DELETE("/twitsnap/:id", postController.DeletePostByID)
 
-	r.PUT("/twitsnap/like/:id", postController.LikePost)
+	r.POST("/twitsnap/like/:id", postController.LikePost)
 
-	r.PUT("/twitsnap/unlike/:id", postController.UnLikePost)
+	r.DELETE("/twitsnap/like/:id", postController.UnLikePost)
 
 	return r
 }

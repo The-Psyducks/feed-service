@@ -3,6 +3,7 @@ package database
 const (
 	DATABASE_NAME   = "feed"
 	FEED_COLLECTION = "posts"
+	LIKES_COLLECTION = "likes"
 )
 
 const (
@@ -12,4 +13,6 @@ const (
 	TIME_FIELD = "time"
 	TAGS_FIELD = "tags"
 	LIKES_FIELD = "likes"
+	PUBLIC_FIELD = "public"
+	LIKERS_FIELD = "likers"
 )
