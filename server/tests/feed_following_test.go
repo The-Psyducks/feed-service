@@ -39,7 +39,7 @@ func TestFeedFollowing(t *testing.T) {
 
 	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{"tag5", "tag6"}, true, r, t)
 
-	token, err := auth.GenerateToken(service.TEST_USER_ONE, "username", true)
+	token, err := auth.GenerateToken(service.TEST_USER_ONE, "username", false)
 
 	assert.Equal(t, err, nil)
 
@@ -88,7 +88,7 @@ func TestFeedFollowingNextOffset(t *testing.T) {
 
 	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{"tag5", "tag6"}, true, r, t)
 
-	token, err := auth.GenerateToken(service.TEST_USER_ONE, "username", true)
+	token, err := auth.GenerateToken(service.TEST_USER_ONE, "username", false)
 
 	assert.Equal(t, err, nil)
 

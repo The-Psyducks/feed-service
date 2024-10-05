@@ -33,5 +33,9 @@ func CreateRouter(db database.Database) *gin.Engine {
 
 	r.DELETE("/twitsnap/like/:id", postController.UnLikePost)
 
+	r.GET("/twitsnap/all", postController.GetAllPosts)
+
+	r.NoRoute(postController.NoRoute)
+
 	return r
 }

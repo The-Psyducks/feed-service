@@ -79,7 +79,7 @@ func makeAndAssertPost(authorId string, content string, tags []string, public bo
 	postBody := PostBody{Content: content, Tags: tags, Public: public}
 	req := newPostRequest(postBody)
 
-	token, err := auth.GenerateToken(authorId, "username", true)
+	token, err := auth.GenerateToken(authorId, "username", false)
 
 	if err != nil {
 		log.Fatal("Error generating token: ", err)

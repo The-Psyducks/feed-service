@@ -136,6 +136,40 @@ func (c *PostController) GetUserFeed(context *gin.Context) {
 	context.JSON(http.StatusOK, result)
 }
 
+func (c *PostController) GetAllPosts(context *gin.Context) {
+	token, _ := context.Get("tokenString")
+	isUserAdmin, _ := context.Get("session_user_admin")
+
+	if !isUserAdmin.(bool) {
+		_ = context.Error(postErrors.AccssDenied())
+		return
+	}
+
+	time := context.Query(TIME)
+	skip := context.Query(SKIP)
+	limit := context.Query(LIMIT)
+
+	limitParams := models.NewLimitConfig(time, skip, limit)
+
+	posts, hasMore, err := c.sv.FetchAllPosts(limitParams, token.(string))
+
+	if err != nil {
+		_ = context.Error(err)
+		return
+	}
+
+	result := models.ReturnPaginatedPosts{
+		Data: posts,
+		Pagination: models.Pagination{Limit: limitParams.Limit},
+	}
+
+	if hasMore {
+		result.Pagination.Next_Offset =limitParams.Skip + limitParams.Limit
+	}
+
+	context.JSON(http.StatusOK, result)
+}
+
 func (c *PostController) HashtagsSearch(context *gin.Context) {
 	token, _ := context.Get("tokenString")
 	userID, _ := context.Get("session_user_id")
@@ -226,4 +260,8 @@ func (c *PostController) UnLikePost(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusNoContent, gin.H{})
+}
+
+func (c *PostController) NoRoute(context *gin.Context) {
+	_ = context.Error(postErrors.NotFound())
 }

@@ -26,7 +26,7 @@ func TestEditPostContent(t *testing.T) {
 
 	author_id := "1"
 
-	token, err := auth.GenerateToken(author_id, "username", true)
+	token, err := auth.GenerateToken(author_id, "username", false)
 
 	assert.Equal(t, err, nil)
 
@@ -72,7 +72,7 @@ func TestEditPostTags(t *testing.T) {
 
 	author_id := "1"
 
-	token, err := auth.GenerateToken(author_id, "username", true)
+	token, err := auth.GenerateToken(author_id, "username", false)
 
 	assert.Equal(t, err, nil)
 
@@ -120,7 +120,7 @@ func TestEditPost(t *testing.T) {
 	postBody := PostBody{Content: "content", Tags: []string{"tag1", "tag2"}, Public: true}
 	req := newPostRequest(postBody)
 
-	token, err := auth.GenerateToken(author_id, "username", true)
+	token, err := auth.GenerateToken(author_id, "username", false)
 
 	if err != nil {
 		log.Fatal("Error generating token: ", err)

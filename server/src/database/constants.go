@@ -15,4 +15,6 @@ const (
 	LIKES_FIELD = "likes"
 	PUBLIC_FIELD = "public"
 	LIKERS_FIELD = "likers"
+
+	ADMIN = "admin"
 )

@@ -13,6 +13,8 @@ type Database interface {
 
 	EditPost(postID string, editInfo models.EditPostExpectedFormat, askerID string) (models.FrontPost, error)
 
+	GetAllPosts(limitConfig models.LimitConfig, askerID string) ([]models.FrontPost, bool, error)
+
 	GetUserFeedFollowing(following []string, askerID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
 
 	GetUserFeedInterests(interests []string, following []string, askerID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
