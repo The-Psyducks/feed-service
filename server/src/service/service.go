@@ -104,6 +104,19 @@ func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpected
 	return &modPost, nil
 }
 
+func (c *Service) FetchAllPosts(limitConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
+
+	posts, hasMore, err := c.db.GetAllPosts(limitConfig, database.ADMIN)
+
+	if err != nil {
+		return []models.FrontPost{}, false, err
+	}
+
+	posts, err = addAuthorInfoToPosts(posts, token)
+
+	return posts, hasMore, err
+}
+
 func (c *Service) FetchUserFeed(feedRequest *models.FeedRequesst, user_id string, limitConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
 	switch feedRequest.FeedType {
 	case FOLLOWING:
@@ -160,6 +173,10 @@ func (c *Service) fetchForyouSingle(limitConfig models.LimitConfig, wantedUserID
 	following, err := getUserFollowingWp(userID, limitConfig, token)
 	if err != nil {
 		return []models.FrontPost{}, false, err
+	}
+
+	if wantedUserID == userID {
+		following = append(following, userID)
 	}
 
 	posts, hasMore, err := c.db.GetUserFeedSingle(wantedUserID, limitConfig, userID, following)

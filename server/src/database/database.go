@@ -132,6 +132,41 @@ func (d *AppDatabase) updatePostTags(postID string, newTags []string) error {
 	return err
 }
 
+func (d *AppDatabase) GetAllPosts(limitConfig models.LimitConfig, askerID string) ([]models.FrontPost, bool, error) {
+	postCollection := d.db.Collection(FEED_COLLECTION)
+
+	parsedTime, err := time.Parse(time.RFC3339, limitConfig.FromTime)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	filter := bson.M{TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}}
+
+	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
+		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
+
+	if err != nil {
+		log.Println(err)
+	}
+	defer cursor.Close(context.Background())
+
+	posts, err := d.createPostList(cursor, askerID)
+
+	if err != nil {
+		log.Println(err)
+		return nil, false, postErrors.DatabaseError(err.Error())
+	}
+
+	hasMore := len(posts) > limitConfig.Limit
+
+	if hasMore{
+		posts = posts[:len(posts)-1]
+	}
+
+	return posts, hasMore, err
+}
+
 func (d *AppDatabase) GetUserFeedFollowing(following []string, askerID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
@@ -430,6 +465,10 @@ func makeDBPostIntoFrontPost(post models.DBPost, liked bool) models.FrontPost {
 }
 
 func (d *AppDatabase) hasLiked(postID string, likerID string) (bool, error) {
+	if likerID == ADMIN {
+		return false, nil
+	}
+
 	likesCollection := d.db.Collection(LIKES_COLLECTION)
 
 	filter := bson.M{POST_ID_FIELD: postID, LIKERS_FIELD: likerID}

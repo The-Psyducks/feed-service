@@ -170,3 +170,25 @@ func DatabaseError(err string) TwitSnapError {
 	}
 	return error
 }
+
+func AccssDenied() TwitSnapError {
+	error := TwitSnapError{
+		"about:blank",
+		"Access Denied",
+		http.StatusForbidden,
+		"Access Denied, user not Admin",
+		"/twitsnap",
+	}
+	return error
+}
+
+func NotFound() TwitSnapError {
+	error := TwitSnapError{
+		"about:blank",
+		"Not Found",
+		http.StatusNotFound,
+		"Resource not found",
+		"/twitsnap",
+	}
+	return error
+}

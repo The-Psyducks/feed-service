@@ -19,7 +19,7 @@ func TestDeletePost(t *testing.T) {
 
 	r := router.CreateRouter(db)
 
-	token, err := auth.GenerateToken("1", "username", true)
+	token, err := auth.GenerateToken("1", "username", false)
 
 	assert.Equal(t, err, nil)
 
@@ -49,7 +49,7 @@ func TestDeleteUnexistentPost(t *testing.T) {
 
 	r := router.CreateRouter(db)
 
-	token, err := auth.GenerateToken("1", "username", true)
+	token, err := auth.GenerateToken("1", "username", false)
 
 	assert.Equal(t, err, nil)
 
