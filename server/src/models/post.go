@@ -14,6 +14,8 @@ type DBPost struct {
 	Public   bool    `bson:"public"`
 	Tags     []string  `bson:"tags"`
 	Likes   int  `bson:"likes"`
+	Original_Author string `bson:"original_author"`
+	Is_Retweet bool `bson:"is_retweet"`
 }
 
 
@@ -25,6 +27,23 @@ func NewDBPost(author_id string, content string, tags []string, privacy bool) DB
 		Time:      time.Now().UTC(),
 		Tags:      tags,
 		Public:   privacy,
+		Likes:   0,
+		Original_Author: author_id,
+		Is_Retweet: false,
+	}
+}
+
+func NewRetweetDBPost(author_id string, content string, tags []string, privacy bool, original_author string) DBPost {
+	return DBPost{
+		Post_ID:   uuid.NewString(),
+		Content:   content,
+		Author_ID: author_id,
+		Time:      time.Now().UTC(),
+		Tags:      tags,
+		Public:   privacy,
+		Likes:   0,
+		Original_Author: original_author,
+		Is_Retweet: true,
 	}
 }
 

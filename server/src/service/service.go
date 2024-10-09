@@ -104,6 +104,30 @@ func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpected
 	return &modPost, nil
 }
 
+func (c *Service) RetweetPost(postId string, userID string, token string) (*models.FrontPost, error) {
+	post, err := c.db.GetPostByID(postId, userID)
+
+	if err != nil {
+		return nil, postErrors.TwitsnapNotFound(postId)
+	}
+
+	retweet := models.NewRetweetDBPost(userID, post.Content, post.Tags, post.Public, post.Author_Info.Author_ID)
+
+	newRetweet, err := c.db.AddNewPost(retweet)
+
+	if err != nil {
+		return nil, postErrors.DatabaseError(err.Error())
+	}
+
+	newRetweet, err = addAuthorInfoToPost(newRetweet, token)
+
+	if err != nil {
+		return nil, postErrors.UserInfoError(err.Error())
+	}
+
+	return &newRetweet, nil
+}
+
 func (c *Service) FetchAllPosts(limitConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
 
 	posts, hasMore, err := c.db.GetAllPosts(limitConfig, database.ADMIN)

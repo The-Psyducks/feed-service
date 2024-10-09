@@ -15,6 +15,8 @@ const (
 	LIKES_FIELD = "likes"
 	PUBLIC_FIELD = "public"
 	LIKERS_FIELD = "likers"
+	ORIGINAL_AUTHOR_FIELD = "original_author"
+	IS_RETWEET_FIELD = "is_retweet"
 
 	ADMIN = "admin"
 )
