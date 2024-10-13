@@ -14,36 +14,43 @@ type DBPost struct {
 	Public   bool    `bson:"public"`
 	Tags     []string  `bson:"tags"`
 	Likes   int  `bson:"likes"`
-	Original_Author string `bson:"original_author"`
 	Is_Retweet bool `bson:"is_retweet"`
+	OriginalPostID string `bson:"original_post_id"`
+	RetweetAuthorID string `bson:"retweet_author"`
+	MediaURL string `bson:"media_url"`
 }
 
 
-func NewDBPost(author_id string, content string, tags []string, privacy bool) DBPost {
+func NewDBPost(author_id string, content string, tags []string, privacy bool, mediaUrl string) DBPost {
+	postID := uuid.NewString()
 	return DBPost{
-		Post_ID:   uuid.NewString(),
+		Post_ID:   postID,
 		Content:   content,
 		Author_ID: author_id,
 		Time:      time.Now().UTC(),
 		Tags:      tags,
 		Public:   privacy,
 		Likes:   0,
-		Original_Author: author_id,
+		OriginalPostID: postID,
+		RetweetAuthorID: author_id,
 		Is_Retweet: false,
+		MediaURL: mediaUrl,
 	}
 }
 
-func NewRetweetDBPost(author_id string, content string, tags []string, privacy bool, original_author string) DBPost {
+func NewRetweetDBPost(post FrontPost, author_id string) DBPost {
 	return DBPost{
 		Post_ID:   uuid.NewString(),
-		Content:   content,
-		Author_ID: author_id,
+		Content:   post.Content,
+		Author_ID: post.Author_Info.Author_ID,
 		Time:      time.Now().UTC(),
-		Tags:      tags,
-		Public:   privacy,
+		Tags:      post.Tags,
+		Public:   post.Public,
 		Likes:   0,
-		Original_Author: original_author,
+		RetweetAuthorID: author_id,
+		OriginalPostID: post.OriginalPostID,
 		Is_Retweet: true,
+		MediaURL: post.MediaURL,
 	}
 }
 
@@ -63,6 +70,11 @@ type FrontPost struct {
 	Tags     []string  `json:"tags"`
 	Likes   int  `json:"likes"`
 	UserLiked  bool  `json:"liked_by_user"`
+
+	Is_Retweet bool `bson:"is_retweet"`
+	OriginalPostID string `bson:"original_post_id"`
+	RetweetAuthor string `bson:"retweet_author"`
+	MediaURL string `bson:"media_url"`
 }
 
 func NewFrontPost(post DBPost, author AuthorInfo, liked bool) FrontPost {
@@ -75,5 +87,10 @@ func NewFrontPost(post DBPost, author AuthorInfo, liked bool) FrontPost {
 		Public:   post.Public,
 		Likes:   post.Likes,
 		UserLiked:  liked,
+		MediaURL: post.MediaURL,
+		OriginalPostID: post.OriginalPostID,
+		Is_Retweet: post.Is_Retweet,
+		RetweetAuthor: post.RetweetAuthorID,
 	}
+
 }

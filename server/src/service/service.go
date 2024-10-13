@@ -35,7 +35,7 @@ func (c *Service) CreatePost(newPost *models.PostExpectedFormat, author_id strin
 		return nil, postErrors.TwitsnapTooLong()
 	}
 
-	postNew := models.NewDBPost(author_id, newPost.Content, newPost.Tags, newPost.Public)
+	postNew := models.NewDBPost(author_id, newPost.Content, newPost.Tags, newPost.Public, newPost.MediaURL)
 
 	newPosted, err := c.db.AddNewPost(postNew)
 
@@ -111,7 +111,7 @@ func (c *Service) RetweetPost(postId string, userID string, token string) (*mode
 		return nil, postErrors.TwitsnapNotFound(postId)
 	}
 
-	retweet := models.NewRetweetDBPost(userID, post.Content, post.Tags, post.Public, post.Author_Info.Author_ID)
+	retweet := models.NewRetweetDBPost(post, userID)
 
 	newRetweet, err := c.db.AddNewPost(retweet)
 
