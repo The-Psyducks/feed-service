@@ -282,7 +282,7 @@ func (d *AppDatabase) GetUserHashtags(interests []string, following []string, as
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	if len(interests) == 0 {
-		return []models.FrontPost{}, false, postErrors.NoTagsFound()
+		return []models.FrontPost{}, false, nil
 	}
 
 	parsedTime, err := time.Parse(time.RFC3339, limitConfig.FromTime)

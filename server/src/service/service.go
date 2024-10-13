@@ -165,6 +165,10 @@ func (c *Service) fetchFollowingFeed(limitConfig models.LimitConfig, userID stri
 		return []models.FrontPost{}, false, err
 	}
 
+	if len(posts) == 0 {
+		return []models.FrontPost{}, false, nil
+	}
+
 	posts, err = addAuthorInfoToPosts(posts, token)
 	return posts, hasMore, err
 }
@@ -188,6 +192,10 @@ func (c *Service) fetchForyouFeed(limitConfig models.LimitConfig, userID string,
 		return []models.FrontPost{}, false, err
 	}
 
+	if len(posts) == 0 {
+		return []models.FrontPost{}, false, nil
+	}
+
 	posts, err = addAuthorInfoToPosts(posts, token)
 	return posts, hasMore, err
 }
@@ -207,6 +215,11 @@ func (c *Service) fetchForyouSingle(limitConfig models.LimitConfig, wantedUserID
 	if err != nil {
 		return []models.FrontPost{}, false, err
 	}
+
+	if len(posts) == 0 {
+		return []models.FrontPost{}, false, nil
+	}
+
 	posts, err = addAuthorInfoToPosts(posts, token)
 	return posts, hasMore, err
 }
@@ -225,7 +238,7 @@ func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models
 	}
 
 	if len(posts) == 0 {
-		return []models.FrontPost{}, false, postErrors.NoTagsFound()
+		return []models.FrontPost{}, false, nil
 	}
 
 	posts, err = addAuthorInfoToPosts(posts, token)
@@ -245,8 +258,9 @@ func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig, user
 	}
 
 	if len(posts) == 0 {
-		return []models.FrontPost{}, false, postErrors.NoWordssFound()
+		return []models.FrontPost{}, false, nil
 	}
+
 
 	posts, err = addAuthorInfoToPosts(posts, token)
 
