@@ -11,6 +11,8 @@ type Database interface {
 
 	DeletePost(postID string) error
 
+	AddNewRetweet(newRetweet models.DBPost) (models.FrontPost, error)
+
 	DeleteRetweet(postID string, userID string) error
 
 	EditPost(postID string, editInfo models.EditPostExpectedFormat, askerID string) (models.FrontPost, error)

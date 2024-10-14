@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"log"
+	// "log"
 	postErrors "server/src/all_errors"
 	"server/src/database"
 	"server/src/models"
@@ -113,7 +113,7 @@ func (c *Service) RetweetPost(postId string, userID string, token string) (*mode
 
 	retweet := models.NewRetweetDBPost(post, userID)
 
-	newRetweet, err := c.db.AddNewPost(retweet)
+	newRetweet, err := c.db.AddNewRetweet(retweet)
 
 	if err != nil {
 		return nil, postErrors.DatabaseError(err.Error())
@@ -168,7 +168,7 @@ func (c *Service) fetchFollowingFeed(limitConfig models.LimitConfig, userID stri
 	if err != nil {
 		return []models.FrontPost{}, false, err
 	}
-	log.Println("following: ", following)
+	// log.Println("following: ", following)
 	posts, hasMore, err := c.db.GetUserFeedFollowing(following, userID, limitConfig)
 
 	if err != nil {
@@ -190,7 +190,7 @@ func (c *Service) fetchForyouFeed(limitConfig models.LimitConfig, userID string,
 		return []models.FrontPost{}, false, err
 	}
 
-	log.Println("interests: ", interests)
+	// log.Println("interests: ", interests)
 
 	following, err := getUserFollowingWp(userID, limitConfig, token)
 	if err != nil {

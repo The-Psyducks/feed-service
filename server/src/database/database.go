@@ -28,20 +28,41 @@ func (d *AppDatabase) AddNewPost(newPost models.DBPost) (models.FrontPost, error
 
 	frontPost := makeDBPostIntoFrontPost(newPost, false, false)
 
-	if newPost.IsRetweet {
-		filter := bson.M{POST_ID_FIELD: newPost.OriginalPostID}
-		update := bson.M{"$inc": bson.M{RETWEET_FIELD: 1}}
+	return frontPost, err
+}
 
-		_, err := postCollection.UpdateOne(context.Background(), filter, update)
+func (d *AppDatabase) AddNewRetweet(newRetweet models.DBPost) (models.FrontPost, error) {
+	postCollection := d.db.Collection(FEED_COLLECTION)
+	_, err := postCollection.InsertOne(context.Background(), newRetweet)
 
-		if err != nil {
-			log.Println(err)
-		}
-
-		frontPost.UserRetweet = true
+	if err != nil {
+		log.Println(err)
+		return models.FrontPost{}, err
 	}
 
-	return frontPost, err
+	retweetCollection := d.db.Collection(RETWEET_COLLECTION)
+
+	filter_original := bson.M{POST_ID_FIELD: newRetweet.OriginalPostID}
+	update := bson.M{"$inc": bson.M{RETWEET_FIELD: 1}}
+
+	retweeter := bson.M{"$addToSet": bson.M{RETWEETERS_FIELD: newRetweet.RetweetAuthorID}}
+
+	_, err = postCollection.UpdateOne(context.Background(), filter_original, update)
+	if err != nil {
+		log.Println(err)
+		return models.FrontPost{}, err
+	}
+
+	_, err = retweetCollection.UpdateOne(context.Background(), filter_original, retweeter, options.Update().SetUpsert(true))
+	if err != nil {
+		log.Println(err)
+	}
+
+	liked, err := d.hasLiked(newRetweet.OriginalPostID, newRetweet.RetweetAuthorID)
+
+	post := makeDBPostIntoFrontPost(newRetweet, liked, true)
+
+	return post, err
 }
 
 func (d *AppDatabase) GetPost(postID string, askerID string) (models.FrontPost, error) {
@@ -54,7 +75,10 @@ func (d *AppDatabase) GetPost(postID string, askerID string) (models.FrontPost, 
 
 	liked, err := d.hasLiked(postID, askerID)
 
-	retweeted := post.IsRetweet && post.RetweetAuthorID == askerID
+	retweeted, err_3 := d.hasRetweeted(post.OriginalPostID, askerID)
+	if err_3 != nil {
+		return models.FrontPost{}, err_3
+	}
 
 	frontPost := makeDBPostIntoFrontPost(post, liked, retweeted)
 	return frontPost, err
@@ -134,13 +158,18 @@ func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFo
 		return post, err
 	}
 
-	liked, err_3 := d.hasLiked(postID, askerID)
-
-	retweeted := dbPost.IsRetweet && dbPost.RetweetAuthorID == askerID
+	
+	retweeted, err_3 := d.hasRetweeted(postID, askerID)
+	
+	if err_3 != nil {
+		return post, err_3
+	}
+	
+	liked, err_4 := d.hasLiked(dbPost.OriginalPostID, askerID)
 
 	frontPost := makeDBPostIntoFrontPost(dbPost, liked, retweeted)
 
-	return frontPost, err_3
+	return frontPost, err_4
 }
 
 func (d *AppDatabase) updatePostContent(postID string, newContent string) error {
@@ -511,7 +540,10 @@ func (d *AppDatabase) createPostList(cursor *mongo.Cursor, askerID string) ([]mo
 		if err_2 != nil {
 			return nil, err_2
 		}
-		retweeted := dbPost.IsRetweet && dbPost.RetweetAuthorID == askerID
+		retweeted, err_3 := d.hasRetweeted(dbPost.OriginalPostID, askerID)
+		if err_3 != nil {
+			return nil, err_3
+		}
 		frontPost := makeDBPostIntoFrontPost(dbPost, liked, retweeted)
 		posts = append(posts, frontPost)
 	}
@@ -541,6 +573,26 @@ func (d *AppDatabase) hasLiked(postID string, likerID string) (bool, error) {
 	var res bson.M
 
 	err := likesCollection.FindOne(context.Background(), filter).Decode(&res)
+
+	if err != nil && err != mongo.ErrNoDocuments {
+		return false, err
+	}
+
+	return err != mongo.ErrNoDocuments, nil
+}
+
+func (d *AppDatabase) hasRetweeted(postID string, retweeterID string) (bool, error) {
+	if retweeterID == ADMIN {
+		return false, nil
+	}
+
+	retweetCollection := d.db.Collection(RETWEET_COLLECTION)
+
+	filter := bson.M{POST_ID_FIELD: postID, RETWEETERS_FIELD: retweeterID}
+
+	var res bson.M
+
+	err := retweetCollection.FindOne(context.Background(), filter).Decode(&res)
 
 	if err != nil && err != mongo.ErrNoDocuments {
 		return false, err

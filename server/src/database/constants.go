@@ -4,6 +4,7 @@ const (
 	DATABASE_NAME   = "feed"
 	FEED_COLLECTION = "posts"
 	LIKES_COLLECTION = "likes"
+	RETWEET_COLLECTION = "retweets"
 )
 
 const (
@@ -19,6 +20,7 @@ const (
 	IS_RETWEET_FIELD = "is_retweet"
 	ORIGINAL_POST_ID_FIELD = "original_post_id"
 	RETWEET_FIELD = "retweets"
+	RETWEETERS_FIELD = "retweeters"
 	RETWEET_AUTHOR_FIELD = "retweet_author"
 	ADMIN = "admin"
 )

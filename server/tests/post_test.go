@@ -82,8 +82,8 @@ func TestNewPostWithMissInf(t *testing.T) {
 		errFMT = postErrors.TwitSnapImportantFieldsMissing(wrongFmtErr)
 	}
 
-	log.Println("errFMT: ", errFMT)
-	log.Println("err: ", err)
+	// log.Println("errFMT: ", errFMT)
+	// log.Println("err: ", err)
 
 	assert.Equal(t, err, nil)
 	assert.Equal(t, errFMT, result)

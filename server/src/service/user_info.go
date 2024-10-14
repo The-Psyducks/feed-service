@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"log"
+	// "log"
 	"net/http"
 	"os"
 	"server/src/models"
@@ -39,8 +39,8 @@ func getUserFollowing(userID string, following []string, limitConfig models.Limi
 	limit := strconv.Itoa(limitConfig.Limit)
 	skipStr := strconv.Itoa(skip)
 
-	log.Println("userID: ", userID)
-	log.Println("token: ", token)
+	// log.Println("userID: ", userID)
+	// log.Println("token: ", token)
 
 	url := "http://" + os.Getenv("USERS_HOST") + "/users/" + userID + "/following" + "?timestamp=" + limitConfig.FromTime + "&skip=" + skipStr + "&limit=" + limit
 
@@ -226,16 +226,19 @@ func addRetweetAuthorInfoToPost(post models.FrontPost, token string) (models.Fro
 func addAuthorInfoToPosts(posts []models.FrontPost, token string) ([]models.FrontPost, error) {
 	for i, post := range posts {
 		post, err := addAuthorInfoToPost(post, token)
+		if err != nil {
+			return nil, err
+		}
 
 		if post.IsRetweet {
 			post, err = addRetweetAuthorInfoToPost(post, token)
+			if err != nil {
+				return []models.FrontPost{}, errors.New("error getting info on the user, " + err.Error())
+			}
 		} else {
 			post.RetweetAuthor = ""
 		}
 
-		if err != nil {
-			return nil, err
-		}
 		posts[i] = post
 	}
 	return posts, nil
