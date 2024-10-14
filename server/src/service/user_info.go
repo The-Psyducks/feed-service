@@ -193,7 +193,7 @@ func addAuthorInfoToPost(post models.FrontPost, token string) (models.FrontPost,
 	post.Author_Info = authorInfo
 
 	if post.IsRetweet {
-		post, err = addEetweetAuthorInfoToPost(post, token)
+		post, err = addRetweetAuthorInfoToPost(post, token)
 		if err != nil {
 			return models.FrontPost{}, errors.New("error getting info on the user, " + err.Error())
 		}
@@ -204,7 +204,7 @@ func addAuthorInfoToPost(post models.FrontPost, token string) (models.FrontPost,
 	return post, nil
 }
 
-func addEetweetAuthorInfoToPost(post models.FrontPost, token string) (models.FrontPost, error) {
+func addRetweetAuthorInfoToPost(post models.FrontPost, token string) (models.FrontPost, error) {
 	var authorInfo models.AuthorInfo
 	var err error
 
@@ -228,7 +228,7 @@ func addAuthorInfoToPosts(posts []models.FrontPost, token string) ([]models.Fron
 		post, err := addAuthorInfoToPost(post, token)
 
 		if post.IsRetweet {
-			post, err = addEetweetAuthorInfoToPost(post, token)
+			post, err = addRetweetAuthorInfoToPost(post, token)
 		} else {
 			post.RetweetAuthor = ""
 		}

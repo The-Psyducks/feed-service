@@ -118,6 +118,18 @@ func (c *PostController) NewPostRetweet(context *gin.Context) {
 }
 
 func (c *PostController) DeleteRetweet(context *gin.Context) {
+
+	postID := context.Param("id")
+	author_id, _ := context.Get("session_user_id")
+
+	err := c.sv.RemoveRetweet(postID, author_id.(string))
+
+	if err != nil {
+		_ = context.Error(err)
+		return
+	}
+
+	context.JSON(http.StatusNoContent, gin.H{})
 }
 
 func (c *PostController) GetUserFeed(context *gin.Context) {

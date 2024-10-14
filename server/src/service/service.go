@@ -54,7 +54,7 @@ func (c *Service) CreatePost(newPost *models.PostExpectedFormat, author_id strin
 
 func (c *Service) FetchPostByID(postID string, token string, userID string) (*models.FrontPost, error) {
 
-	post, err := c.db.GetPostByID(postID, userID)
+	post, err := c.db.GetPost(postID, userID)
 
 	if err != nil {
 		return nil, postErrors.TwitsnapNotFound(postID)
@@ -70,7 +70,7 @@ func (c *Service) FetchPostByID(postID string, token string, userID string) (*mo
 }
 
 func (c *Service) RemovePostByID(postID string) error {
-	err := c.db.DeletePostByID(postID)
+	err := c.db.DeletePost(postID)
 
 	if err != nil {
 		return postErrors.TwitsnapNotFound(postID)
@@ -105,7 +105,7 @@ func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpected
 }
 
 func (c *Service) RetweetPost(postId string, userID string, token string) (*models.FrontPost, error) {
-	post, err := c.db.GetPostByID(postId, userID)
+	post, err := c.db.GetPost(postId, userID)
 
 	if err != nil {
 		return nil, postErrors.TwitsnapNotFound(postId)
@@ -126,6 +126,16 @@ func (c *Service) RetweetPost(postId string, userID string, token string) (*mode
 	}
 
 	return &newRetweet, nil
+}
+
+func (c *Service) RemoveRetweet(postId string, userID string) error {
+	err := c.db.DeleteRetweet(postId, userID)
+
+	if err != nil {
+		return postErrors.TwitsnapNotFound(postId)
+	}
+
+	return nil
 }
 
 func (c *Service) FetchAllPosts(limitConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
@@ -260,7 +270,6 @@ func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig, user
 	if len(posts) == 0 {
 		return []models.FrontPost{}, false, nil
 	}
-
 
 	posts, err = addAuthorInfoToPosts(posts, token)
 

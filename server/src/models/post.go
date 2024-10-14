@@ -73,14 +73,14 @@ type FrontPost struct {
 	Likes       int        `json:"likes"`
 	Retweets    int        `json:"retweets"`
 	UserLiked   bool       `json:"liked_by_user"`
-
+	UserRetweet bool       `json:"retweeted_by_user"`
 	IsRetweet      bool   `bson:"is_retweet"`
 	OriginalPostID string `bson:"original_post_id"`
 	RetweetAuthor  string `bson:"retweet_author"`
 	MediaURL       string `bson:"media_url"`
 }
 
-func NewFrontPost(post DBPost, author AuthorInfo, liked bool) FrontPost {
+func NewFrontPost(post DBPost, author AuthorInfo, liked bool, retweeted bool) FrontPost {
 	return FrontPost{
 		Post_ID:        post.Post_ID,
 		Content:        post.Content,
@@ -91,6 +91,7 @@ func NewFrontPost(post DBPost, author AuthorInfo, liked bool) FrontPost {
 		Likes:          post.Likes,
 		Retweets:       post.Retweets,
 		UserLiked:      liked,
+		UserRetweet:    retweeted,
 		MediaURL:       post.MediaURL,
 		OriginalPostID: post.OriginalPostID,
 		IsRetweet:      post.IsRetweet,
