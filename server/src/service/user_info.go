@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"log"
+	// "log"
 	"net/http"
 	"os"
 	"server/src/models"
@@ -12,14 +12,14 @@ import (
 )
 
 const (
-	TEST_USER_ONE = "1"
-	TEST_USER_TWO = "2"
+	TEST_USER_ONE   = "1"
+	TEST_USER_TWO   = "2"
 	TEST_USER_THREE = "3"
 
 	INITIAL_SKIP = 0
 
-	TEST_TAG_ONE = "tag1"
-	TEST_TAG_TWO = "tag2"
+	TEST_TAG_ONE   = "tag1"
+	TEST_TAG_TWO   = "tag2"
 	TEST_TAG_THREE = "tag3"
 
 	TEST_NOT_FOLLOWING_ID = "4"
@@ -29,8 +29,8 @@ func getUserFollowingWp(userID string, limitConfig models.LimitConfig, token str
 	if os.Getenv("ENVIROMENT") == "test" {
 		return []string{TEST_USER_ONE, TEST_USER_TWO, TEST_USER_THREE}, nil
 	} else {
-		
-		return getUserFollowing(userID, []string{}, limitConfig, INITIAL_SKIP , token)
+
+		return getUserFollowing(userID, []string{}, limitConfig, INITIAL_SKIP, token)
 	}
 }
 
@@ -39,8 +39,8 @@ func getUserFollowing(userID string, following []string, limitConfig models.Limi
 	limit := strconv.Itoa(limitConfig.Limit)
 	skipStr := strconv.Itoa(skip)
 
-	log.Println("userID: ", userID)
-	log.Println("token: ", token)
+	// log.Println("userID: ", userID)
+	// log.Println("token: ", token)
 
 	url := "http://" + os.Getenv("USERS_HOST") + "/users/" + userID + "/following" + "?timestamp=" + limitConfig.FromTime + "&skip=" + skipStr + "&limit=" + limit
 
@@ -83,7 +83,7 @@ func getUserFollowing(userID string, following []string, limitConfig models.Limi
 
 		newLimit := models.NewLimitConfig(limitConfig.FromTime, limit, strconv.Itoa(user.Pagination.Next_Offset+limitConfig.Skip))
 
-		return getUserFollowing(userID, following, newLimit, skip + limitConfig.Skip, token)
+		return getUserFollowing(userID, following, newLimit, skip+limitConfig.Skip, token)
 	}
 
 	return following, nil
@@ -163,7 +163,7 @@ func getUsersInterests(userID string, token string) ([]string, error) {
 	}
 
 	user := struct {
-		Following bool                               `json:"following"`
+		Following bool                                `json:"following"`
 		Profile   models.PrivateProfileExpectedFormat `json:"profile"`
 	}{}
 	err = json.Unmarshal(body, &user)
@@ -175,7 +175,6 @@ func getUsersInterests(userID string, token string) ([]string, error) {
 	return user.Profile.Interests, nil
 }
 
-
 func addAuthorInfoToPost(post models.FrontPost, token string) (models.FrontPost, error) {
 
 	var authorInfo models.AuthorInfo
@@ -184,7 +183,6 @@ func addAuthorInfoToPost(post models.FrontPost, token string) (models.FrontPost,
 	if os.Getenv("ENVIROMENT") == "test" {
 		authorInfo, err = getUserDataForTests(post)
 	} else {
-		
 		authorInfo, err = getUserData(post.Author_Info.Author_ID, token)
 	}
 
@@ -194,16 +192,53 @@ func addAuthorInfoToPost(post models.FrontPost, token string) (models.FrontPost,
 
 	post.Author_Info = authorInfo
 
+	if post.IsRetweet {
+		post, err = addRetweetAuthorInfoToPost(post, token)
+		if err != nil {
+			return models.FrontPost{}, errors.New("error getting info on the user, " + err.Error())
+		}
+	} else {
+		post.RetweetAuthor = ""
+	}
+
+	return post, nil
+}
+
+func addRetweetAuthorInfoToPost(post models.FrontPost, token string) (models.FrontPost, error) {
+	var authorInfo models.AuthorInfo
+	var err error
+
+	if os.Getenv("ENVIROMENT") == "test" {
+		authorInfo, err = getUserDataForTests(post)
+	} else {
+		authorInfo, err = getUserData(post.RetweetAuthor, token)
+	}
+
+	if err != nil {
+		return models.FrontPost{}, errors.New("error getting info on the user, " + err.Error())
+	}
+
+	post.RetweetAuthor = authorInfo.Username
+
 	return post, nil
 }
 
 func addAuthorInfoToPosts(posts []models.FrontPost, token string) ([]models.FrontPost, error) {
 	for i, post := range posts {
 		post, err := addAuthorInfoToPost(post, token)
-
 		if err != nil {
 			return nil, err
 		}
+
+		if post.IsRetweet {
+			post, err = addRetweetAuthorInfoToPost(post, token)
+			if err != nil {
+				return []models.FrontPost{}, errors.New("error getting info on the user, " + err.Error())
+			}
+		} else {
+			post.RetweetAuthor = ""
+		}
+
 		posts[i] = post
 	}
 	return posts, nil

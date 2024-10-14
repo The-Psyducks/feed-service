@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"log"
+	// "log"
 	postErrors "server/src/all_errors"
 	"server/src/database"
 	"server/src/models"
@@ -35,7 +35,7 @@ func (c *Service) CreatePost(newPost *models.PostExpectedFormat, author_id strin
 		return nil, postErrors.TwitsnapTooLong()
 	}
 
-	postNew := models.NewDBPost(author_id, newPost.Content, newPost.Tags, newPost.Public)
+	postNew := models.NewDBPost(author_id, newPost.Content, newPost.Tags, newPost.Public, newPost.MediaURL)
 
 	newPosted, err := c.db.AddNewPost(postNew)
 
@@ -54,7 +54,7 @@ func (c *Service) CreatePost(newPost *models.PostExpectedFormat, author_id strin
 
 func (c *Service) FetchPostByID(postID string, token string, userID string) (*models.FrontPost, error) {
 
-	post, err := c.db.GetPostByID(postID, userID)
+	post, err := c.db.GetPost(postID, userID)
 
 	if err != nil {
 		return nil, postErrors.TwitsnapNotFound(postID)
@@ -70,7 +70,7 @@ func (c *Service) FetchPostByID(postID string, token string, userID string) (*mo
 }
 
 func (c *Service) RemovePostByID(postID string) error {
-	err := c.db.DeletePostByID(postID)
+	err := c.db.DeletePost(postID)
 
 	if err != nil {
 		return postErrors.TwitsnapNotFound(postID)
@@ -104,6 +104,40 @@ func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpected
 	return &modPost, nil
 }
 
+func (c *Service) RetweetPost(postId string, userID string, token string) (*models.FrontPost, error) {
+	post, err := c.db.GetPost(postId, userID)
+
+	if err != nil {
+		return nil, postErrors.TwitsnapNotFound(postId)
+	}
+
+	retweet := models.NewRetweetDBPost(post, userID)
+
+	newRetweet, err := c.db.AddNewRetweet(retweet)
+
+	if err != nil {
+		return nil, postErrors.DatabaseError(err.Error())
+	}
+
+	newRetweet, err = addAuthorInfoToPost(newRetweet, token)
+
+	if err != nil {
+		return nil, postErrors.UserInfoError(err.Error())
+	}
+
+	return &newRetweet, nil
+}
+
+func (c *Service) RemoveRetweet(postId string, userID string) error {
+	err := c.db.DeleteRetweet(postId, userID)
+
+	if err != nil {
+		return postErrors.TwitsnapNotFound(postId)
+	}
+
+	return nil
+}
+
 func (c *Service) FetchAllPosts(limitConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
 
 	posts, hasMore, err := c.db.GetAllPosts(limitConfig, database.ADMIN)
@@ -134,11 +168,15 @@ func (c *Service) fetchFollowingFeed(limitConfig models.LimitConfig, userID stri
 	if err != nil {
 		return []models.FrontPost{}, false, err
 	}
-	log.Println("following: ", following)
+	// log.Println("following: ", following)
 	posts, hasMore, err := c.db.GetUserFeedFollowing(following, userID, limitConfig)
 
 	if err != nil {
 		return []models.FrontPost{}, false, err
+	}
+
+	if len(posts) == 0 {
+		return []models.FrontPost{}, false, nil
 	}
 
 	posts, err = addAuthorInfoToPosts(posts, token)
@@ -152,7 +190,7 @@ func (c *Service) fetchForyouFeed(limitConfig models.LimitConfig, userID string,
 		return []models.FrontPost{}, false, err
 	}
 
-	log.Println("interests: ", interests)
+	// log.Println("interests: ", interests)
 
 	following, err := getUserFollowingWp(userID, limitConfig, token)
 	if err != nil {
@@ -162,6 +200,10 @@ func (c *Service) fetchForyouFeed(limitConfig models.LimitConfig, userID string,
 
 	if err != nil {
 		return []models.FrontPost{}, false, err
+	}
+
+	if len(posts) == 0 {
+		return []models.FrontPost{}, false, nil
 	}
 
 	posts, err = addAuthorInfoToPosts(posts, token)
@@ -183,6 +225,11 @@ func (c *Service) fetchForyouSingle(limitConfig models.LimitConfig, wantedUserID
 	if err != nil {
 		return []models.FrontPost{}, false, err
 	}
+
+	if len(posts) == 0 {
+		return []models.FrontPost{}, false, nil
+	}
+
 	posts, err = addAuthorInfoToPosts(posts, token)
 	return posts, hasMore, err
 }
@@ -201,7 +248,7 @@ func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models
 	}
 
 	if len(posts) == 0 {
-		return []models.FrontPost{}, false, postErrors.NoTagsFound()
+		return []models.FrontPost{}, false, nil
 	}
 
 	posts, err = addAuthorInfoToPosts(posts, token)
@@ -221,7 +268,7 @@ func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig, user
 	}
 
 	if len(posts) == 0 {
-		return []models.FrontPost{}, false, postErrors.NoWordssFound()
+		return []models.FrontPost{}, false, nil
 	}
 
 	posts, err = addAuthorInfoToPosts(posts, token)
