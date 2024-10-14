@@ -17,6 +17,7 @@ const (
 	LIKERS_FIELD = "likers"
 	ORIGINAL_AUTHOR_FIELD = "original_author"
 	IS_RETWEET_FIELD = "is_retweet"
-
+	ORIGINAL_POST_ID_FIELD = "original_post_id"
+	RETWEET_FIELD = "retweetS"
 	ADMIN = "admin"
 )

@@ -27,6 +27,18 @@ func (d *AppDatabase) AddNewPost(newPost models.DBPost) (models.FrontPost, error
 	_, err := postCollection.InsertOne(context.Background(), newPost)
 
 	frontPost := makeDBPostIntoFrontPost(newPost, false)
+
+	if newPost.IsRetweet {
+		filter := bson.M{POST_ID_FIELD: newPost.OriginalPostID}
+		update := bson.M{"$inc": bson.M{RETWEET_FIELD: 1}}
+
+		_, err := postCollection.UpdateOne(context.Background(), filter, update)
+
+		if err != nil {
+			log.Println(err)
+		}
+	}
+
 	return frontPost, err
 }
 
@@ -51,12 +63,20 @@ func (d *AppDatabase) DeletePostByID(postID string) error {
 	filter := bson.M{POST_ID_FIELD: postID}
 
 	result, err := postCollection.DeleteOne(context.Background(), filter)
+
 	if err != nil {
 		return err
 	}
 
 	if result.DeletedCount == 0 {
 		return postErrors.ErrTwitsnapNotFound
+	}
+
+	filter_retweet := bson.M{ORIGINAL_POST_ID_FIELD: postID}
+	_, err = postCollection.DeleteMany(context.Background(), filter_retweet)
+
+	if err != nil {
+		return err
 	}
 
 	_, err = likesCollection.DeleteOne(context.Background(), filter)
@@ -160,7 +180,7 @@ func (d *AppDatabase) GetAllPosts(limitConfig models.LimitConfig, askerID string
 
 	hasMore := len(posts) > limitConfig.Limit
 
-	if hasMore{
+	if hasMore {
 		posts = posts[:len(posts)-1]
 	}
 
@@ -193,7 +213,7 @@ func (d *AppDatabase) GetUserFeedFollowing(following []string, askerID string, l
 
 	hasMore := len(posts) > limitConfig.Limit
 
-	if hasMore{
+	if hasMore {
 		posts = posts[:len(posts)-1]
 	}
 
@@ -212,11 +232,10 @@ func (d *AppDatabase) GetUserFeedInterests(interests []string, following []strin
 		log.Println(err)
 	}
 
-
 	filter := bson.M{TAGS_FIELD: bson.M{"$in": interests}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
 		{PUBLIC_FIELD: true},
 		{PUBLIC_FIELD: false, AUTHOR_ID_FIELD: bson.M{"$in": following}},
-	},}
+	}}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
 		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
@@ -234,7 +253,7 @@ func (d *AppDatabase) GetUserFeedInterests(interests []string, following []strin
 
 	hasMore := len(posts) > limitConfig.Limit
 
-	if hasMore{
+	if hasMore {
 		posts = posts[:len(posts)-1]
 	}
 
@@ -253,7 +272,7 @@ func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitC
 	filter := bson.M{AUTHOR_ID_FIELD: userId, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
 		{PUBLIC_FIELD: true},
 		{PUBLIC_FIELD: false, AUTHOR_ID_FIELD: bson.M{"$in": following}},
-	},}
+	}}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
 		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
@@ -271,7 +290,7 @@ func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitC
 
 	hasMore := len(posts) > limitConfig.Limit
 
-	if hasMore{
+	if hasMore {
 		posts = posts[:len(posts)-1]
 	}
 
@@ -294,7 +313,7 @@ func (d *AppDatabase) GetUserHashtags(interests []string, following []string, as
 	filter := bson.M{TAGS_FIELD: bson.M{"$all": interests}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
 		{PUBLIC_FIELD: true},
 		{PUBLIC_FIELD: false, AUTHOR_ID_FIELD: bson.M{"$in": following}},
-	},}
+	}}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
 		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
@@ -312,7 +331,7 @@ func (d *AppDatabase) GetUserHashtags(interests []string, following []string, as
 
 	hasMore := len(posts) > limitConfig.Limit
 
-	if hasMore{
+	if hasMore {
 		posts = posts[:len(posts)-1]
 	}
 
@@ -360,7 +379,7 @@ func (d *AppDatabase) WordSearchPosts(words string, following []string, askerID 
 
 	hasMore := len(posts) > limitConfig.Limit
 
-	if hasMore{
+	if hasMore {
 		posts = posts[:len(posts)-1]
 	}
 
@@ -440,7 +459,7 @@ func (d *AppDatabase) createPostList(cursor *mongo.Cursor, askerID string) ([]mo
 	for cursor.Next(context.Background()) {
 		var dbPost models.DBPost
 		err = cursor.Decode(&dbPost)
-		if err != nil{
+		if err != nil {
 			return nil, err
 		}
 		liked, err_2 := d.hasLiked(dbPost.Post_ID, askerID)

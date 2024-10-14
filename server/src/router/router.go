@@ -18,6 +18,8 @@ func CreateRouter(db database.Database) *gin.Engine {
 	r.POST("/twitsnap", postController.NewPost)
 	
 	r.POST("/twitsnap/retweet/:id", postController.NewPostRetweet)
+
+	r.DELETE("/twitsnap/retweet/:id", postController.DeleteRetweet)
 	
 	r.PUT("/twitsnap/edit/:id", postController.UpdatePostByID)
 

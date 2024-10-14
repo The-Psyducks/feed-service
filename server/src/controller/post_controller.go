@@ -117,6 +117,9 @@ func (c *PostController) NewPostRetweet(context *gin.Context) {
 	context.JSON(http.StatusCreated, newRetweet)
 }
 
+func (c *PostController) DeleteRetweet(context *gin.Context) {
+}
+
 func (c *PostController) GetUserFeed(context *gin.Context) {
 	token, _ := context.Get("tokenString")
 	author_id, _ := context.Get("session_user_id")
