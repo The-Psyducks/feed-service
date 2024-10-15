@@ -87,6 +87,7 @@ func (d *AppDatabase) GetPost(postID string, askerID string) (models.FrontPost, 
 func (d *AppDatabase) DeletePost(postID string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	likesCollection := d.db.Collection(LIKES_COLLECTION)
+	retweetCollection := d.db.Collection(RETWEET_COLLECTION)
 
 	filter := bson.M{POST_ID_FIELD: postID}
 
@@ -109,13 +110,22 @@ func (d *AppDatabase) DeletePost(postID string) error {
 
 	_, err = likesCollection.DeleteOne(context.Background(), filter)
 
+	if err != nil {
+		return err
+	}
+
+	_, err = retweetCollection.DeleteOne(context.Background(), filter)
+
 	return err
 }
 
 func (d *AppDatabase) DeleteRetweet(postID string, userID string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
+	retweetCollection := d.db.Collection(RETWEET_COLLECTION)
 
 	filter := bson.M{POST_ID_FIELD: postID}
+	update := bson.M{"$inc": bson.M{RETWEET_FIELD: -1}}
+	retweeter :=  bson.M{"$pull": bson.M{RETWEETERS_FIELD: userID}}
 
 	result, err := postCollection.DeleteOne(context.Background(), filter)
 
@@ -127,12 +137,15 @@ func (d *AppDatabase) DeleteRetweet(postID string, userID string) error {
 		return postErrors.ErrTwitsnapNotFound
 	}
 
-	filter_rt := bson.M{ORIGINAL_POST_ID_FIELD: postID}
-	update := bson.M{"$inc": bson.M{RETWEET_FIELD: -1}}
+	_, err_2 := postCollection.UpdateOne(context.Background(), filter, update)
 
-	_, err_2 := postCollection.UpdateOne(context.Background(), filter_rt, update)
+	if err_2 != nil {
+		return err_2
+	}
 
-	return err_2
+	_, err_3 := retweetCollection.UpdateOne(context.Background(), filter, retweeter)	
+
+	return err_3
 }
 
 func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFormat, askerID string) (models.FrontPost, error) {

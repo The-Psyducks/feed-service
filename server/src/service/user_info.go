@@ -11,19 +11,7 @@ import (
 	"strconv"
 )
 
-const (
-	TEST_USER_ONE   = "1"
-	TEST_USER_TWO   = "2"
-	TEST_USER_THREE = "3"
 
-	INITIAL_SKIP = 0
-
-	TEST_TAG_ONE   = "tag1"
-	TEST_TAG_TWO   = "tag2"
-	TEST_TAG_THREE = "tag3"
-
-	TEST_NOT_FOLLOWING_ID = "4"
-)
 
 func getUserFollowingWp(userID string, limitConfig models.LimitConfig, token string) ([]string, error) {
 	if os.Getenv("ENVIROMENT") == "test" {
@@ -209,7 +197,7 @@ func addRetweetAuthorInfoToPost(post models.FrontPost, token string) (models.Fro
 	var err error
 
 	if os.Getenv("ENVIROMENT") == "test" {
-		authorInfo, err = getUserDataForTests(post)
+		authorInfo, err = getUserDataRetweetForTests(post)
 	} else {
 		authorInfo, err = getUserData(post.RetweetAuthor, token)
 	}
@@ -246,7 +234,15 @@ func addAuthorInfoToPosts(posts []models.FrontPost, token string) ([]models.Fron
 
 func getUserDataForTests(post models.FrontPost) (models.AuthorInfo, error) {
 
-	authorInfo := models.AuthorInfo{Author_ID: post.Author_Info.Author_ID, Username: "username",
+	authorInfo := models.AuthorInfo{Author_ID: post.Author_Info.Author_ID, Username: getTestUsername(post.Author_Info.Author_ID),
+		Alias: "alias", PthotoURL: ""}
+
+	return authorInfo, nil
+}
+
+func getUserDataRetweetForTests(post models.FrontPost) (models.AuthorInfo, error) {
+
+	authorInfo := models.AuthorInfo{Author_ID: post.RetweetAuthor, Username: getTestUsername(post.RetweetAuthor),
 		Alias: "alias", PthotoURL: ""}
 
 	return authorInfo, nil
