@@ -26,11 +26,46 @@ func (d *AppDatabase) AddNewPost(newPost models.DBPost) (models.FrontPost, error
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	_, err := postCollection.InsertOne(context.Background(), newPost)
 
-	frontPost := makeDBPostIntoFrontPost(newPost, false)
+	frontPost := makeDBPostIntoFrontPost(newPost, false, false)
+
 	return frontPost, err
 }
 
-func (d *AppDatabase) GetPostByID(postID string, askerID string) (models.FrontPost, error) {
+func (d *AppDatabase) AddNewRetweet(newRetweet models.DBPost) (models.FrontPost, error) {
+	postCollection := d.db.Collection(FEED_COLLECTION)
+	_, err := postCollection.InsertOne(context.Background(), newRetweet)
+
+	if err != nil {
+		log.Println(err)
+		return models.FrontPost{}, err
+	}
+
+	retweetCollection := d.db.Collection(RETWEET_COLLECTION)
+
+	filter_original := bson.M{POST_ID_FIELD: newRetweet.OriginalPostID}
+	update := bson.M{"$inc": bson.M{RETWEET_FIELD: 1}}
+
+	retweeter := bson.M{"$addToSet": bson.M{RETWEETERS_FIELD: newRetweet.RetweetAuthorID}}
+
+	_, err = postCollection.UpdateOne(context.Background(), filter_original, update)
+	if err != nil {
+		log.Println(err)
+		return models.FrontPost{}, err
+	}
+
+	_, err = retweetCollection.UpdateOne(context.Background(), filter_original, retweeter, options.Update().SetUpsert(true))
+	if err != nil {
+		log.Println(err)
+	}
+
+	liked, err := d.hasLiked(newRetweet.OriginalPostID, newRetweet.RetweetAuthorID)
+
+	post := makeDBPostIntoFrontPost(newRetweet, liked, true)
+
+	return post, err
+}
+
+func (d *AppDatabase) GetPost(postID string, askerID string) (models.FrontPost, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	post, err := d.findPost(postID, postCollection)
 
@@ -40,17 +75,24 @@ func (d *AppDatabase) GetPostByID(postID string, askerID string) (models.FrontPo
 
 	liked, err := d.hasLiked(postID, askerID)
 
-	frontPost := makeDBPostIntoFrontPost(post, liked)
+	retweeted, err_3 := d.hasRetweeted(post.OriginalPostID, askerID)
+	if err_3 != nil {
+		return models.FrontPost{}, err_3
+	}
+
+	frontPost := makeDBPostIntoFrontPost(post, liked, retweeted)
 	return frontPost, err
 }
 
-func (d *AppDatabase) DeletePostByID(postID string) error {
+func (d *AppDatabase) DeletePost(postID string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	likesCollection := d.db.Collection(LIKES_COLLECTION)
+	retweetCollection := d.db.Collection(RETWEET_COLLECTION)
 
 	filter := bson.M{POST_ID_FIELD: postID}
 
 	result, err := postCollection.DeleteOne(context.Background(), filter)
+
 	if err != nil {
 		return err
 	}
@@ -59,9 +101,51 @@ func (d *AppDatabase) DeletePostByID(postID string) error {
 		return postErrors.ErrTwitsnapNotFound
 	}
 
+	filter_retweet := bson.M{ORIGINAL_POST_ID_FIELD: postID}
+	_, err = postCollection.DeleteMany(context.Background(), filter_retweet)
+
+	if err != nil {
+		return err
+	}
+
 	_, err = likesCollection.DeleteOne(context.Background(), filter)
 
+	if err != nil {
+		return err
+	}
+
+	_, err = retweetCollection.DeleteOne(context.Background(), filter)
+
 	return err
+}
+
+func (d *AppDatabase) DeleteRetweet(postID string, userID string) error {
+	postCollection := d.db.Collection(FEED_COLLECTION)
+	retweetCollection := d.db.Collection(RETWEET_COLLECTION)
+
+	filter := bson.M{POST_ID_FIELD: postID}
+	update := bson.M{"$inc": bson.M{RETWEET_FIELD: -1}}
+	retweeter :=  bson.M{"$pull": bson.M{RETWEETERS_FIELD: userID}}
+
+	result, err := postCollection.DeleteOne(context.Background(), filter)
+
+	if err != nil {
+		return err
+	}
+
+	if result.DeletedCount == 0 {
+		return postErrors.ErrTwitsnapNotFound
+	}
+
+	_, err_2 := postCollection.UpdateOne(context.Background(), filter, update)
+
+	if err_2 != nil {
+		return err_2
+	}
+
+	_, err_3 := retweetCollection.UpdateOne(context.Background(), filter, retweeter)	
+
+	return err_3
 }
 
 func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFormat, askerID string) (models.FrontPost, error) {
@@ -87,11 +171,18 @@ func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFo
 		return post, err
 	}
 
-	liked, err_3 := d.hasLiked(postID, askerID)
+	
+	retweeted, err_3 := d.hasRetweeted(postID, askerID)
+	
+	if err_3 != nil {
+		return post, err_3
+	}
+	
+	liked, err_4 := d.hasLiked(dbPost.OriginalPostID, askerID)
 
-	frontPost := makeDBPostIntoFrontPost(dbPost, liked)
+	frontPost := makeDBPostIntoFrontPost(dbPost, liked, retweeted)
 
-	return frontPost, err_3
+	return frontPost, err_4
 }
 
 func (d *AppDatabase) updatePostContent(postID string, newContent string) error {
@@ -160,7 +251,7 @@ func (d *AppDatabase) GetAllPosts(limitConfig models.LimitConfig, askerID string
 
 	hasMore := len(posts) > limitConfig.Limit
 
-	if hasMore{
+	if hasMore {
 		posts = posts[:len(posts)-1]
 	}
 
@@ -176,7 +267,10 @@ func (d *AppDatabase) GetUserFeedFollowing(following []string, askerID string, l
 		log.Println(err)
 	}
 
-	filter := bson.M{AUTHOR_ID_FIELD: bson.M{"$in": following}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}}
+	filter := bson.M{ TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
+		{AUTHOR_ID_FIELD: bson.M{"$in": following}},
+		{RETWEET_AUTHOR_FIELD: bson.M{"$in": following}},
+	}}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
 		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
@@ -193,7 +287,7 @@ func (d *AppDatabase) GetUserFeedFollowing(following []string, askerID string, l
 
 	hasMore := len(posts) > limitConfig.Limit
 
-	if hasMore{
+	if hasMore {
 		posts = posts[:len(posts)-1]
 	}
 
@@ -212,11 +306,11 @@ func (d *AppDatabase) GetUserFeedInterests(interests []string, following []strin
 		log.Println(err)
 	}
 
-
 	filter := bson.M{TAGS_FIELD: bson.M{"$in": interests}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
 		{PUBLIC_FIELD: true},
 		{PUBLIC_FIELD: false, AUTHOR_ID_FIELD: bson.M{"$in": following}},
-	},}
+		{PUBLIC_FIELD: false, RETWEET_AUTHOR_FIELD: bson.M{"$in": following}},
+	}}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
 		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
@@ -234,7 +328,7 @@ func (d *AppDatabase) GetUserFeedInterests(interests []string, following []strin
 
 	hasMore := len(posts) > limitConfig.Limit
 
-	if hasMore{
+	if hasMore {
 		posts = posts[:len(posts)-1]
 	}
 
@@ -247,13 +341,23 @@ func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitC
 
 	if err != nil {
 		log.Println(err)
+		log.Println("User does not follow")
 	}
 
-	log.Println("User does not follow")
-	filter := bson.M{AUTHOR_ID_FIELD: userId, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
-		{PUBLIC_FIELD: true},
-		{PUBLIC_FIELD: false, AUTHOR_ID_FIELD: bson.M{"$in": following}},
-	},}
+	filter := bson.M{
+		TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, 
+		"$and": []bson.M{
+			{"$or": []bson.M{
+				{AUTHOR_ID_FIELD: userId},
+				{RETWEET_AUTHOR_FIELD: userId},
+			}},
+			{"$or": []bson.M{
+				{PUBLIC_FIELD: true},
+				{PUBLIC_FIELD: false, AUTHOR_ID_FIELD: bson.M{"$in": following}},
+				{PUBLIC_FIELD: false, RETWEET_AUTHOR_FIELD: bson.M{"$in": following}},
+			}},
+		},
+	}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
 		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
@@ -271,7 +375,7 @@ func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitC
 
 	hasMore := len(posts) > limitConfig.Limit
 
-	if hasMore{
+	if hasMore {
 		posts = posts[:len(posts)-1]
 	}
 
@@ -282,7 +386,7 @@ func (d *AppDatabase) GetUserHashtags(interests []string, following []string, as
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	if len(interests) == 0 {
-		return []models.FrontPost{}, false, postErrors.NoTagsFound()
+		return []models.FrontPost{}, false, nil
 	}
 
 	parsedTime, err := time.Parse(time.RFC3339, limitConfig.FromTime)
@@ -294,7 +398,8 @@ func (d *AppDatabase) GetUserHashtags(interests []string, following []string, as
 	filter := bson.M{TAGS_FIELD: bson.M{"$all": interests}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
 		{PUBLIC_FIELD: true},
 		{PUBLIC_FIELD: false, AUTHOR_ID_FIELD: bson.M{"$in": following}},
-	},}
+		{PUBLIC_FIELD: false, RETWEET_AUTHOR_FIELD: bson.M{"$in": following}},
+	}}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
 		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
@@ -312,7 +417,7 @@ func (d *AppDatabase) GetUserHashtags(interests []string, following []string, as
 
 	hasMore := len(posts) > limitConfig.Limit
 
-	if hasMore{
+	if hasMore {
 		posts = posts[:len(posts)-1]
 	}
 
@@ -341,6 +446,7 @@ func (d *AppDatabase) WordSearchPosts(words string, following []string, askerID 
 	filter := bson.M{"$and": []bson.M{{"$or": filters}, {TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}}, {"$or": []bson.M{
 		{PUBLIC_FIELD: true},
 		{PUBLIC_FIELD: false, AUTHOR_ID_FIELD: bson.M{"$in": following}},
+		{PUBLIC_FIELD: false, RETWEET_AUTHOR_FIELD: bson.M{"$in": following}},
 	}}}}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
@@ -360,7 +466,7 @@ func (d *AppDatabase) WordSearchPosts(words string, following []string, askerID 
 
 	hasMore := len(posts) > limitConfig.Limit
 
-	if hasMore{
+	if hasMore {
 		posts = posts[:len(posts)-1]
 	}
 
@@ -440,28 +546,32 @@ func (d *AppDatabase) createPostList(cursor *mongo.Cursor, askerID string) ([]mo
 	for cursor.Next(context.Background()) {
 		var dbPost models.DBPost
 		err = cursor.Decode(&dbPost)
-		if err != nil{
+		if err != nil {
 			return nil, err
 		}
 		liked, err_2 := d.hasLiked(dbPost.Post_ID, askerID)
 		if err_2 != nil {
 			return nil, err_2
 		}
-		frontPost := makeDBPostIntoFrontPost(dbPost, liked)
+		retweeted, err_3 := d.hasRetweeted(dbPost.OriginalPostID, askerID)
+		if err_3 != nil {
+			return nil, err_3
+		}
+		frontPost := makeDBPostIntoFrontPost(dbPost, liked, retweeted)
 		posts = append(posts, frontPost)
 	}
 
 	return posts, err
 }
 
-func makeDBPostIntoFrontPost(post models.DBPost, liked bool) models.FrontPost {
+func makeDBPostIntoFrontPost(post models.DBPost, liked bool, retweeted bool) models.FrontPost {
 	author := models.AuthorInfo{
 		Author_ID: post.Author_ID,
 		Username:  "username",
 		Alias:     "alias",
 		PthotoURL: "photourl",
 	}
-	return models.NewFrontPost(post, author, liked)
+	return models.NewFrontPost(post, author, liked, retweeted)
 }
 
 func (d *AppDatabase) hasLiked(postID string, likerID string) (bool, error) {
@@ -476,6 +586,26 @@ func (d *AppDatabase) hasLiked(postID string, likerID string) (bool, error) {
 	var res bson.M
 
 	err := likesCollection.FindOne(context.Background(), filter).Decode(&res)
+
+	if err != nil && err != mongo.ErrNoDocuments {
+		return false, err
+	}
+
+	return err != mongo.ErrNoDocuments, nil
+}
+
+func (d *AppDatabase) hasRetweeted(postID string, retweeterID string) (bool, error) {
+	if retweeterID == ADMIN {
+		return false, nil
+	}
+
+	retweetCollection := d.db.Collection(RETWEET_COLLECTION)
+
+	filter := bson.M{POST_ID_FIELD: postID, RETWEETERS_FIELD: retweeterID}
+
+	var res bson.M
+
+	err := retweetCollection.FindOne(context.Background(), filter).Decode(&res)
 
 	if err != nil && err != mongo.ErrNoDocuments {
 		return false, err

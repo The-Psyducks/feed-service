@@ -7,9 +7,13 @@ import (
 type Database interface {
 	AddNewPost(newPost models.DBPost) (models.FrontPost, error)
 
-	GetPostByID(postID string, askerID string) (models.FrontPost, error)
+	GetPost(postID string, askerID string) (models.FrontPost, error)
 
-	DeletePostByID(postID string) error
+	DeletePost(postID string) error
+
+	AddNewRetweet(newRetweet models.DBPost) (models.FrontPost, error)
+
+	DeleteRetweet(postID string, userID string) error
 
 	EditPost(postID string, editInfo models.EditPostExpectedFormat, askerID string) (models.FrontPost, error)
 
@@ -30,5 +34,4 @@ type Database interface {
 	UnLikeAPost(postID string, likerID string) error
 
 	ClearDB() error
-
 }

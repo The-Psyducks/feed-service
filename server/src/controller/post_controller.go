@@ -102,6 +102,36 @@ func (c *PostController) UpdatePostByID(context *gin.Context) {
 	context.JSON(http.StatusOK, modPost)
 }
 
+func (c *PostController) NewPostRetweet(context *gin.Context) {
+	postID := context.Param("id")
+	token, _ := context.Get("tokenString")
+	author_id, _ := context.Get("session_user_id")
+
+	newRetweet, err := c.sv.RetweetPost(postID, author_id.(string), token.(string))
+
+	if err != nil {
+		_ = context.Error(err)
+		return
+	}
+	
+	context.JSON(http.StatusCreated, newRetweet)
+}
+
+func (c *PostController) DeleteRetweet(context *gin.Context) {
+
+	postID := context.Param("id")
+	author_id, _ := context.Get("session_user_id")
+
+	err := c.sv.RemoveRetweet(postID, author_id.(string))
+
+	if err != nil {
+		_ = context.Error(err)
+		return
+	}
+
+	context.JSON(http.StatusNoContent, gin.H{})
+}
+
 func (c *PostController) GetUserFeed(context *gin.Context) {
 	token, _ := context.Get("tokenString")
 	author_id, _ := context.Get("session_user_id")

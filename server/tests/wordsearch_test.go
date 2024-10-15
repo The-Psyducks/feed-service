@@ -65,7 +65,7 @@ func TestWordsearch(t *testing.T) {
 
 	err_2 := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
 
-	log.Println(result)
+	// log.Println(result)
 
 	assert.Equal(t, err_2, nil)
 	assert.Equal(t, http.StatusOK, feedRecorder.Code)
