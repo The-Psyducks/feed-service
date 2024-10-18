@@ -38,6 +38,9 @@ services:
     environment:
       - MONGO_URI=mongodb://mongo:27017
       - ENVIROMENT=test
+    volumes:
+      - ./coverage:/home/app/coverage
+
     # networks:
     #   - my-network
 
