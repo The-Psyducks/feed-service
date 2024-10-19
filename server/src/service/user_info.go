@@ -218,14 +218,14 @@ func addAuthorInfoToPosts(posts []models.FrontPost, token string) ([]models.Fron
 			return nil, err
 		}
 
-		if post.IsRetweet {
-			post, err = addRetweetAuthorInfoToPost(post, token)
-			if err != nil {
-				return []models.FrontPost{}, errors.New("error getting info on the user, " + err.Error())
-			}
-		} else {
-			post.RetweetAuthor = ""
-		}
+		// if post.IsRetweet {
+		// 	post, err = addRetweetAuthorInfoToPost(post, token)
+		// 	if err != nil {
+		// 		return []models.FrontPost{}, errors.New("error getting info on the user, " + err.Error())
+		// 	}
+		// } else {
+		// 	post.RetweetAuthor = ""
+		// }
 
 		posts[i] = post
 	}

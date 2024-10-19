@@ -159,7 +159,7 @@ func TestRetweetInFeedFollowing(t *testing.T) {
 }
 
 func TestUnRetweetAPost(t *testing.T) {
-	log.Println("TestRetweetAPost")
+	log.Println("TestUnRetweetAPost")
 
 	db := connectToDatabase()
 
@@ -187,7 +187,7 @@ func TestUnRetweetAPost(t *testing.T) {
 	assert.Equal(t, true, retweet_post.UserRetweet)
 	assert.Equal(t, retweet_post.Content, post.Content)
 	assert.Equal(t, retweet_post.Tags, post.Tags)
-	assert.Equal(t, retweet_post.RetweetAuthor, service.TEST_USER_TWO_USERNAME)
+	assert.Equal(t, retweet_post.RetweetAuthor, service.TEST_USER_TWO_USERNAME, "Retweet author should be the retweeter (Retweet)")
 
 	getPostAfterRetweet, _ := http.NewRequest("GET", "/twitsnap/"+ post.Post_ID, nil)
 	addAuthorization(getPostAfterRetweet, tokenRetweeterer)
@@ -205,6 +205,8 @@ func TestUnRetweetAPost(t *testing.T) {
 	assert.Equal(t, http.StatusOK, second.Code)
 	assert.Equal(t, true, result_post.UserRetweet)
 	assert.Equal(t, result_post.Retweets, 1)
+	assert.Equal(t, result_post.Content, post.Content)
+	assert.Equal(t, result_post.Tags, post.Tags)
 
 	unretweetPost, _ := http.NewRequest("DELETE", "/twitsnap/retweet/"+retweet_post.Post_ID, nil)
 	addAuthorization(unretweetPost, tokenRetweeterer)
@@ -213,6 +215,7 @@ func TestUnRetweetAPost(t *testing.T) {
 	r.ServeHTTP(third, unretweetPost)
 
 	assert.Equal(t, http.StatusNoContent, third.Code)
+
 
 	getPostAfterUnRetweet, _ := http.NewRequest("GET", "/twitsnap/"+ post.Post_ID, nil)
 	addAuthorization(getPostAfterUnRetweet, tokenRetweeterer)
