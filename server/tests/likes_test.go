@@ -15,8 +15,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
-
 func TestLikingAPost(t *testing.T) {
 	log.Println("TestLikingAPost")
 
@@ -55,7 +53,7 @@ func TestLikingAPost(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, second.Code)
 	assert.Equal(t, result_post.Likes, 1)
-	assert.Equal(t, result_post.UserLiked, true)
+	assert.Equal(t, result_post.User_Liked, true)
 }
 
 func TestUnlikingAPost(t *testing.T) {
@@ -94,7 +92,7 @@ func TestUnlikingAPost(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, second.Code)
 	assert.Equal(t, result_post.Likes, 1)
-	assert.Equal(t, result_post.UserLiked, true)
+	assert.Equal(t, result_post.User_Liked, true)
 
 	getPostUnlike, _ := http.NewRequest("DELETE", "/twitsnap/like/"+post.Post_ID, nil)
 	addAuthorization(getPostUnlike, tokenLiker)
@@ -118,7 +116,7 @@ func TestUnlikingAPost(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, fourth.Code)
 	assert.Equal(t, result_post_s.Likes, 0)
-	assert.Equal(t, result_post_s.UserLiked, false)
+	assert.Equal(t, result_post_s.User_Liked, false)
 }
 
 func TestSeeLikedTweetInFeedFollowing(t *testing.T) {
@@ -170,9 +168,8 @@ func TestSeeLikedTweetInFeedFollowing(t *testing.T) {
 	assert.Equal(t, 0, result.Pagination.Next_Offset)
 
 	assert.Equal(t, result.Data[2].Likes, 1)
-	assert.Equal(t, result.Data[2].UserLiked, true)
+	assert.Equal(t, result.Data[2].User_Liked, true)
 }
-
 
 func TestUserCanNotLikeTwice(t *testing.T) {
 	log.Println("TestUserCanNotLikeTwice")
@@ -212,7 +209,7 @@ func TestUserCanNotLikeTwice(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, second.Code)
 	assert.Equal(t, result_post.Likes, 1)
-	assert.Equal(t, result_post.UserLiked, true)
+	assert.Equal(t, result_post.User_Liked, true)
 
 	getPost2, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Post_ID, nil)
 	addAuthorization(getPost2, tokenLiker)

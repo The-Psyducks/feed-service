@@ -42,10 +42,10 @@ func (d *AppDatabase) AddNewRetweet(newRetweet models.DBPost) (models.FrontPost,
 
 	retweetCollection := d.db.Collection(RETWEET_COLLECTION)
 
-	filter_original := bson.M{POST_ID_FIELD: newRetweet.OriginalPostID}
+	filter_original := bson.M{POST_ID_FIELD: newRetweet.Original_Post_ID}
 	update := bson.M{"$inc": bson.M{RETWEET_FIELD: 1}}
 
-	retweeter := bson.M{"$addToSet": bson.M{RETWEETERS_FIELD: newRetweet.RetweetAuthorID}}
+	retweeter := bson.M{"$addToSet": bson.M{RETWEETERS_FIELD: newRetweet.Retweet_Author_ID}}
 
 	_, err = postCollection.UpdateOne(context.Background(), filter_original, update)
 	if err != nil {
@@ -58,7 +58,7 @@ func (d *AppDatabase) AddNewRetweet(newRetweet models.DBPost) (models.FrontPost,
 		log.Println(err)
 	}
 
-	liked, err := d.hasLiked(newRetweet.OriginalPostID, newRetweet.RetweetAuthorID)
+	liked, err := d.hasLiked(newRetweet.Original_Post_ID, newRetweet.Retweet_Author_ID)
 
 	post := makeDBPostIntoFrontPost(newRetweet, liked, true)
 
@@ -75,7 +75,7 @@ func (d *AppDatabase) GetPost(postID string, askerID string) (models.FrontPost, 
 
 	liked, err := d.hasLiked(postID, askerID)
 
-	retweeted, err_3 := d.hasRetweeted(post.OriginalPostID, askerID)
+	retweeted, err_3 := d.hasRetweeted(post.Original_Post_ID, askerID)
 	if err_3 != nil {
 		return models.FrontPost{}, err_3
 	}
@@ -125,7 +125,7 @@ func (d *AppDatabase) DeleteRetweet(postID string, userID string) error {
 
 	filter := bson.M{POST_ID_FIELD: postID}
 	update := bson.M{"$inc": bson.M{RETWEET_FIELD: -1}}
-	retweeter :=  bson.M{"$pull": bson.M{RETWEETERS_FIELD: userID}}
+	retweeter := bson.M{"$pull": bson.M{RETWEETERS_FIELD: userID}}
 
 	result, err := postCollection.DeleteOne(context.Background(), filter)
 
@@ -143,7 +143,7 @@ func (d *AppDatabase) DeleteRetweet(postID string, userID string) error {
 		return err_2
 	}
 
-	_, err_3 := retweetCollection.UpdateOne(context.Background(), filter, retweeter)	
+	_, err_3 := retweetCollection.UpdateOne(context.Background(), filter, retweeter)
 
 	return err_3
 }
@@ -165,11 +165,11 @@ func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFo
 		return post, err_2
 	}
 
-	// err_3 := d.updatePostPublic(postID, editInfo.Public)
+	err_3 := d.updatePostPublic(postID, editInfo.Public)
 
-	// if err_3 != nil {
-	// 	return post, err_3
-	// }
+	if err_3 != nil {
+		return post, err_3
+	}
 
 	err_4 := d.updatePostMediaURL(postID, editInfo.MediaURL)
 
@@ -183,23 +183,22 @@ func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFo
 		return post, err
 	}
 
-	
 	retweeted, err_5 := d.hasRetweeted(postID, askerID)
-	
+
 	if err_5 != nil {
 		return post, err_5
 	}
-	
-	liked, err_5 := d.hasLiked(dbPost.OriginalPostID, askerID)
+
+	liked, err_5 := d.hasLiked(dbPost.Original_Post_ID, askerID)
 
 	frontPost := makeDBPostIntoFrontPost(dbPost, liked, retweeted)
 
 	return frontPost, err_5
 }
 
-func (d *AppDatabase) updatePostContent(postID string, newContent string) error {
+func (d *AppDatabase) updatePostContent(postID string, newContent *string) error {
 
-	if len(newContent) == 0 {
+	if newContent == nil {
 		return nil
 	}
 
@@ -216,9 +215,9 @@ func (d *AppDatabase) updatePostContent(postID string, newContent string) error 
 	return err
 }
 
-func (d *AppDatabase) updatePostTags(postID string, newTags []string) error {
+func (d *AppDatabase) updatePostTags(postID string, newTags *[]string) error {
 
-	if len(newTags) == 0 {
+	if newTags == nil {
 		return nil
 	}
 
@@ -235,24 +234,32 @@ func (d *AppDatabase) updatePostTags(postID string, newTags []string) error {
 	return err
 }
 
-// func (d *AppDatabase) updatePostPublic(postID string, newPublic bool) error {
-
-// 	postCollection := d.db.Collection(FEED_COLLECTION)
-
-// 	filter := bson.M{POST_ID_FIELD: postID}
-// 	update := bson.M{"$set": bson.M{PUBLIC_FIELD: newPublic}}
-
-// 	_, err := postCollection.UpdateOne(context.Background(), filter, update)
-// 	if err != nil {
-// 		log.Println(err)
-// 	}
-
-// 	return err
-// }
-
-func (d *AppDatabase) updatePostMediaURL(postID string, newMediaURL string) error {
+func (d *AppDatabase) updatePostPublic(postID string, newPublic *bool) error {
 
 	postCollection := d.db.Collection(FEED_COLLECTION)
+
+	if newPublic == nil {
+		return nil
+	}
+
+	filter := bson.M{POST_ID_FIELD: postID}
+	update := bson.M{"$set": bson.M{PUBLIC_FIELD: newPublic}}
+
+	_, err := postCollection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return err
+}
+
+func (d *AppDatabase) updatePostMediaURL(postID string, newMediaURL *string) error {
+
+	postCollection := d.db.Collection(FEED_COLLECTION)
+
+	if newMediaURL == nil {
+		return nil
+	}
 
 	filter := bson.M{POST_ID_FIELD: postID}
 	update := bson.M{"$set": bson.M{MEDIA_URL_FIELD: newMediaURL}}
@@ -310,7 +317,7 @@ func (d *AppDatabase) GetUserFeedFollowing(following []string, askerID string, l
 		log.Println(err)
 	}
 
-	filter := bson.M{ TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
+	filter := bson.M{TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
 		{AUTHOR_ID_FIELD: bson.M{"$in": following}},
 		{RETWEET_AUTHOR_FIELD: bson.M{"$in": following}},
 	}}
@@ -388,7 +395,7 @@ func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitC
 	}
 
 	filter := bson.M{
-		TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, 
+		TIME_FIELD: bson.M{"$lt": parsedTime.UTC()},
 		"$and": []bson.M{
 			{"$or": []bson.M{
 				{AUTHOR_ID_FIELD: userId},
@@ -435,7 +442,7 @@ func (d *AppDatabase) GetUserFeedRetweet(userId string, limitConfig models.Limit
 	}
 
 	filter := bson.M{
-		TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, 
+		TIME_FIELD:       bson.M{"$lt": parsedTime.UTC()},
 		IS_RETWEET_FIELD: true,
 		"$and": []bson.M{
 			{"$or": []bson.M{
@@ -660,7 +667,7 @@ func (d *AppDatabase) createPostList(cursor *mongo.Cursor, askerID string) ([]mo
 		if err_2 != nil {
 			return nil, err_2
 		}
-		retweeted, err_3 := d.hasRetweeted(dbPost.OriginalPostID, askerID)
+		retweeted, err_3 := d.hasRetweeted(dbPost.Original_Post_ID, askerID)
 		if err_3 != nil {
 			return nil, err_3
 		}

@@ -15,7 +15,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
 func TestRetweetAPost(t *testing.T) {
 	log.Println("TestRetweetAPost")
 
@@ -42,12 +41,12 @@ func TestRetweetAPost(t *testing.T) {
 
 	assert.Equal(t, err, nil)
 	assert.Equal(t, http.StatusCreated, first.Code)
-	assert.Equal(t, true, retweet_post.UserRetweet)
+	assert.Equal(t, true, retweet_post.User_Retweet)
 	assert.Equal(t, retweet_post.Content, post.Content)
 	assert.Equal(t, retweet_post.Tags, post.Tags)
-	assert.Equal(t, retweet_post.RetweetAuthor, service.TEST_USER_TWO_USERNAME)
+	assert.Equal(t, retweet_post.Retweet_Author, service.TEST_USER_TWO_USERNAME)
 
-	getPostAfterRetweet, _ := http.NewRequest("GET", "/twitsnap/"+ post.Post_ID, nil)
+	getPostAfterRetweet, _ := http.NewRequest("GET", "/twitsnap/"+post.Post_ID, nil)
 	addAuthorization(getPostAfterRetweet, tokenRetweeterer)
 
 	second := httptest.NewRecorder()
@@ -61,16 +60,15 @@ func TestRetweetAPost(t *testing.T) {
 
 	log.Println(result_post)
 	assert.Equal(t, http.StatusOK, second.Code)
-	assert.Equal(t, true, result_post.UserRetweet)
+	assert.Equal(t, true, result_post.User_Retweet)
 	assert.Equal(t, result_post.Retweets, 1)
 
-
-	getPostRetweeted, _ := http.NewRequest("GET", "/twitsnap/"+ retweet_post.Post_ID, nil)
+	getPostRetweeted, _ := http.NewRequest("GET", "/twitsnap/"+retweet_post.Post_ID, nil)
 	addAuthorization(getPostRetweeted, tokenRetweeterer)
 
 	third := httptest.NewRecorder()
 	r.ServeHTTP(third, getPostRetweeted)
-		
+
 	retweet_result := models.FrontPost{}
 
 	err = json.Unmarshal(third.Body.Bytes(), &retweet_result)
@@ -80,7 +78,7 @@ func TestRetweetAPost(t *testing.T) {
 	assert.Equal(t, err, nil)
 
 	assert.Equal(t, http.StatusOK, third.Code)
-	assert.Equal(t, true, retweet_result.UserRetweet)
+	assert.Equal(t, true, retweet_result.User_Retweet)
 }
 
 func TestRetweetInFeedFollowing(t *testing.T) {
@@ -121,10 +119,10 @@ func TestRetweetInFeedFollowing(t *testing.T) {
 
 	assert.Equal(t, err, nil)
 	assert.Equal(t, http.StatusCreated, first.Code)
-	assert.Equal(t, true, retweet_post.UserRetweet)
+	assert.Equal(t, true, retweet_post.User_Retweet)
 	assert.Equal(t, retweet_post.Content, post1.Content)
 	assert.Equal(t, retweet_post.Tags, post1.Tags)
-	assert.Equal(t, retweet_post.RetweetAuthor, service.TEST_USER_TWO_USERNAME)
+	assert.Equal(t, retweet_post.Retweet_Author, service.TEST_USER_TWO_USERNAME)
 
 	log.Println(retweet_post)
 
@@ -174,7 +172,7 @@ func TestUnRetweetAPost(t *testing.T) {
 
 	retweet_post := retweetAPost(post, username, tokenRetweeterer, r, t)
 
-	getPostAfterRetweet, _ := http.NewRequest("GET", "/twitsnap/"+ post.Post_ID, nil)
+	getPostAfterRetweet, _ := http.NewRequest("GET", "/twitsnap/"+post.Post_ID, nil)
 	addAuthorization(getPostAfterRetweet, tokenRetweeterer)
 
 	second := httptest.NewRecorder()
@@ -188,7 +186,7 @@ func TestUnRetweetAPost(t *testing.T) {
 
 	log.Println(result_post)
 	assert.Equal(t, http.StatusOK, second.Code)
-	assert.Equal(t, true, result_post.UserRetweet)
+	assert.Equal(t, true, result_post.User_Retweet)
 	assert.Equal(t, result_post.Retweets, 1)
 	assert.Equal(t, result_post.Content, post.Content)
 	assert.Equal(t, result_post.Tags, post.Tags)
@@ -201,8 +199,7 @@ func TestUnRetweetAPost(t *testing.T) {
 
 	assert.Equal(t, http.StatusNoContent, third.Code)
 
-
-	getPostAfterUnRetweet, _ := http.NewRequest("GET", "/twitsnap/"+ post.Post_ID, nil)
+	getPostAfterUnRetweet, _ := http.NewRequest("GET", "/twitsnap/"+post.Post_ID, nil)
 	addAuthorization(getPostAfterUnRetweet, tokenRetweeterer)
 
 	fourth := httptest.NewRecorder()
@@ -216,7 +213,7 @@ func TestUnRetweetAPost(t *testing.T) {
 
 	log.Println(result_post)
 	assert.Equal(t, http.StatusOK, fourth.Code)
-	assert.Equal(t, false, result_post_no_retweet.UserRetweet)
+	assert.Equal(t, false, result_post_no_retweet.User_Retweet)
 	assert.Equal(t, result_post_no_retweet.Retweets, 0)
 }
 
