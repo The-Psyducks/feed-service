@@ -625,15 +625,39 @@ func (d *AppDatabase) UnLikeAPost(postID string, likerID string) error {
 	return err
 }
 
-func (d *AppDatabase) findPost(postID string, postCollection *mongo.Collection) (models.DBPost, error) {
-	var post models.DBPost
-	filter := bson.M{POST_ID_FIELD: postID}
-	err := postCollection.FindOne(context.Background(), filter).Decode(&post)
+
+func (d *AppDatabase) AddFavorite(postID string, userID string) error {
+	favoritesCollection := d.db.Collection(FAVORITES_COLLECTION)
+	
+	filter := bson.M{AUTHOR_ID_FIELD: userID}
+	update := bson.M{"$addToSet": bson.M{FAVORITES_FIELD: postID}}
+
+	_, err := favoritesCollection.UpdateOne(context.Background(), filter, update, options.Update().SetUpsert(true))
+	
 	if err != nil {
 		log.Println(err)
-		err = postErrors.ErrTwitsnapNotFound
 	}
-	return post, err
+
+	return err
+}
+
+func (d *AppDatabase) RemoveFavorite(postID string, userID string) error {
+	favoritesCollection := d.db.Collection(FAVORITES_COLLECTION)
+	
+	filter := bson.M{AUTHOR_ID_FIELD: userID}
+	update := bson.M{"$pull": bson.M{FAVORITES_FIELD: postID}}
+	
+	_, err := favoritesCollection.UpdateOne(context.Background(), filter, update)
+	
+	if err != nil {
+		log.Println(err)
+	}
+	
+	return err
+}
+
+func (d *AppDatabase) GetUserFavorites(userID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
+	return nil, false, nil
 }
 
 func (d *AppDatabase) ClearDB() error {
@@ -653,6 +677,18 @@ func (d *AppDatabase) ClearDB() error {
 	return nil
 }
 
+func (d *AppDatabase) findPost(postID string, postCollection *mongo.Collection) (models.DBPost, error) {
+	var post models.DBPost
+	filter := bson.M{POST_ID_FIELD: postID}
+	err := postCollection.FindOne(context.Background(), filter).Decode(&post)
+	if err != nil {
+		log.Println(err)
+		err = postErrors.ErrTwitsnapNotFound
+	}
+	return post, err
+}
+
+
 func (d *AppDatabase) createPostList(cursor *mongo.Cursor, askerID string) ([]models.FrontPost, error) {
 	var posts []models.FrontPost
 	var err error
@@ -671,6 +707,13 @@ func (d *AppDatabase) createPostList(cursor *mongo.Cursor, askerID string) ([]mo
 		if err_3 != nil {
 			return nil, err_3
 		}
+
+		_, err_4 := d.isFavorite(dbPost.Post_ID, askerID)
+
+		if err_4 != nil {
+			return nil, err_4
+		}
+		
 		frontPost := makeDBPostIntoFrontPost(dbPost, liked, retweeted)
 		posts = append(posts, frontPost)
 	}
@@ -720,6 +763,22 @@ func (d *AppDatabase) hasRetweeted(postID string, retweeterID string) (bool, err
 	var res bson.M
 
 	err := retweetCollection.FindOne(context.Background(), filter).Decode(&res)
+
+	if err != nil && err != mongo.ErrNoDocuments {
+		return false, err
+	}
+
+	return err != mongo.ErrNoDocuments, nil
+}
+
+func (d *AppDatabase) isFavorite(postID string, userID string) (bool, error) {
+	favoritesCollection := d.db.Collection(FAVORITES_COLLECTION)
+
+	filter := bson.M{AUTHOR_ID_FIELD: userID, FAVORITES_FIELD: postID}
+
+	var res bson.M
+
+	err := favoritesCollection.FindOne(context.Background(), filter).Decode(&res)
 
 	if err != nil && err != mongo.ErrNoDocuments {
 		return false, err

@@ -112,7 +112,7 @@ func getUserData(userID string, token string) (models.AuthorInfo, error) {
 	}
 
 	authorInfo := models.AuthorInfo{Author_ID: user.Profile.ID, Username: user.Profile.Username,
-		Alias: user.Profile.FisrtName + " " + user.Profile.LastName, PthotoURL: ""}
+		Alias: user.Profile.FisrtName + " " + user.Profile.LastName, PthotoURL: user.Profile.PicturePath}
 
 	return authorInfo, nil
 }
