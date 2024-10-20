@@ -14,6 +14,8 @@ type LikeExpectedFormat struct {
 type EditPostExpectedFormat struct {
 	Content string   `json:"content"`
 	Tags    []string `json:"tags"`
+	// Public 	bool     `json:"public"`
+	MediaURL string `json:"media_url"`
 }
 
 type ReturnPaginatedPosts struct {

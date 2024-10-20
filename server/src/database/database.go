@@ -165,6 +165,18 @@ func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFo
 		return post, err_2
 	}
 
+	// err_3 := d.updatePostPublic(postID, editInfo.Public)
+
+	// if err_3 != nil {
+	// 	return post, err_3
+	// }
+
+	err_4 := d.updatePostMediaURL(postID, editInfo.MediaURL)
+
+	if err_4 != nil {
+		return post, err_4
+	}
+
 	dbPost, err = d.findPost(postID, postCollection)
 
 	if err != nil {
@@ -172,17 +184,17 @@ func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFo
 	}
 
 	
-	retweeted, err_3 := d.hasRetweeted(postID, askerID)
+	retweeted, err_5 := d.hasRetweeted(postID, askerID)
 	
-	if err_3 != nil {
-		return post, err_3
+	if err_5 != nil {
+		return post, err_5
 	}
 	
-	liked, err_4 := d.hasLiked(dbPost.OriginalPostID, askerID)
+	liked, err_5 := d.hasLiked(dbPost.OriginalPostID, askerID)
 
 	frontPost := makeDBPostIntoFrontPost(dbPost, liked, retweeted)
 
-	return frontPost, err_4
+	return frontPost, err_5
 }
 
 func (d *AppDatabase) updatePostContent(postID string, newContent string) error {
@@ -223,6 +235,36 @@ func (d *AppDatabase) updatePostTags(postID string, newTags []string) error {
 	return err
 }
 
+// func (d *AppDatabase) updatePostPublic(postID string, newPublic bool) error {
+
+// 	postCollection := d.db.Collection(FEED_COLLECTION)
+
+// 	filter := bson.M{POST_ID_FIELD: postID}
+// 	update := bson.M{"$set": bson.M{PUBLIC_FIELD: newPublic}}
+
+// 	_, err := postCollection.UpdateOne(context.Background(), filter, update)
+// 	if err != nil {
+// 		log.Println(err)
+// 	}
+
+// 	return err
+// }
+
+func (d *AppDatabase) updatePostMediaURL(postID string, newMediaURL string) error {
+
+	postCollection := d.db.Collection(FEED_COLLECTION)
+
+	filter := bson.M{POST_ID_FIELD: postID}
+	update := bson.M{"$set": bson.M{MEDIA_URL_FIELD: newMediaURL}}
+
+	_, err := postCollection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return err
+}
+
 func (d *AppDatabase) GetAllPosts(limitConfig models.LimitConfig, askerID string) ([]models.FrontPost, bool, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
@@ -239,6 +281,7 @@ func (d *AppDatabase) GetAllPosts(limitConfig models.LimitConfig, askerID string
 
 	if err != nil {
 		log.Println(err)
+		return []models.FrontPost{}, false, postErrors.DatabaseError(err.Error())
 	}
 	defer cursor.Close(context.Background())
 
@@ -246,7 +289,7 @@ func (d *AppDatabase) GetAllPosts(limitConfig models.LimitConfig, askerID string
 
 	if err != nil {
 		log.Println(err)
-		return nil, false, postErrors.DatabaseError(err.Error())
+		return []models.FrontPost{}, false, postErrors.DatabaseError(err.Error())
 	}
 
 	hasMore := len(posts) > limitConfig.Limit
@@ -525,6 +568,12 @@ func (d *AppDatabase) LikeAPost(postID string, likerID string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	likesCollection := d.db.Collection(LIKES_COLLECTION)
 
+	liked, _ := d.hasLiked(postID, likerID)
+
+	if liked {
+		return postErrors.AlreadyLiked(postID)
+	}
+
 	filter := bson.M{POST_ID_FIELD: postID}
 	update := bson.M{"$inc": bson.M{LIKES_FIELD: 1}}
 
@@ -533,15 +582,16 @@ func (d *AppDatabase) LikeAPost(postID string, likerID string) error {
 	_, err := postCollection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
 		log.Println(err)
-		return err
+		return postErrors.TwitsnapNotFound(postID)
 	}
 
 	_, err = likesCollection.UpdateOne(context.Background(), filter, liker, options.Update().SetUpsert(true))
 	if err != nil {
 		log.Println(err)
+		return postErrors.TwitsnapNotFound(postID)
 	}
 
-	return err
+	return nil
 }
 
 func (d *AppDatabase) UnLikeAPost(postID string, likerID string) error {
@@ -581,6 +631,15 @@ func (d *AppDatabase) findPost(postID string, postCollection *mongo.Collection) 
 
 func (d *AppDatabase) ClearDB() error {
 	err := d.db.Collection(FEED_COLLECTION).Drop(context.Background())
+	if err != nil {
+		return postErrors.DatabaseError(err.Error())
+	}
+	err = d.db.Collection(LIKES_COLLECTION).Drop(context.Background())
+	if err != nil {
+		return postErrors.DatabaseError(err.Error())
+	}
+
+	err = d.db.Collection(RETWEET_COLLECTION).Drop(context.Background())
 	if err != nil {
 		return postErrors.DatabaseError(err.Error())
 	}

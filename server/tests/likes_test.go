@@ -31,7 +31,7 @@ func TestLikingAPost(t *testing.T) {
 
 	assert.Equal(t, err, nil)
 
-	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, r, t)
+	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
 
 	getPost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Post_ID, nil)
 	addAuthorization(getPost, tokenLiker)
@@ -70,7 +70,7 @@ func TestUnlikingAPost(t *testing.T) {
 
 	assert.Equal(t, err, nil)
 
-	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, r, t)
+	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
 
 	getPost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Post_ID, nil)
 	addAuthorization(getPost, tokenLiker)
@@ -132,11 +132,11 @@ func TestSeeLikedTweetInFeedFollowing(t *testing.T) {
 	tokenLiker, err := auth.GenerateToken(liker_id, "username", true)
 	assert.Equal(t, err, nil)
 
-	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, r, t)
+	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
 	time.Sleep(1 * time.Second)
-	makeAndAssertPost(service.TEST_USER_THREE, "content", []string{"tag1", "tag2"}, true, r, t)
+	makeAndAssertPost(service.TEST_USER_THREE, "content", []string{"tag1", "tag2"}, true, "", r, t)
 	time.Sleep(1 * time.Second)
-	makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, r, t)
+	makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
 
 	getPost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Post_ID, nil)
 	addAuthorization(getPost, tokenLiker)
@@ -171,4 +171,54 @@ func TestSeeLikedTweetInFeedFollowing(t *testing.T) {
 
 	assert.Equal(t, result.Data[2].Likes, 1)
 	assert.Equal(t, result.Data[2].UserLiked, true)
+}
+
+
+func TestUserCanNotLikeTwice(t *testing.T) {
+	log.Println("TestUserCanNotLikeTwice")
+
+	db := connectToDatabase()
+
+	r := router.CreateRouter(db)
+
+	author_id := service.TEST_USER_ONE
+	liker_id := service.TEST_USER_TWO
+
+	tokenLiker, err := auth.GenerateToken(liker_id, "username", true)
+
+	assert.Equal(t, err, nil)
+
+	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
+
+	getPost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Post_ID, nil)
+	addAuthorization(getPost, tokenLiker)
+
+	first := httptest.NewRecorder()
+	r.ServeHTTP(first, getPost)
+
+	assert.Equal(t, http.StatusNoContent, first.Code)
+
+	getPostLiked, _ := http.NewRequest("GET", "/twitsnap/"+post.Post_ID, nil)
+	addAuthorization(getPostLiked, tokenLiker)
+
+	second := httptest.NewRecorder()
+	r.ServeHTTP(second, getPostLiked)
+
+	result_post := models.FrontPost{}
+
+	err = json.Unmarshal(second.Body.Bytes(), &result_post)
+
+	assert.Equal(t, err, nil)
+
+	assert.Equal(t, http.StatusOK, second.Code)
+	assert.Equal(t, result_post.Likes, 1)
+	assert.Equal(t, result_post.UserLiked, true)
+
+	getPost2, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Post_ID, nil)
+	addAuthorization(getPost2, tokenLiker)
+
+	third := httptest.NewRecorder()
+	r.ServeHTTP(third, getPost2)
+
+	assert.Equal(t, http.StatusBadRequest, third.Code)
 }

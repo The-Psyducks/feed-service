@@ -116,6 +116,17 @@ func NoWordssFound() TwitSnapError {
 	return error
 }
 
+func AlreadyLiked(postID string) TwitSnapError {
+	error := TwitSnapError{
+		"about:blank",
+		"Already Liked",
+		http.StatusBadRequest,
+		"You have already liked this twitsnap: " + postID,
+		"/twitsnap",
+	}
+	return error
+}
+
 func UserInfoError(err string) TwitSnapError {
 	error := TwitSnapError{
 		"about:blank",

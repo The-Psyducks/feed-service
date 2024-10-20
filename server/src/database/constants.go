@@ -22,5 +22,9 @@ const (
 	RETWEET_FIELD = "retweets"
 	RETWEETERS_FIELD = "retweeters"
 	RETWEET_AUTHOR_FIELD = "retweet_author"
+	MEDIA_URL_FIELD = "media_url"
+)
+
+const (
 	ADMIN = "admin"
 )
