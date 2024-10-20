@@ -171,7 +171,6 @@ func (c *Service) fetchFollowingFeed(limitConfig models.LimitConfig, userID stri
 	if err != nil {
 		return []models.FrontPost{}, false, err
 	}
-	// log.Println("following: ", following)
 	posts, hasMore, err := c.db.GetUserFeedFollowing(following, userID, limitConfig)
 
 	if err != nil {
@@ -192,8 +191,6 @@ func (c *Service) fetchForyouFeed(limitConfig models.LimitConfig, userID string,
 	if err != nil {
 		return []models.FrontPost{}, false, err
 	}
-
-	// log.Println("interests: ", interests)
 
 	following, err := getUserFollowingWp(userID, limitConfig, token)
 	if err != nil {
@@ -303,11 +300,7 @@ func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig, user
 func (c *Service) LikePost(postID string, userID string) error {
 	err := c.db.LikeAPost(postID, userID)
 
-	if err != nil {
-		return postErrors.TwitsnapNotFound(postID)
-	}
-
-	return nil
+	return err
 }
 
 func (c *Service) UnLikePost(postID string, userID string) error {

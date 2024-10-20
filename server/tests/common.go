@@ -27,6 +27,7 @@ type PostBody struct {
 	Content string   `json:"content"`
 	Tags    []string `json:"tags"`
 	Public  bool     `json:"public"`
+	MediaURL string `json:"media_url"`
 }
 
 func newPostRequest(post PostBody) *http.Request {
@@ -72,11 +73,12 @@ func makeResponseAsserions(t *testing.T, response int, result_post models.FrontP
 	assert.Equal(t, result_post.Author_Info.Author_ID, author_id)
 	assert.Equal(t, result_post.Tags, postBody.Tags)
 	assert.Equal(t, result_post.Public, postBody.Public)
+	assert.Equal(t, result_post.MediaURL, postBody.MediaURL)
 }
 
-func makeAndAssertPost(authorId string, content string, tags []string, public bool, r *gin.Engine, t *testing.T) models.FrontPost {
+func makeAndAssertPost(authorId string, content string, tags []string, public bool, media_url string, r *gin.Engine, t *testing.T) models.FrontPost {
 
-	postBody := PostBody{Content: content, Tags: tags, Public: public}
+	postBody := PostBody{Content: content, Tags: tags, Public: public, MediaURL: media_url}
 	req := newPostRequest(postBody)
 
 	token, err := auth.GenerateToken(authorId, "username", false)

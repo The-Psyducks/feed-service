@@ -23,7 +23,7 @@ func TestDeletePost(t *testing.T) {
 
 	assert.Equal(t, err, nil)
 
-	post := makeAndAssertPost("1", "content", []string{"tag1", "tag2"}, true, r, t)
+	post := makeAndAssertPost("1", "content", []string{"tag1", "tag2"}, true, "", r, t)
 
 	deletePost, _ := http.NewRequest("DELETE", "/twitsnap/"+post.Post_ID, nil)
 	addAuthorization(deletePost, token)
@@ -53,7 +53,7 @@ func TestDeleteUnexistentPost(t *testing.T) {
 
 	assert.Equal(t, err, nil)
 
-	post := makeAndAssertPost("1", "content", []string{"tag1", "tag2"}, true, r, t)
+	post := makeAndAssertPost("1", "content", []string{"tag1", "tag2"}, true, "", r, t)
 
 	deletePost, _ := http.NewRequest("DELETE", "/twitsnap/"+post.Post_ID+"invalid", nil)
 	addAuthorization(deletePost, token)

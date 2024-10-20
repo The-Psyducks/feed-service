@@ -39,7 +39,7 @@ func main() {
 
 	db := database.NewAppDatabase(client)
 
-	// err = db.ClearDB()
+	err = db.ClearDB()
 
 	if err != nil {
 		log.Fatal("Error clearing database: ", err)

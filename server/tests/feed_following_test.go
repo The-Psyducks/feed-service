@@ -29,15 +29,15 @@ func TestFeedFollowing(t *testing.T) {
 
 	r := router.CreateRouter(db)
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content", []string{"tag1", "tag2"}, true, r, t)
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content", []string{"tag1", "tag2"}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2", []string{"tag3", "tag4"}, true, r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2", []string{"tag3", "tag4"}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{"tag5", "tag6"}, true, r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{"tag5", "tag6"}, true, "", r, t)
 
 	token, err := auth.GenerateToken(service.TEST_USER_ONE, "username", false)
 
@@ -78,15 +78,15 @@ func TestFeedFollowingNextOffset(t *testing.T) {
 
 	r := router.CreateRouter(db)
 
-	post1 := makeAndAssertPost(service.TEST_USER_TWO, "content", []string{"tag1", "tag2"}, true, r, t)
+	post1 := makeAndAssertPost(service.TEST_USER_TWO, "content", []string{"tag1", "tag2"}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_ONE, "content2", []string{"tag3", "tag4"}, true, r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_ONE, "content2", []string{"tag3", "tag4"}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{"tag5", "tag6"}, true, r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{"tag5", "tag6"}, true,"", r, t)
 
 	token, err := auth.GenerateToken(service.TEST_USER_ONE, "username", false)
 
