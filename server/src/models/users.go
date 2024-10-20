@@ -13,6 +13,7 @@ type PublicProfileExpectedFormat struct {
 	Location  string `json:"location"`
 	Following int    `json:"following"`
 	Followers int    `json:"followers"`
+	PicturePath string    `json:"picture_path"`	
 }
 
 type Pagination struct {
@@ -30,4 +31,5 @@ type PrivateProfileExpectedFormat struct {
 	Interests []string `json:"interests"`
 	Following int    `json:"following"`
 	Followers int    `json:"followers"`
+	PicturePath string    `json:"picture_path"`
 }

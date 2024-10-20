@@ -35,5 +35,11 @@ type Database interface {
 
 	UnLikeAPost(postID string, likerID string) error
 
+	AddFavorite(postID string, userID string) error
+	
+	RemoveFavorite(postID string, userID string) error
+
+	GetUserFavorites(userID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
+
 	ClearDB() error
 }

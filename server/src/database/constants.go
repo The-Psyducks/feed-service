@@ -5,6 +5,7 @@ const (
 	FEED_COLLECTION = "posts"
 	LIKES_COLLECTION = "likes"
 	RETWEET_COLLECTION = "retweets"
+	FAVORITES_COLLECTION = "favorites"
 )
 
 const (
@@ -23,6 +24,7 @@ const (
 	RETWEETERS_FIELD = "retweeters"
 	RETWEET_AUTHOR_FIELD = "retweet_author"
 	MEDIA_URL_FIELD = "media_url"
+	FAVORITES_FIELD = "favorites"
 )
 
 const (
