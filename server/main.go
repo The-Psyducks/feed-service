@@ -39,6 +39,12 @@ func main() {
 
 	db := database.NewAppDatabase(client)
 
+	err = db.ClearDB()
+
+	if err != nil {
+		log.Fatal("Error clearing database: ", err)
+	}
+
 	r := router.CreateRouter(db)
 
 	address := fmt.Sprintf("%s:%s", config.Host, config.Port)

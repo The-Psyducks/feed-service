@@ -25,6 +25,8 @@ type Database interface {
 
 	GetUserFeedSingle(userID string, limitConfig models.LimitConfig, askerID string, following []string) ([]models.FrontPost, bool, error)
 
+	GetUserFeedRetweet(userID string, limitConfig models.LimitConfig, askerID string, following []string) ([]models.FrontPost, bool, error)
+
 	WordSearchPosts(words string, following []string, askerID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
 
 	GetUserHashtags(hashtags []string, following []string, askerID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)

@@ -134,3 +134,29 @@ func postsHaveAtLeastOneWord(result []models.FrontPost, words_wanted_list []stri
 		assert.Equal(t, true, found)
 	}
 }
+
+func retweetAPost(post models.FrontPost, username, tokenRetweeterer string, r *gin.Engine, t *testing.T)  models.FrontPost {
+	retweetPost, _ := http.NewRequest("POST", "/twitsnap/retweet/"+post.Post_ID, nil)
+	addAuthorization(retweetPost, tokenRetweeterer)
+
+	first := httptest.NewRecorder()
+	r.ServeHTTP(first, retweetPost)
+
+	retweet_post := models.FrontPost{}
+
+	err := json.Unmarshal(first.Body.Bytes(), &retweet_post)
+
+	assert.Equal(t, err, nil)
+	assert.Equal(t, http.StatusCreated, first.Code)
+	assert.Equal(t, true, retweet_post.UserRetweet)
+	assert.Equal(t, retweet_post.Content, post.Content)
+	assert.Equal(t, retweet_post.Tags, post.Tags)
+	assert.Equal(t, retweet_post.RetweetAuthor, username)
+
+	return retweet_post
+}
+
+func checkRetweetPost(post models.FrontPost, retweetAuthor string, t *testing.T) {
+	assert.Equal(t, post.RetweetAuthor, retweetAuthor, "Retweet author should be the retweeter (Retweet)")
+	assert.Equal(t, post.IsRetweet, true, "IsRetweet should be true")
+}

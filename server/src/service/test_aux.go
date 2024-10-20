@@ -17,6 +17,8 @@ const (
 	TEST_USER_ONE_USERNAME = "username1"
 	TEST_USER_TWO_USERNAME = "username2"
 	TEST_USER_THREE_USERNAME = "username3"
+
+	TEST_NOT_FOLLOWING_USERNAME = "username_not_following"
 )
 
 func getTestUsername(userID string) string {
@@ -27,6 +29,8 @@ func getTestUsername(userID string) string {
 		return TEST_USER_TWO_USERNAME
 	case TEST_USER_THREE:
 		return TEST_USER_THREE_USERNAME
+	case TEST_NOT_FOLLOWING_ID:
+		return TEST_NOT_FOLLOWING_USERNAME
 	default:
 		return ""
 	}
