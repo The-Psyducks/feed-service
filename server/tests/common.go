@@ -24,10 +24,10 @@ import (
 )
 
 type PostBody struct {
-	Content string   `json:"content"`
-	Tags    []string `json:"tags"`
-	Public  bool     `json:"public"`
-	MediaURL string `json:"media_url"`
+	Content  string   `json:"content"`
+	Tags     []string `json:"tags"`
+	Public   bool     `json:"public"`
+	MediaURL string   `json:"media_url"`
 }
 
 func newPostRequest(post PostBody) *http.Request {
@@ -73,7 +73,7 @@ func makeResponseAsserions(t *testing.T, response int, result_post models.FrontP
 	assert.Equal(t, result_post.Author_Info.Author_ID, author_id)
 	assert.Equal(t, result_post.Tags, postBody.Tags)
 	assert.Equal(t, result_post.Public, postBody.Public)
-	assert.Equal(t, result_post.MediaURL, postBody.MediaURL)
+	assert.Equal(t, result_post.Media_URL, postBody.MediaURL)
 }
 
 func makeAndAssertPost(authorId string, content string, tags []string, public bool, media_url string, r *gin.Engine, t *testing.T) models.FrontPost {
@@ -137,7 +137,7 @@ func postsHaveAtLeastOneWord(result []models.FrontPost, words_wanted_list []stri
 	}
 }
 
-func retweetAPost(post models.FrontPost, username, tokenRetweeterer string, r *gin.Engine, t *testing.T)  models.FrontPost {
+func retweetAPost(post models.FrontPost, username, tokenRetweeterer string, r *gin.Engine, t *testing.T) models.FrontPost {
 	retweetPost, _ := http.NewRequest("POST", "/twitsnap/retweet/"+post.Post_ID, nil)
 	addAuthorization(retweetPost, tokenRetweeterer)
 
@@ -150,15 +150,15 @@ func retweetAPost(post models.FrontPost, username, tokenRetweeterer string, r *g
 
 	assert.Equal(t, err, nil)
 	assert.Equal(t, http.StatusCreated, first.Code)
-	assert.Equal(t, true, retweet_post.UserRetweet)
+	assert.Equal(t, true, retweet_post.User_Retweet)
 	assert.Equal(t, retweet_post.Content, post.Content)
 	assert.Equal(t, retweet_post.Tags, post.Tags)
-	assert.Equal(t, retweet_post.RetweetAuthor, username)
+	assert.Equal(t, retweet_post.Retweet_Author, username)
 
 	return retweet_post
 }
 
 func checkRetweetPost(post models.FrontPost, retweetAuthor string, t *testing.T) {
-	assert.Equal(t, post.RetweetAuthor, retweetAuthor, "Retweet author should be the retweeter (Retweet)")
-	assert.Equal(t, post.IsRetweet, true, "IsRetweet should be true")
+	assert.Equal(t, post.Retweet_Author, retweetAuthor, "Retweet author should be the retweeter (Retweet)")
+	assert.Equal(t, post.Is_Retweet, true, "IsRetweet should be true")
 }

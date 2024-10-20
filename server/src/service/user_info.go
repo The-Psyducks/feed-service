@@ -4,14 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+
 	// "log"
 	"net/http"
 	"os"
 	"server/src/models"
 	"strconv"
 )
-
-
 
 func getUserFollowingWp(userID string, limitConfig models.LimitConfig, token string) ([]string, error) {
 	if os.Getenv("ENVIROMENT") == "test" {
@@ -180,13 +179,13 @@ func addAuthorInfoToPost(post models.FrontPost, token string) (models.FrontPost,
 
 	post.Author_Info = authorInfo
 
-	if post.IsRetweet {
+	if post.Is_Retweet {
 		post, err = addRetweetAuthorInfoToPost(post, token)
 		if err != nil {
 			return models.FrontPost{}, errors.New("error getting info on the user, " + err.Error())
 		}
 	} else {
-		post.RetweetAuthor = ""
+		post.Retweet_Author = ""
 	}
 
 	return post, nil
@@ -199,14 +198,14 @@ func addRetweetAuthorInfoToPost(post models.FrontPost, token string) (models.Fro
 	if os.Getenv("ENVIROMENT") == "test" {
 		authorInfo, err = getUserDataRetweetForTests(post)
 	} else {
-		authorInfo, err = getUserData(post.RetweetAuthor, token)
+		authorInfo, err = getUserData(post.Retweet_Author, token)
 	}
 
 	if err != nil {
 		return models.FrontPost{}, errors.New("error getting info on the user, " + err.Error())
 	}
 
-	post.RetweetAuthor = authorInfo.Username
+	post.Retweet_Author = authorInfo.Username
 
 	return post, nil
 }
@@ -233,7 +232,7 @@ func getUserDataForTests(post models.FrontPost) (models.AuthorInfo, error) {
 
 func getUserDataRetweetForTests(post models.FrontPost) (models.AuthorInfo, error) {
 
-	authorInfo := models.AuthorInfo{Author_ID: post.RetweetAuthor, Username: getTestUsername(post.RetweetAuthor),
+	authorInfo := models.AuthorInfo{Author_ID: post.Retweet_Author, Username: getTestUsername(post.Retweet_Author),
 		Alias: "alias", PthotoURL: ""}
 
 	return authorInfo, nil
