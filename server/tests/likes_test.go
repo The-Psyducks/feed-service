@@ -27,7 +27,7 @@ func TestLikingAPost(t *testing.T) {
 
 	tokenLiker, err := auth.GenerateToken(liker_id, "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
 
@@ -49,11 +49,11 @@ func TestLikingAPost(t *testing.T) {
 
 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
-	assert.Equal(t, http.StatusOK, second.Code)
-	assert.Equal(t, result_post.Likes, 1)
-	assert.Equal(t, result_post.User_Liked, true)
+	assert.Equal(t, http.StatusOK, second.Code, "Status should be 200")
+	assert.Equal(t, result_post.Likes, 1, "Post should have 1 like")
+	assert.Equal(t, result_post.User_Liked, true, "User should have liked the post")
 }
 
 func TestUnlikingAPost(t *testing.T) {
@@ -66,7 +66,7 @@ func TestUnlikingAPost(t *testing.T) {
 
 	tokenLiker, err := auth.GenerateToken(liker_id, "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
 
@@ -88,7 +88,7 @@ func TestUnlikingAPost(t *testing.T) {
 
 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	assert.Equal(t, http.StatusOK, second.Code)
 	assert.Equal(t, result_post.Likes, 1)
@@ -112,7 +112,7 @@ func TestUnlikingAPost(t *testing.T) {
 
 	err = json.Unmarshal(fourth.Body.Bytes(), &result_post_s)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	assert.Equal(t, http.StatusOK, fourth.Code)
 	assert.Equal(t, result_post_s.Likes, 0)
@@ -128,7 +128,7 @@ func TestSeeLikedTweetInFeedFollowing(t *testing.T) {
 	liker_id := service.TEST_USER_TWO
 
 	tokenLiker, err := auth.GenerateToken(liker_id, "username", true)
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
 	time.Sleep(1 * time.Second)
@@ -162,8 +162,8 @@ func TestSeeLikedTweetInFeedFollowing(t *testing.T) {
 
 	// log.Println(result)
 
-	assert.Equal(t, err_2, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder.Code)
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
 	assert.Equal(t, 6, result.Pagination.Limit)
 	assert.Equal(t, 0, result.Pagination.Next_Offset)
 
@@ -183,7 +183,7 @@ func TestUserCanNotLikeTwice(t *testing.T) {
 
 	tokenLiker, err := auth.GenerateToken(liker_id, "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
 
@@ -205,7 +205,7 @@ func TestUserCanNotLikeTwice(t *testing.T) {
 
 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	assert.Equal(t, http.StatusOK, second.Code)
 	assert.Equal(t, result_post.Likes, 1)
