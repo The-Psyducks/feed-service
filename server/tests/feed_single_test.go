@@ -41,7 +41,7 @@ func TestGetFeedSingle(t *testing.T) {
 
 	token, err := auth.GenerateToken("1", "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	expectedPosts := []models.FrontPost{post1}
 
@@ -63,8 +63,8 @@ func TestGetFeedSingle(t *testing.T) {
 
 	// log.Println(result)
 
-	assert.Equal(t, err_2, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder.Code)
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
 	assert.Equal(t, 6, result.Pagination.Limit)
@@ -92,7 +92,7 @@ func TestGetFeedSingleNotFollowing(t *testing.T) {
 
 	token, err := auth.GenerateToken("1", "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	expectedPosts := []models.FrontPost{post3, post1}
 
@@ -114,8 +114,8 @@ func TestGetFeedSingleNotFollowing(t *testing.T) {
 
 	// log.Println(result)
 
-	assert.Equal(t, err_2, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder.Code)
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
 	assertOnlyPublicPosts(result.Data, t)
@@ -144,7 +144,7 @@ func TestFeedSingleWithFollowing(t *testing.T) {
 
 	token, err := auth.GenerateToken("1", "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	expectedPosts := []models.FrontPost{post3, post2, post1}
 
@@ -166,8 +166,8 @@ func TestFeedSingleWithFollowing(t *testing.T) {
 
 	// log.Println(result)
 
-	assert.Equal(t, err_2, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder.Code)
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
 	assert.Equal(t, 6, result.Pagination.Limit)
@@ -193,7 +193,7 @@ func TestFeedSingleNextOffset(t *testing.T) {
 
 	token, err := auth.GenerateToken(service.TEST_USER_ONE, "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	expectedPosts := []models.FrontPost{post3, post2}
 
@@ -215,12 +215,12 @@ func TestFeedSingleNextOffset(t *testing.T) {
 
 	// log.Println(result)
 
-	assert.Equal(t, err_2, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder.Code)
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
-	assert.Equal(t, 2, result.Pagination.Limit)
-	assert.Equal(t, 2, result.Pagination.Next_Offset)
+	assert.Equal(t, 2, result.Pagination.Limit, "Limit should be 2")
+	assert.Equal(t, 2, result.Pagination.Next_Offset, "Next offset should be 2")
 
 	result2 := models.ReturnPaginatedPosts{}
 	expectedPosts2 := []models.FrontPost{post1}
@@ -236,9 +236,9 @@ func TestFeedSingleNextOffset(t *testing.T) {
 	err_3 := json.Unmarshal(feedRecorder2.Body.Bytes(), &result2)
 
 	assert.Equal(t, err_3, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder2.Code)
+	assert.Equal(t, http.StatusOK, feedRecorder2.Code, "Status should be 200")
 
 	compareOrderAsExpected(expectedPosts2, result2.Data, t)
-	assert.Equal(t, 2, result2.Pagination.Limit)
-	assert.Equal(t, 0, result2.Pagination.Next_Offset)
+	assert.Equal(t, 2, result2.Pagination.Limit, "Limit should be 2")
+	assert.Equal(t, 0, result2.Pagination.Next_Offset, "Next offset should be 0")
 }

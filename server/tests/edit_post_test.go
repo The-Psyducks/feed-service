@@ -14,6 +14,7 @@ import (
 	"server/src/auth"
 	"server/src/models"
 	"server/src/router"
+	"server/src/service"
 )
 
 func TestEditPostContent(t *testing.T) {
@@ -24,11 +25,11 @@ func TestEditPostContent(t *testing.T) {
 
 	r := router.CreateRouter(db)
 
-	author_id := "1"
+	author_id := service.TEST_USER_ONE
 
 	token, err := auth.GenerateToken(author_id, "username", false)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
 
@@ -55,7 +56,7 @@ func TestEditPostContent(t *testing.T) {
 
 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 	makeResponseAsserions(t, http.StatusOK, result_post, newPostBody, author_id, second.Code)
 }
 
@@ -71,7 +72,7 @@ func TestEditPostTags(t *testing.T) {
 
 	token, err := auth.GenerateToken(author_id, "username", false)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
 
@@ -100,8 +101,8 @@ func TestEditPostTags(t *testing.T) {
 
 	// log.Println(result_post)
 
-	assert.Equal(t, err, nil)
-	assert.Equal(t, http.StatusOK, second.Code)
+	assert.Equal(t, err, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, second.Code, "Status should be 200")
 	makeResponseAsserions(t, http.StatusOK, result_post, newPostBody, author_id, second.Code)
 }
 
@@ -121,7 +122,7 @@ func TestEditPostMediaURL(t *testing.T) {
 
 	edit_media_url := "media_url_edited"
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, base_media_url, r, t)
 
@@ -146,7 +147,7 @@ func TestEditPostMediaURL(t *testing.T) {
 
 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 	makeResponseAsserions(t, http.StatusOK, result_post, newPostBody, author_id, second.Code)
 }
 
@@ -166,7 +167,7 @@ func TestEditPostPublicToPrivate(t *testing.T) {
 
 	newPublic := false
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, public, "base_media_url", r, t)
 
@@ -191,7 +192,7 @@ func TestEditPostPublicToPrivate(t *testing.T) {
 
 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 	makeResponseAsserions(t, http.StatusOK, result_post, newPostBody, author_id, second.Code)
 }
 
@@ -211,7 +212,7 @@ func TestEditPostPrivateToPublic(t *testing.T) {
 
 	newPublic := true
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, public, "base_media_url", r, t)
 
@@ -236,7 +237,7 @@ func TestEditPostPrivateToPublic(t *testing.T) {
 
 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 	makeResponseAsserions(t, http.StatusOK, result_post, newPostBody, author_id, second.Code)
 }
 
@@ -248,7 +249,7 @@ func TestEditPost(t *testing.T) {
 	author_id := "1"
 	token, err := auth.GenerateToken(author_id, "username", false)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
 
@@ -286,7 +287,7 @@ func TestEditPost(t *testing.T) {
 
 	// log.Println(result_post)
 
-	assert.Equal(t, err, nil)
-	assert.Equal(t, http.StatusOK, second.Code)
+	assert.Equal(t, err, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, second.Code, "Status should be 200")
 	makeResponseAsserions(t, http.StatusOK, result_post, newPostBody, author_id, second.Code)
 }

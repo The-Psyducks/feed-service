@@ -31,21 +31,21 @@ func TestWordsearch(t *testing.T) {
 
 	words_wanted_list := strings.Split(words_wanted, " ")
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + words_wanted_list[0], []string{service.TEST_TAG_ONE, "tag5"}, true, "", r, t)
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content "+words_wanted_list[0], []string{service.TEST_TAG_ONE, "tag5"}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + words_wanted_list[1], []string{"tag6", "tag5"}, true,  "",r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 "+words_wanted_list[1], []string{"tag6", "tag5"}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 " + words_wanted_list[2], []string{service.TEST_TAG_THREE, "tag6"}, true, "", r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 "+words_wanted_list[2], []string{service.TEST_TAG_THREE, "tag6"}, true, "", r, t)
 
 	makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{"tag7", "tag8"}, true, "", r, t)
 
 	token, err := auth.GenerateToken("1", "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	expectedPosts := []models.FrontPost{post3, post2, post1}
 
@@ -67,8 +67,8 @@ func TestWordsearch(t *testing.T) {
 
 	// log.Println(result)
 
-	assert.Equal(t, err_2, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder.Code)
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
 	postsHaveAtLeastOneWord(result.Data, words_wanted_list, t)
@@ -76,35 +76,33 @@ func TestWordsearch(t *testing.T) {
 	assert.Equal(t, 0, result.Pagination.Next_Offset)
 }
 
-
-
 func TestWordSearchNotFollowing(t *testing.T) {
 
 	log.Println("TestHashagSearchNotFollowing: only posts with all the tags wanted appear, and only public posts from not followed users")
 
 	db := connectToDatabase()
-	
+
 	r := router.CreateRouter(db)
-	
+
 	words_wanted := "apple pie pecan"
 
 	words_wanted_list := strings.Split(words_wanted, " ")
 
-	makeAndAssertPost(service.TEST_NOT_FOLLOWING_ID, "content" + words_wanted_list[2], []string{"tags", "tags1"}, false, "", r, t)
+	makeAndAssertPost(service.TEST_NOT_FOLLOWING_ID, "content"+words_wanted_list[2], []string{"tags", "tags1"}, false, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2" + words_wanted_list[0], []string{"tags_wanted[0]", "tags_wanted[1]"}, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2"+words_wanted_list[0], []string{"tags_wanted[0]", "tags_wanted[1]"}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
 	makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{service.TEST_TAG_THREE, "tag6"}, true, "", r, t)
 
-	makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{"tag7", "tag8"}, true, "",r, t)
+	makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{"tag7", "tag8"}, true, "", r, t)
 
 	token, err := auth.GenerateToken("1", "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	expectedPosts := []models.FrontPost{post2}
 
@@ -116,7 +114,6 @@ func TestWordSearchNotFollowing(t *testing.T) {
 	skip := "0"
 	limit := "6"
 
-
 	getFeed, _ := http.NewRequest("GET", "/twitsnap/word-search?words="+words_wanted+"&time="+time+"&skip="+skip+"&limit="+limit, nil)
 	addAuthorization(getFeed, token)
 
@@ -125,8 +122,8 @@ func TestWordSearchNotFollowing(t *testing.T) {
 
 	err_2 := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
 
-	assert.Equal(t, err_2, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder.Code)
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
 	assertOnlyPublicPostsForNotFollowing(result.Data, t)
@@ -146,11 +143,11 @@ func TestWordSearchFollowing(t *testing.T) {
 
 	words_wanted_list := strings.Split(words_wanted, " ")
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content" + words_wanted_list[1], []string{"tags_wanted"," tags_wanted[1]"}, false, "", r, t)
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content"+words_wanted_list[1], []string{"tags_wanted", " tags_wanted[1]"}, false, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2" + words_wanted_list[0], []string{"tags_wanted[0]", "tags_wanted[1]"}, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2"+words_wanted_list[0], []string{"tags_wanted[0]", "tags_wanted[1]"}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
@@ -160,7 +157,7 @@ func TestWordSearchFollowing(t *testing.T) {
 
 	token, err := auth.GenerateToken("1", "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	expectedPosts := []models.FrontPost{post2, post1}
 
@@ -172,8 +169,7 @@ func TestWordSearchFollowing(t *testing.T) {
 	skip := "0"
 	limit := "6"
 
-
-	getFeed, _ := http.NewRequest("GET",  "/twitsnap/word-search?words="+words_wanted+"&time="+time+"&skip="+skip+"&limit="+limit, nil)
+	getFeed, _ := http.NewRequest("GET", "/twitsnap/word-search?words="+words_wanted+"&time="+time+"&skip="+skip+"&limit="+limit, nil)
 	addAuthorization(getFeed, token)
 
 	feedRecorder := httptest.NewRecorder()
@@ -183,16 +179,14 @@ func TestWordSearchFollowing(t *testing.T) {
 
 	// log.Println(result)
 
-	assert.Equal(t, err_2, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder.Code)
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
 	assertOnlyPublicPostsForNotFollowing(result.Data, t)
 	assert.Equal(t, 6, result.Pagination.Limit)
 	assert.Equal(t, 0, result.Pagination.Next_Offset)
 }
-
-
 
 func TestWordSearchNextOffset(t *testing.T) {
 	log.Println("TestGetFeedFollowingNextOffset")
@@ -205,19 +199,19 @@ func TestWordSearchNextOffset(t *testing.T) {
 
 	words_wanted_list := strings.Split(words_wanted, " ")
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + words_wanted_list[0], []string{service.TEST_TAG_ONE, "tag5"}, true, "", r, t)
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content "+words_wanted_list[0], []string{service.TEST_TAG_ONE, "tag5"}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + words_wanted_list[1], []string{"tag6", "tag5"}, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 "+words_wanted_list[1], []string{"tag6", "tag5"}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 " + words_wanted_list[2], []string{service.TEST_TAG_THREE, "tag6"}, true, "", r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 "+words_wanted_list[2], []string{service.TEST_TAG_THREE, "tag6"}, true, "", r, t)
 
 	token, err := auth.GenerateToken(service.TEST_USER_ONE, "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	expectedPosts := []models.FrontPost{post3, post2}
 
@@ -239,12 +233,12 @@ func TestWordSearchNextOffset(t *testing.T) {
 
 	// log.Println(result)
 
-	assert.Equal(t, err_2, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder.Code)
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
-	assert.Equal(t, 2, result.Pagination.Limit)
-	assert.Equal(t, 2, result.Pagination.Next_Offset)
+	assert.Equal(t, 2, result.Pagination.Limit, "Limit should be 2")
+	assert.Equal(t, 2, result.Pagination.Next_Offset, "Next offset should be 2")
 
 	result2 := models.ReturnPaginatedPosts{}
 	expectedPosts2 := []models.FrontPost{post1}
@@ -260,9 +254,9 @@ func TestWordSearchNextOffset(t *testing.T) {
 	err_3 := json.Unmarshal(feedRecorder2.Body.Bytes(), &result2)
 
 	assert.Equal(t, err_3, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder2.Code)
+	assert.Equal(t, http.StatusOK, feedRecorder2.Code, "Status should be 200")
 
 	compareOrderAsExpected(expectedPosts2, result2.Data, t)
-	assert.Equal(t, 2, result2.Pagination.Limit)
-	assert.Equal(t, 0, result2.Pagination.Next_Offset)
+	assert.Equal(t, 2, result2.Pagination.Limit, "Limit should be 2")
+	assert.Equal(t, 0, result2.Pagination.Next_Offset, "Next offset should be 0")
 }

@@ -68,12 +68,12 @@ func connectToDatabase() database.Database {
 }
 
 func makeResponseAsserions(t *testing.T, response int, result_post models.FrontPost, postBody PostBody, author_id string, code int) {
-	assert.Equal(t, response, code)
-	assert.Equal(t, result_post.Content, postBody.Content)
-	assert.Equal(t, result_post.Author_Info.Author_ID, author_id)
-	assert.Equal(t, result_post.Tags, postBody.Tags)
-	assert.Equal(t, result_post.Public, postBody.Public)
-	assert.Equal(t, result_post.Media_URL, postBody.MediaURL)
+	assert.Equal(t, response, code, "Response should be 201")
+	assert.Equal(t, result_post.Content, postBody.Content, "Content should be the same")
+	assert.Equal(t, result_post.Author_Info.Author_ID, author_id, "Author should be the same")
+	assert.Equal(t, result_post.Tags, postBody.Tags, "Tags should be the same")
+	assert.Equal(t, result_post.Public, postBody.Public, "Public should be the same")
+	assert.Equal(t, result_post.Media_URL, postBody.MediaURL, "Media URL should be the same")
 }
 
 func makeAndAssertPost(authorId string, content string, tags []string, public bool, media_url string, r *gin.Engine, t *testing.T) models.FrontPost {
@@ -96,29 +96,29 @@ func makeAndAssertPost(authorId string, content string, tags []string, public bo
 
 	err = json.Unmarshal(first.Body.Bytes(), &result)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 	makeResponseAsserions(t, http.StatusCreated, result, postBody, authorId, first.Code)
 
 	return result
 }
 
 func compareOrderAsExpected(expected []models.FrontPost, result []models.FrontPost, t *testing.T) {
-	assert.Equal(t, len(expected), len(result))
+	assert.Equal(t, len(expected), len(result), "Length should be the same")
 	for i := range expected {
-		assert.Equal(t, expected[i].Content, result[i].Content)
+		assert.Equal(t, expected[i].Content, result[i].Content, "Content should be the same")
 	}
 }
 
 func assertOnlyPublicPosts(result []models.FrontPost, t *testing.T) {
 	for i := range result {
-		assert.Equal(t, true, result[i].Public)
+		assert.Equal(t, true, result[i].Public, "Posts should be public")
 	}
 }
 
 func assertOnlyPublicPostsForNotFollowing(result []models.FrontPost, t *testing.T) {
 	for i := range result {
 		if result[i].Author_Info.Author_ID == service.TEST_NOT_FOLLOWING_ID {
-			assert.Equal(t, true, result[i].Public)
+			assert.Equal(t, true, result[i].Public, "All posts should be public")
 		}
 	}
 }
@@ -133,7 +133,7 @@ func postsHaveAtLeastOneWord(result []models.FrontPost, words_wanted_list []stri
 				break
 			}
 		}
-		assert.Equal(t, true, found)
+		assert.Equal(t, true, found, "At least one word should be in the content")
 	}
 }
 
@@ -148,12 +148,13 @@ func retweetAPost(post models.FrontPost, username, tokenRetweeterer string, r *g
 
 	err := json.Unmarshal(first.Body.Bytes(), &retweet_post)
 
-	assert.Equal(t, err, nil)
-	assert.Equal(t, http.StatusCreated, first.Code)
-	assert.Equal(t, true, retweet_post.User_Retweet)
-	assert.Equal(t, retweet_post.Content, post.Content)
-	assert.Equal(t, retweet_post.Tags, post.Tags)
-	assert.Equal(t, retweet_post.Retweet_Author, username)
+	assert.Equal(t, err, nil, "Error should be nil")
+	assert.Equal(t, http.StatusCreated, first.Code, "Response should be 201")
+	assert.Equal(t, true, retweet_post.User_Retweet, "User should have retweeted")
+	assert.Equal(t, retweet_post.Content, post.Content, "Content should be the same")
+	assert.Equal(t, retweet_post.Tags, post.Tags, "Tags should be the same")
+	assert.Equal(t, retweet_post.Retweet_Author, username, "Retweet author should be the retweeter (Retweet)")
+	assert.Equal(t, retweet_post.Retweets, post.Retweets, "Retweets should be the same")
 
 	return retweet_post
 }

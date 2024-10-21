@@ -42,7 +42,7 @@ func TestHashagSearch(t *testing.T) {
 
 	token, err := auth.GenerateToken("1", "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	expectedPosts := []models.FrontPost{post2}
 
@@ -54,9 +54,7 @@ func TestHashagSearch(t *testing.T) {
 	skip := "0"
 	limit := "6"
 
-	
-
-	getFeed, _ := http.NewRequest("GET", "/twitsnap/hashtag-search?tags="+tags_wanted[0]+"&tags=" + tags_wanted[1] +"&time="+time+"&skip="+skip+"&limit="+limit, nil)
+	getFeed, _ := http.NewRequest("GET", "/twitsnap/hashtag-search?tags="+tags_wanted[0]+"&tags="+tags_wanted[1]+"&time="+time+"&skip="+skip+"&limit="+limit, nil)
 	addAuthorization(getFeed, token)
 
 	feedRecorder := httptest.NewRecorder()
@@ -66,8 +64,8 @@ func TestHashagSearch(t *testing.T) {
 
 	// log.Println(result)
 
-	assert.Equal(t, err_2, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder.Code)
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
 	assertOnlyPublicPostsForNotFollowing(result.Data, t)
@@ -80,9 +78,9 @@ func TestHashagSearchNotFollowing(t *testing.T) {
 	log.Println("TestHashagSearchNotFollowing: only posts with all the tags wanted appear, and only public posts from not followed users")
 
 	db := connectToDatabase()
-	
+
 	r := router.CreateRouter(db)
-	
+
 	tags_wanted := []string{"tag5", "tag6"}
 
 	makeAndAssertPost(service.TEST_NOT_FOLLOWING_ID, "content", []string{tags_wanted[0], tags_wanted[1]}, false, "", r, t)
@@ -99,7 +97,7 @@ func TestHashagSearchNotFollowing(t *testing.T) {
 
 	token, err := auth.GenerateToken("1", "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	expectedPosts := []models.FrontPost{post2}
 
@@ -111,8 +109,7 @@ func TestHashagSearchNotFollowing(t *testing.T) {
 	skip := "0"
 	limit := "6"
 
-
-	getFeed, _ := http.NewRequest("GET", "/twitsnap/hashtag-search?tags="+tags_wanted[0]+"&tags=" + tags_wanted[1] +"&time="+time+"&skip="+skip+"&limit="+limit, nil)
+	getFeed, _ := http.NewRequest("GET", "/twitsnap/hashtag-search?tags="+tags_wanted[0]+"&tags="+tags_wanted[1]+"&time="+time+"&skip="+skip+"&limit="+limit, nil)
 	addAuthorization(getFeed, token)
 
 	feedRecorder := httptest.NewRecorder()
@@ -120,8 +117,8 @@ func TestHashagSearchNotFollowing(t *testing.T) {
 
 	err_2 := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
 
-	assert.Equal(t, err_2, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder.Code)
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
 	assertOnlyPublicPostsForNotFollowing(result.Data, t)
@@ -153,7 +150,7 @@ func TestHashtagSearchFollowing(t *testing.T) {
 
 	token, err := auth.GenerateToken("1", "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	expectedPosts := []models.FrontPost{post2, post1}
 
@@ -165,8 +162,7 @@ func TestHashtagSearchFollowing(t *testing.T) {
 	skip := "0"
 	limit := "6"
 
-
-	getFeed, _ := http.NewRequest("GET", "/twitsnap/hashtag-search?tags="+tags_wanted[0]+"&tags=" + tags_wanted[1] +"&time="+time+"&skip="+skip+"&limit="+limit, nil)
+	getFeed, _ := http.NewRequest("GET", "/twitsnap/hashtag-search?tags="+tags_wanted[0]+"&tags="+tags_wanted[1]+"&time="+time+"&skip="+skip+"&limit="+limit, nil)
 	addAuthorization(getFeed, token)
 
 	feedRecorder := httptest.NewRecorder()
@@ -176,8 +172,8 @@ func TestHashtagSearchFollowing(t *testing.T) {
 
 	// log.Println(result)
 
-	assert.Equal(t, err_2, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder.Code)
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
 	assertOnlyPublicPostsForNotFollowing(result.Data, t)
@@ -206,7 +202,7 @@ func TestHashtagSearchNextOffset(t *testing.T) {
 
 	token, err := auth.GenerateToken(service.TEST_USER_ONE, "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	expectedPosts := []models.FrontPost{post3, post2}
 
@@ -228,19 +224,19 @@ func TestHashtagSearchNextOffset(t *testing.T) {
 
 	// log.Println(result)
 
-	assert.Equal(t, err_2, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder.Code)
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
-	assert.Equal(t, 2, result.Pagination.Limit)
-	assert.Equal(t, 2, result.Pagination.Next_Offset)
+	assert.Equal(t, 2, result.Pagination.Limit, "Limit should be 2")
+	assert.Equal(t, 2, result.Pagination.Next_Offset, "Next offset should be 2")
 
 	result2 := models.ReturnPaginatedPosts{}
 	expectedPosts2 := []models.FrontPost{post1}
 
 	skip_2 := strconv.Itoa(result.Pagination.Next_Offset)
 
-	getFeed2, _ := http.NewRequest("GET", "/twitsnap/hashtag-search?tags="+tags_wanted[0]+"&tags="+tags_wanted[1] +"&time="+time+"&skip="+skip_2+"&limit="+limit, nil)
+	getFeed2, _ := http.NewRequest("GET", "/twitsnap/hashtag-search?tags="+tags_wanted[0]+"&tags="+tags_wanted[1]+"&time="+time+"&skip="+skip_2+"&limit="+limit, nil)
 	addAuthorization(getFeed2, token)
 
 	feedRecorder2 := httptest.NewRecorder()
@@ -249,9 +245,9 @@ func TestHashtagSearchNextOffset(t *testing.T) {
 	err_3 := json.Unmarshal(feedRecorder2.Body.Bytes(), &result2)
 
 	assert.Equal(t, err_3, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder2.Code)
+	assert.Equal(t, http.StatusOK, feedRecorder2.Code, "Status should be 200")
 
 	compareOrderAsExpected(expectedPosts2, result2.Data, t)
-	assert.Equal(t, 2, result2.Pagination.Limit)
-	assert.Equal(t, 0, result2.Pagination.Next_Offset)
+	assert.Equal(t, 2, result2.Pagination.Limit, "Limit should be 2")
+	assert.Equal(t, 0, result2.Pagination.Next_Offset, "Next offset should be 0")
 }

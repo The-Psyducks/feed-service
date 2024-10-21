@@ -42,12 +42,12 @@ func (d *AppDatabase) AddNewRetweet(newRetweet models.DBPost) (models.FrontPost,
 
 	retweetCollection := d.db.Collection(RETWEET_COLLECTION)
 
-	filter_original := bson.M{POST_ID_FIELD: newRetweet.Original_Post_ID}
+	filter_original := bson.M{ORIGINAL_POST_ID_FIELD: newRetweet.Original_Post_ID}
 	update := bson.M{"$inc": bson.M{RETWEET_FIELD: 1}}
 
 	retweeter := bson.M{"$addToSet": bson.M{RETWEETERS_FIELD: newRetweet.Retweet_Author_ID}}
 
-	_, err = postCollection.UpdateOne(context.Background(), filter_original, update)
+	_, err = postCollection.UpdateMany(context.Background(), filter_original, update)
 	if err != nil {
 		log.Println(err)
 		return models.FrontPost{}, err
@@ -123,7 +123,7 @@ func (d *AppDatabase) DeleteRetweet(postID string, userID string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	retweetCollection := d.db.Collection(RETWEET_COLLECTION)
 
-	filter := bson.M{POST_ID_FIELD: postID}
+	filter := bson.M{ORIGINAL_POST_ID_FIELD: postID, RETWEET_AUTHOR_FIELD: userID}
 	update := bson.M{"$inc": bson.M{RETWEET_FIELD: -1}}
 	retweeter := bson.M{"$pull": bson.M{RETWEETERS_FIELD: userID}}
 
@@ -581,12 +581,12 @@ func (d *AppDatabase) LikeAPost(postID string, likerID string) error {
 		return postErrors.AlreadyLiked(postID)
 	}
 
-	filter := bson.M{POST_ID_FIELD: postID}
+	filter := bson.M{ORIGINAL_POST_ID_FIELD: postID}
 	update := bson.M{"$inc": bson.M{LIKES_FIELD: 1}}
 
 	liker := bson.M{"$addToSet": bson.M{LIKERS_FIELD: likerID}}
 
-	_, err := postCollection.UpdateOne(context.Background(), filter, update)
+	_, err := postCollection.UpdateMany(context.Background(), filter, update)
 	if err != nil {
 		log.Println(err)
 		return postErrors.TwitsnapNotFound(postID)
@@ -605,12 +605,12 @@ func (d *AppDatabase) UnLikeAPost(postID string, likerID string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	likesCollection := d.db.Collection(LIKES_COLLECTION)
 
-	filter := bson.M{POST_ID_FIELD: postID}
+	filter := bson.M{ORIGINAL_POST_ID_FIELD: postID}
 	update := bson.M{"$inc": bson.M{LIKES_FIELD: -1}}
 
 	liker := bson.M{"$pull": bson.M{LIKERS_FIELD: likerID}}
 
-	_, err := postCollection.UpdateOne(context.Background(), filter, update)
+	_, err := postCollection.UpdateMany(context.Background(), filter, update)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -738,7 +738,7 @@ func (d *AppDatabase) hasLiked(postID string, likerID string) (bool, error) {
 
 	likesCollection := d.db.Collection(LIKES_COLLECTION)
 
-	filter := bson.M{POST_ID_FIELD: postID, LIKERS_FIELD: likerID}
+	filter := bson.M{ORIGINAL_POST_ID_FIELD: postID, LIKERS_FIELD: likerID}
 
 	var res bson.M
 
@@ -758,7 +758,7 @@ func (d *AppDatabase) hasRetweeted(postID string, retweeterID string) (bool, err
 
 	retweetCollection := d.db.Collection(RETWEET_COLLECTION)
 
-	filter := bson.M{POST_ID_FIELD: postID, RETWEETERS_FIELD: retweeterID}
+	filter := bson.M{ORIGINAL_POST_ID_FIELD: postID, RETWEETERS_FIELD: retweeterID}
 
 	var res bson.M
 
