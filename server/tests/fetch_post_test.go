@@ -27,7 +27,7 @@ func TestGetPostWithValidID(t *testing.T) {
 
 	token, err := auth.GenerateToken(author_id, "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
 
@@ -43,7 +43,7 @@ func TestGetPostWithValidID(t *testing.T) {
 
 	// log.Println(result_post)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 	assert.Equal(t, http.StatusOK, second.Code)
 	makeResponseAsserions(t, http.StatusOK, result_post, PostBody{Content: ogPost.Content, Tags: ogPost.Tags, Public: ogPost.Public}, author_id, second.Code)
 }
@@ -59,7 +59,7 @@ func TestGetPostWithInvalidID(t *testing.T) {
 	author_id := "54"
 	token, err := auth.GenerateToken(author_id, "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
 
@@ -73,6 +73,6 @@ func TestGetPostWithInvalidID(t *testing.T) {
 
 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 	assert.Equal(t, http.StatusNotFound, second.Code)
 }

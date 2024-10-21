@@ -21,7 +21,7 @@ func TestDeletePost(t *testing.T) {
 
 	token, err := auth.GenerateToken("1", "username", false)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	post := makeAndAssertPost("1", "content", []string{"tag1", "tag2"}, true, "", r, t)
 
@@ -31,14 +31,14 @@ func TestDeletePost(t *testing.T) {
 	third := httptest.NewRecorder()
 	r.ServeHTTP(third, deletePost)
 
-	assert.Equal(t, http.StatusNoContent, third.Code)
+	assert.Equal(t, http.StatusNoContent, third.Code, "Status should be 204")
 
 	getPost, _ := http.NewRequest("GET", "/twitsnap/"+post.Post_ID, nil)
 	addAuthorization(getPost, token)
 
 	fourth := httptest.NewRecorder()
 	r.ServeHTTP(fourth, getPost)
-	assert.Equal(t, http.StatusNotFound, fourth.Code)
+	assert.Equal(t, http.StatusNotFound, fourth.Code, "Status should be 404")
 }
 
 func TestDeleteUnexistentPost(t *testing.T) {
@@ -51,7 +51,7 @@ func TestDeleteUnexistentPost(t *testing.T) {
 
 	token, err := auth.GenerateToken("1", "username", false)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	post := makeAndAssertPost("1", "content", []string{"tag1", "tag2"}, true, "", r, t)
 
@@ -61,5 +61,5 @@ func TestDeleteUnexistentPost(t *testing.T) {
 	third := httptest.NewRecorder()
 	r.ServeHTTP(third, deletePost)
 
-	assert.Equal(t, http.StatusNotFound, third.Code)
+	assert.Equal(t, http.StatusNotFound, third.Code, "Status should be 404")
 }
