@@ -352,13 +352,14 @@ func TestRetweetAndLikeOriginal(t *testing.T) {
 	assert.Equal(t, err, nil, "Error should be nil")
 	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
 
-	retweet_post := retweetAPost(post, username, tokenRetweeterer, r, t)
-
 	likePost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Post_ID, nil)
 	addAuthorization(likePost, tokenRetweeterer)
 
 	first := httptest.NewRecorder()
 	r.ServeHTTP(first, likePost)
+
+	retweet_post := retweetAPost(post, username, tokenRetweeterer, r, t)
+
 
 	assert.Equal(t, http.StatusNoContent, first.Code, "Status should be 204")
 
@@ -378,6 +379,7 @@ func TestRetweetAndLikeOriginal(t *testing.T) {
 	assert.Equal(t, true, retweet_result.User_Retweet, "User should have retweeted")
 	assert.Equal(t, 1, retweet_result.Retweets, "Retweets should be 1")
 	assert.Equal(t, 1, retweet_result.Likes, "Likes should be 1")
+	assert.Equal(t, retweet_result.User_Liked, true, "Original post should be liked")
 }
 
 func TestRetweetAndLikeOriginalAndRetweet(t *testing.T) {
@@ -434,4 +436,6 @@ func TestRetweetAndLikeOriginalAndRetweet(t *testing.T) {
 	assert.Equal(t, true, retweet_result.User_Retweet, "User should have retweeted")
 	assert.Equal(t, 1, retweet_result.Retweets, "Retweets should be 1")
 	assert.Equal(t, 2, retweet_result.Likes, "Likes should be 2")
+	assert.Equal(t, retweet_result.User_Liked, true, "Original post should be liked")
+
 }
