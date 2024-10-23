@@ -399,7 +399,7 @@ func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitC
 		TIME_FIELD: bson.M{"$lt": parsedTime.UTC()},
 		"$and": []bson.M{
 			{"$or": []bson.M{
-				{AUTHOR_ID_FIELD: userId},
+				{AUTHOR_ID_FIELD: userId, IS_RETWEET_FIELD: false},
 				{RETWEET_AUTHOR_FIELD: userId},
 			}},
 			{"$or": []bson.M{
