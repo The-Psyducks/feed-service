@@ -73,7 +73,7 @@ func (d *AppDatabase) GetPost(postID string, askerID string) (models.FrontPost, 
 		return models.FrontPost{}, err
 	}
 
-	liked, err := d.hasLiked(postID, askerID)
+	liked, err := d.hasLiked(post.Original_Post_ID, askerID)
 
 	retweeted, err_3 := d.hasRetweeted(post.Original_Post_ID, askerID)
 	if err_3 != nil {
@@ -81,6 +81,7 @@ func (d *AppDatabase) GetPost(postID string, askerID string) (models.FrontPost, 
 	}
 
 	frontPost := makeDBPostIntoFrontPost(post, liked, retweeted)
+
 	return frontPost, err
 }
 
@@ -398,7 +399,7 @@ func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitC
 		TIME_FIELD: bson.M{"$lt": parsedTime.UTC()},
 		"$and": []bson.M{
 			{"$or": []bson.M{
-				{AUTHOR_ID_FIELD: userId},
+				{AUTHOR_ID_FIELD: userId, IS_RETWEET_FIELD: false},
 				{RETWEET_AUTHOR_FIELD: userId},
 			}},
 			{"$or": []bson.M{
@@ -699,7 +700,7 @@ func (d *AppDatabase) createPostList(cursor *mongo.Cursor, askerID string) ([]mo
 		if err != nil {
 			return nil, err
 		}
-		liked, err_2 := d.hasLiked(dbPost.Post_ID, askerID)
+		liked, err_2 := d.hasLiked(dbPost.Original_Post_ID, askerID)
 		if err_2 != nil {
 			return nil, err_2
 		}
