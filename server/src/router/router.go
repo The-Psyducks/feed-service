@@ -5,10 +5,15 @@ import (
 	"server/src/controller"
 	"github.com/gin-gonic/gin"
 	"server/src/middleware"
+
+	"github.com/newrelic/go-agent/v3/newrelic"
+	nrgin "github.com/newrelic/go-agent/v3/integrations/nrgin"
 )
 
 func CreateRouter(db database.Database) *gin.Engine {
 	r := gin.Default()
+
+	setNewRelicConnection(r)
 
 	r.Use(middleware.ErrorManager())
 	r.Use(middleware.AuthMiddleware())
@@ -42,4 +47,16 @@ func CreateRouter(db database.Database) *gin.Engine {
 	r.NoRoute(postController.NoRoute)
 
 	return r
+}
+
+func setNewRelicConnection(r *gin.Engine) {
+	app, err := newrelic.NewApplication(
+		newrelic.ConfigAppName("feed-micro"),
+		newrelic.ConfigLicense("1133c491dc667d55d64f81f50324285dFFFFNRAL"),
+		newrelic.ConfigAppLogForwardingEnabled(true),
+	  )	  
+	if err != nil {
+		panic(err)
+	}
+	r.Use(nrgin.Middleware(app))
 }
