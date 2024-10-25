@@ -47,8 +47,8 @@ func NewRetweetDBPost(post FrontPost, author_id string) DBPost {
 		Time:              time.Now().UTC(),
 		Tags:              post.Tags,
 		Public:            post.Public,
-		Likes:             0,
-		Retweets:          0,
+		Likes:             post.Likes,
+		Retweets:          post.Retweets,
 		Retweet_Author_ID: author_id,
 		Original_Post_ID:  post.Original_Post_ID,
 		Is_Retweet:        true,
@@ -78,9 +78,10 @@ type FrontPost struct {
 	Original_Post_ID string     `json:"original_post_id"`
 	Retweet_Author   string     `json:"retweet_author"`
 	Media_URL        string     `json:"media_url"`
+	Bookmark		 bool       `json:"bookmark"`
 }
 
-func NewFrontPost(post DBPost, author AuthorInfo, liked bool, retweeted bool) FrontPost {
+func NewFrontPost(post DBPost, author AuthorInfo, liked bool, retweeted bool, bookmarked bool) FrontPost {
 	return FrontPost{
 		Post_ID:          post.Post_ID,
 		Content:          post.Content,
@@ -96,6 +97,7 @@ func NewFrontPost(post DBPost, author AuthorInfo, liked bool, retweeted bool) Fr
 		Original_Post_ID: post.Original_Post_ID,
 		Is_Retweet:       post.Is_Retweet,
 		Retweet_Author:   post.Retweet_Author_ID,
+		Bookmark:		  bookmarked,
 	}
 
 }

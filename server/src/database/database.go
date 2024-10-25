@@ -26,7 +26,7 @@ func (d *AppDatabase) AddNewPost(newPost models.DBPost) (models.FrontPost, error
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	_, err := postCollection.InsertOne(context.Background(), newPost)
 
-	frontPost := makeDBPostIntoFrontPost(newPost, false, false)
+	frontPost := makeDBPostIntoFrontPost(newPost, false, false, false)
 
 	return frontPost, err
 }
@@ -42,12 +42,12 @@ func (d *AppDatabase) AddNewRetweet(newRetweet models.DBPost) (models.FrontPost,
 
 	retweetCollection := d.db.Collection(RETWEET_COLLECTION)
 
-	filter_original := bson.M{POST_ID_FIELD: newRetweet.Original_Post_ID}
+	filter_original := bson.M{ORIGINAL_POST_ID_FIELD: newRetweet.Original_Post_ID}
 	update := bson.M{"$inc": bson.M{RETWEET_FIELD: 1}}
 
 	retweeter := bson.M{"$addToSet": bson.M{RETWEETERS_FIELD: newRetweet.Retweet_Author_ID}}
 
-	_, err = postCollection.UpdateOne(context.Background(), filter_original, update)
+	_, err = postCollection.UpdateMany(context.Background(), filter_original, update)
 	if err != nil {
 		log.Println(err)
 		return models.FrontPost{}, err
@@ -56,11 +56,18 @@ func (d *AppDatabase) AddNewRetweet(newRetweet models.DBPost) (models.FrontPost,
 	_, err = retweetCollection.UpdateOne(context.Background(), filter_original, retweeter, options.Update().SetUpsert(true))
 	if err != nil {
 		log.Println(err)
+		return models.FrontPost{}, err
 	}
 
 	liked, err := d.hasLiked(newRetweet.Original_Post_ID, newRetweet.Retweet_Author_ID)
 
-	post := makeDBPostIntoFrontPost(newRetweet, liked, true)
+	if err != nil {
+		return models.FrontPost{}, err
+	}
+
+	bookmarked, err := d.hasBookmark(newRetweet.Original_Post_ID, newRetweet.Retweet_Author_ID)
+
+	post := makeDBPostIntoFrontPost(newRetweet, liked, true, bookmarked)
 
 	return post, err
 }
@@ -73,15 +80,26 @@ func (d *AppDatabase) GetPost(postID string, askerID string) (models.FrontPost, 
 		return models.FrontPost{}, err
 	}
 
-	liked, err := d.hasLiked(postID, askerID)
+	liked, err := d.hasLiked(post.Original_Post_ID, askerID)
+
+	if err != nil {
+		return models.FrontPost{}, err
+	}
 
 	retweeted, err_3 := d.hasRetweeted(post.Original_Post_ID, askerID)
 	if err_3 != nil {
 		return models.FrontPost{}, err_3
 	}
 
-	frontPost := makeDBPostIntoFrontPost(post, liked, retweeted)
-	return frontPost, err
+	bookmarked, err_4 := d.hasBookmark(post.Original_Post_ID, askerID)
+
+	if err_4 != nil {
+		return models.FrontPost{}, err_4
+	}
+
+	frontPost := makeDBPostIntoFrontPost(post, liked, retweeted, bookmarked)
+
+	return frontPost, nil
 }
 
 func (d *AppDatabase) DeletePost(postID string) error {
@@ -123,7 +141,7 @@ func (d *AppDatabase) DeleteRetweet(postID string, userID string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	retweetCollection := d.db.Collection(RETWEET_COLLECTION)
 
-	filter := bson.M{POST_ID_FIELD: postID}
+	filter := bson.M{ORIGINAL_POST_ID_FIELD: postID, RETWEET_AUTHOR_FIELD: userID}
 	update := bson.M{"$inc": bson.M{RETWEET_FIELD: -1}}
 	retweeter := bson.M{"$pull": bson.M{RETWEETERS_FIELD: userID}}
 
@@ -191,9 +209,15 @@ func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFo
 
 	liked, err_5 := d.hasLiked(dbPost.Original_Post_ID, askerID)
 
-	frontPost := makeDBPostIntoFrontPost(dbPost, liked, retweeted)
+	if err_5 != nil {
+		return post, err_5
+	}
 
-	return frontPost, err_5
+	bookmarked, err_6 := d.hasBookmark(dbPost.Original_Post_ID, askerID)
+
+	frontPost := makeDBPostIntoFrontPost(dbPost, liked, retweeted, bookmarked)
+
+	return frontPost, err_6
 }
 
 func (d *AppDatabase) updatePostContent(postID string, newContent *string) error {
@@ -398,7 +422,7 @@ func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitC
 		TIME_FIELD: bson.M{"$lt": parsedTime.UTC()},
 		"$and": []bson.M{
 			{"$or": []bson.M{
-				{AUTHOR_ID_FIELD: userId},
+				{AUTHOR_ID_FIELD: userId, IS_RETWEET_FIELD: false},
 				{RETWEET_AUTHOR_FIELD: userId},
 			}},
 			{"$or": []bson.M{
@@ -581,12 +605,12 @@ func (d *AppDatabase) LikeAPost(postID string, likerID string) error {
 		return postErrors.AlreadyLiked(postID)
 	}
 
-	filter := bson.M{POST_ID_FIELD: postID}
+	filter := bson.M{ORIGINAL_POST_ID_FIELD: postID}
 	update := bson.M{"$inc": bson.M{LIKES_FIELD: 1}}
 
 	liker := bson.M{"$addToSet": bson.M{LIKERS_FIELD: likerID}}
 
-	_, err := postCollection.UpdateOne(context.Background(), filter, update)
+	_, err := postCollection.UpdateMany(context.Background(), filter, update)
 	if err != nil {
 		log.Println(err)
 		return postErrors.TwitsnapNotFound(postID)
@@ -605,12 +629,12 @@ func (d *AppDatabase) UnLikeAPost(postID string, likerID string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	likesCollection := d.db.Collection(LIKES_COLLECTION)
 
-	filter := bson.M{POST_ID_FIELD: postID}
+	filter := bson.M{ORIGINAL_POST_ID_FIELD: postID}
 	update := bson.M{"$inc": bson.M{LIKES_FIELD: -1}}
 
 	liker := bson.M{"$pull": bson.M{LIKERS_FIELD: likerID}}
 
-	_, err := postCollection.UpdateOne(context.Background(), filter, update)
+	_, err := postCollection.UpdateMany(context.Background(), filter, update)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -625,15 +649,14 @@ func (d *AppDatabase) UnLikeAPost(postID string, likerID string) error {
 	return err
 }
 
-
 func (d *AppDatabase) AddFavorite(postID string, userID string) error {
-	favoritesCollection := d.db.Collection(FAVORITES_COLLECTION)
-	
+	favoritesCollection := d.db.Collection(BOOKMARK_COLLECTION)
+
 	filter := bson.M{AUTHOR_ID_FIELD: userID}
-	update := bson.M{"$addToSet": bson.M{FAVORITES_FIELD: postID}}
+	update := bson.M{"$addToSet": bson.M{POST_ID_FIELD: postID}}
 
 	_, err := favoritesCollection.UpdateOne(context.Background(), filter, update, options.Update().SetUpsert(true))
-	
+
 	if err != nil {
 		log.Println(err)
 	}
@@ -642,22 +665,86 @@ func (d *AppDatabase) AddFavorite(postID string, userID string) error {
 }
 
 func (d *AppDatabase) RemoveFavorite(postID string, userID string) error {
-	favoritesCollection := d.db.Collection(FAVORITES_COLLECTION)
-	
+	favoritesCollection := d.db.Collection(BOOKMARK_COLLECTION)
+
 	filter := bson.M{AUTHOR_ID_FIELD: userID}
-	update := bson.M{"$pull": bson.M{FAVORITES_FIELD: postID}}
-	
+	update := bson.M{"$pull": bson.M{POST_ID_FIELD: postID}}
+
 	_, err := favoritesCollection.UpdateOne(context.Background(), filter, update)
-	
+
 	if err != nil {
 		log.Println(err)
 	}
-	
+
 	return err
 }
 
 func (d *AppDatabase) GetUserFavorites(userID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
-	return nil, false, nil
+
+	favoritesCollection := d.db.Collection(BOOKMARK_COLLECTION)
+	postCollection := d.db.Collection(FEED_COLLECTION)
+
+
+	parsedTime, err := time.Parse(time.RFC3339, limitConfig.FromTime)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	filter := bson.M{AUTHOR_ID_FIELD: userID}
+
+	cursor, err := favoritesCollection.Find(context.Background(), filter, options.Find())
+
+	if err != nil {
+		log.Println(err)
+		return nil, false, postErrors.DatabaseError(err.Error())
+	}
+
+	postIDs := []string{}
+
+	for cursor.Next(context.Background()) {
+		var res bson.M
+		err = cursor.Decode(&res)
+		if err != nil {
+			log.Println(err)
+			return nil, false, postErrors.DatabaseError(err.Error())
+		}
+
+		if postIDArray, ok := res[POST_ID_FIELD].(bson.A); ok {
+			for _, postID := range postIDArray {
+				if idStr, ok := postID.(string); ok {
+					postIDs = append(postIDs, idStr)
+				} else {
+					log.Printf("Unexpected post ID type: %T", postID)
+				}
+			}
+		} else {
+			log.Printf("Unexpected type for POST_ID_FIELD: %T", res[POST_ID_FIELD])
+		}
+	}
+
+	filter = bson.M{POST_ID_FIELD: bson.M{"$in": postIDs}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}}
+
+	cursor, err = postCollection.Find(context.Background(), filter, options.Find().
+
+		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
+
+	if err != nil {
+		log.Println(err)
+		return nil, false, postErrors.DatabaseError(err.Error())
+	}
+
+	posts, err := d.createPostList(cursor, userID)
+
+	if err != nil {
+		log.Println(err)
+		return nil, false, postErrors.DatabaseError(err.Error())
+	}
+
+	hasMore := len(posts) > limitConfig.Limit
+
+
+	return posts, hasMore, nil
 }
 
 func (d *AppDatabase) ClearDB() error {
@@ -688,7 +775,6 @@ func (d *AppDatabase) findPost(postID string, postCollection *mongo.Collection) 
 	return post, err
 }
 
-
 func (d *AppDatabase) createPostList(cursor *mongo.Cursor, askerID string) ([]models.FrontPost, error) {
 	var posts []models.FrontPost
 	var err error
@@ -699,7 +785,7 @@ func (d *AppDatabase) createPostList(cursor *mongo.Cursor, askerID string) ([]mo
 		if err != nil {
 			return nil, err
 		}
-		liked, err_2 := d.hasLiked(dbPost.Post_ID, askerID)
+		liked, err_2 := d.hasLiked(dbPost.Original_Post_ID, askerID)
 		if err_2 != nil {
 			return nil, err_2
 		}
@@ -708,27 +794,27 @@ func (d *AppDatabase) createPostList(cursor *mongo.Cursor, askerID string) ([]mo
 			return nil, err_3
 		}
 
-		_, err_4 := d.isFavorite(dbPost.Post_ID, askerID)
+		bookmarked, err_4 := d.hasBookmark(dbPost.Post_ID, askerID)
 
 		if err_4 != nil {
 			return nil, err_4
 		}
-		
-		frontPost := makeDBPostIntoFrontPost(dbPost, liked, retweeted)
+
+		frontPost := makeDBPostIntoFrontPost(dbPost, liked, retweeted, bookmarked)
 		posts = append(posts, frontPost)
 	}
 
 	return posts, err
 }
 
-func makeDBPostIntoFrontPost(post models.DBPost, liked bool, retweeted bool) models.FrontPost {
+func makeDBPostIntoFrontPost(post models.DBPost, liked bool, retweeted bool, bookmarked bool) models.FrontPost {
 	author := models.AuthorInfo{
 		Author_ID: post.Author_ID,
 		Username:  "username",
 		Alias:     "alias",
 		PthotoURL: "photourl",
 	}
-	return models.NewFrontPost(post, author, liked, retweeted)
+	return models.NewFrontPost(post, author, liked, retweeted, bookmarked)
 }
 
 func (d *AppDatabase) hasLiked(postID string, likerID string) (bool, error) {
@@ -738,7 +824,7 @@ func (d *AppDatabase) hasLiked(postID string, likerID string) (bool, error) {
 
 	likesCollection := d.db.Collection(LIKES_COLLECTION)
 
-	filter := bson.M{POST_ID_FIELD: postID, LIKERS_FIELD: likerID}
+	filter := bson.M{ORIGINAL_POST_ID_FIELD: postID, LIKERS_FIELD: likerID}
 
 	var res bson.M
 
@@ -758,7 +844,7 @@ func (d *AppDatabase) hasRetweeted(postID string, retweeterID string) (bool, err
 
 	retweetCollection := d.db.Collection(RETWEET_COLLECTION)
 
-	filter := bson.M{POST_ID_FIELD: postID, RETWEETERS_FIELD: retweeterID}
+	filter := bson.M{ORIGINAL_POST_ID_FIELD: postID, RETWEETERS_FIELD: retweeterID}
 
 	var res bson.M
 
@@ -771,10 +857,10 @@ func (d *AppDatabase) hasRetweeted(postID string, retweeterID string) (bool, err
 	return err != mongo.ErrNoDocuments, nil
 }
 
-func (d *AppDatabase) isFavorite(postID string, userID string) (bool, error) {
-	favoritesCollection := d.db.Collection(FAVORITES_COLLECTION)
+func (d *AppDatabase) hasBookmark(postID string, userID string) (bool, error) {
+	favoritesCollection := d.db.Collection(BOOKMARK_COLLECTION)
 
-	filter := bson.M{AUTHOR_ID_FIELD: userID, FAVORITES_FIELD: postID}
+	filter := bson.M{AUTHOR_ID_FIELD: userID, POST_ID_FIELD: postID}
 
 	var res bson.M
 

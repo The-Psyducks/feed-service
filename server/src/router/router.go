@@ -42,6 +42,12 @@ func CreateRouter(db database.Database) *gin.Engine {
 
 	r.GET("/twitsnap/all", postController.GetAllPosts)
 
+	r.POST("/twitsnap/bookmark/:id", postController.BookmarkPost)
+
+	r.DELETE("/twitsnap/bookmark/:id", postController.UnBookmarkPost)
+
+	r.GET("/twitsnap/bookmarks", postController.GetBookmarks)
+
 	r.NoRoute(postController.NoRoute)
 
 	return r

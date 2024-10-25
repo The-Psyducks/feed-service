@@ -44,7 +44,7 @@ func TestNewPost(t *testing.T) {
 
 	err = json.Unmarshal(first.Body.Bytes(), &result)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 	makeResponseAsserions(t, http.StatusCreated, result, postBody, author_id, first.Code)
 }
 
@@ -85,7 +85,7 @@ func TestNewPostWithMissInf(t *testing.T) {
 	// log.Println("errFMT: ", errFMT)
 	// log.Println("err: ", err)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 	assert.Equal(t, errFMT, result)
 	assert.Equal(t, http.StatusBadRequest, first.Code)
 }

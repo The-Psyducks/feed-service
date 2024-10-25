@@ -39,7 +39,7 @@ func TestGetAll(t *testing.T) {
 
 	token, err := auth.GenerateToken("1", "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	expectedPosts := []models.FrontPost{post4, post3, post2, post1}
 
@@ -59,10 +59,10 @@ func TestGetAll(t *testing.T) {
 
 	err_2 := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
 
-	log.Println(result)
+	// log.Println(result)
 
-	assert.Equal(t, err_2, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder.Code)
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
 	assert.Equal(t, 6, result.Pagination.Limit)
@@ -78,7 +78,7 @@ func TestGetAllDeniedAccess(t *testing.T) {
 
 	token, err := auth.GenerateToken("1", "username", false)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	result := models.ReturnPaginatedPosts{}
 
@@ -98,7 +98,7 @@ func TestGetAllDeniedAccess(t *testing.T) {
 
 	// log.Println(result)
 
-	assert.Equal(t, err_2, nil)
+	assert.Equal(t, err_2, nil, "Error should be nil")
 	assert.Equal(t, http.StatusForbidden, feedRecorder.Code)
 }
 
@@ -117,13 +117,13 @@ func TestGetAllNextOffset(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{service.TEST_TAG_THREE, "tag6"}, true,  "",r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{service.TEST_TAG_THREE, "tag6"}, true, "", r, t)
 
 	post4 := makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{"tag7", "tag8"}, true, "", r, t)
 
 	token, err := auth.GenerateToken("1", "username", true)
 
-	assert.Equal(t, err, nil)
+	assert.Equal(t, err, nil, "Error should be nil")
 
 	expectedPosts := []models.FrontPost{post4, post3}
 
@@ -145,12 +145,12 @@ func TestGetAllNextOffset(t *testing.T) {
 
 	// log.Println(result)
 
-	assert.Equal(t, err_2, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder.Code)
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
 
 	compareOrderAsExpected(expectedPosts, result.Data, t)
-	assert.Equal(t, 2, result.Pagination.Limit)
-	assert.Equal(t, 2, result.Pagination.Next_Offset)
+	assert.Equal(t, 2, result.Pagination.Limit, "Limit should be 2")
+	assert.Equal(t, 2, result.Pagination.Next_Offset, "Next offset should be 2")
 
 	skip_2 := strconv.Itoa(result.Pagination.Next_Offset)
 
@@ -167,9 +167,9 @@ func TestGetAllNextOffset(t *testing.T) {
 	err_3 := json.Unmarshal(feedRecorder2.Body.Bytes(), &result2)
 
 	assert.Equal(t, err_3, nil)
-	assert.Equal(t, http.StatusOK, feedRecorder2.Code)
+	assert.Equal(t, http.StatusOK, feedRecorder2.Code, "Status should be 200")
 
 	compareOrderAsExpected(expectedPosts2, result2.Data, t)
-	assert.Equal(t, 2, result2.Pagination.Limit)
-	assert.Equal(t, 0, result2.Pagination.Next_Offset)
+	assert.Equal(t, 2, result2.Pagination.Limit, "Limit should be 2")
+	assert.Equal(t, 0, result2.Pagination.Next_Offset, "Next offset should be 0")
 }
