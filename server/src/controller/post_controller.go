@@ -321,15 +321,16 @@ func (c *PostController) UnBookmarkPost(context *gin.Context) {
 }
 
 func (c *PostController) GetBookmarks(context *gin.Context) {
-	userID, _ := context.Get("session_user_id")
+	token, _ := context.Get("tokenString")
 
 	time := context.Query(TIME)
 	skip := context.Query(SKIP)
 	limit := context.Query(LIMIT)
+	wanted_id := context.Query(WANTED_ID)
 
 	limitParams := models.NewLimitConfig(time, skip, limit)
 
-	bookmarks, hasMore, err := c.sv.GetUserFavorites(userID.(string), limitParams)
+	bookmarks, hasMore, err := c.sv.GetUserFavorites(wanted_id, limitParams, token.(string))
 
 	if err != nil {
 		_ = context.Error(err)

@@ -333,12 +333,18 @@ func (c *Service) UnBookmarkPost(postID string, userID string) error {
 	return nil 
 }
 
-func (c *Service) GetUserFavorites(userID string, limitiConfig models.LimitConfig) ([]models.FrontPost, bool, error) {
+func (c *Service) GetUserFavorites(userID string, limitiConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
 	bookmarks, hasMore, err := c.db.GetUserFavorites(userID, limitiConfig)
 
 	if err != nil {
 		return []models.FrontPost{}, false, err
 	}
 
-	return bookmarks, hasMore, nil
+	posts, err := addAuthorInfoToPosts(bookmarks, token)
+
+	if err != nil {
+		return []models.FrontPost{}, false, err
+	}
+
+	return posts, hasMore, nil
 }
