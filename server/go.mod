@@ -12,6 +12,12 @@ require (
 )
 
 require (
+	github.com/newrelic/go-agent/v3/integrations/nrgin v1.3.2 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 // indirect
+	google.golang.org/grpc v1.65.0 // indirect
+)
+
+require (
 	github.com/bytedance/sonic v1.12.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.0 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
@@ -37,6 +43,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
+	github.com/newrelic/go-agent/v3 v3.35.0
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
