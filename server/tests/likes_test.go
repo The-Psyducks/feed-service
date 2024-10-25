@@ -22,8 +22,8 @@ func TestLikingAPost(t *testing.T) {
 
 	r := router.CreateRouter(db)
 
-	author_id := "1"
-	liker_id := "2"
+	author_id := service.TEST_USER_ONE
+	liker_id := service.TEST_USER_TWO
 
 	tokenLiker, err := auth.GenerateToken(liker_id, "username", true)
 
@@ -61,8 +61,8 @@ func TestUnlikingAPost(t *testing.T) {
 
 	r := router.CreateRouter(db)
 
-	author_id := "1"
-	liker_id := "2"
+	author_id := service.TEST_USER_ONE
+	liker_id := service.TEST_USER_TWO
 
 	tokenLiker, err := auth.GenerateToken(liker_id, "username", true)
 

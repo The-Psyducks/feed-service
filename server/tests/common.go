@@ -163,3 +163,13 @@ func checkRetweetPost(post models.FrontPost, retweetAuthor string, t *testing.T)
 	assert.Equal(t, post.Retweet_Author, retweetAuthor, "Retweet author should be the retweeter (Retweet)")
 	assert.Equal(t, post.Is_Retweet, true, "IsRetweet should be true")
 }
+
+func boookmarkPost(postID string, token string, r *gin.Engine, t *testing.T) {
+	bookmarkPost, _ := http.NewRequest("POST", "/twitsnap/bookmark/"+postID, nil)
+	addAuthorization(bookmarkPost, token)
+
+	first := httptest.NewRecorder()
+	r.ServeHTTP(first, bookmarkPost)
+
+	assert.Equal(t, http.StatusNoContent, first.Code)
+}
