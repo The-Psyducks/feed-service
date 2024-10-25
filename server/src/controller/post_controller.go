@@ -292,6 +292,63 @@ func (c *PostController) UnLikePost(context *gin.Context) {
 	context.JSON(http.StatusNoContent, gin.H{})
 }
 
+func (c *PostController) BookmarkPost(context *gin.Context) {
+	postID := context.Param("id")
+	userID, _ := context.Get("session_user_id")
+
+	err := c.sv.BookmarkPost(postID, userID.(string))
+
+	if err != nil {
+		_ = context.Error(err)
+		return
+	}
+
+	context.JSON(http.StatusNoContent, gin.H{})
+}
+
+func (c *PostController) UnBookmarkPost(context *gin.Context) {
+	postID := context.Param("id")
+	userID, _ := context.Get("session_user_id")
+
+	err := c.sv.UnBookmarkPost(postID, userID.(string))
+
+	if err != nil {
+		_ = context.Error(err)
+		return
+	}
+
+	context.JSON(http.StatusNoContent, gin.H{})
+}
+
+func (c *PostController) GetBookmarks(context *gin.Context) {
+	userID, _ := context.Get("session_user_id")
+
+	time := context.Query(TIME)
+	skip := context.Query(SKIP)
+	limit := context.Query(LIMIT)
+
+	limitParams := models.NewLimitConfig(time, skip, limit)
+
+	bookmarks, hasMore, err := c.sv.GetUserFavorites(userID.(string), limitParams)
+
+	if err != nil {
+		_ = context.Error(err)
+		return
+	}
+
+	result := models.ReturnPaginatedPosts{
+		Data: bookmarks,
+		Pagination: models.Pagination{Limit: limitParams.Limit},
+	}
+
+	if hasMore {
+		result.Pagination.Next_Offset =limitParams.Skip + limitParams.Limit
+	}
+
+
+	context.JSON(http.StatusOK, result)
+}
+
 func (c *PostController) NoRoute(context *gin.Context) {
 	_ = context.Error(postErrors.NotFound())
 }
