@@ -5,11 +5,11 @@ import (
 	"server/src/controller"
 	"server/src/database"
 	"server/src/middleware"
-
 	"github.com/gin-gonic/gin"
 
 	nrgin "github.com/newrelic/go-agent/v3/integrations/nrgin"
 	"github.com/newrelic/go-agent/v3/newrelic"
+
 )
 
 func CreateRouter(db database.Database) *gin.Engine {
@@ -46,6 +46,12 @@ func CreateRouter(db database.Database) *gin.Engine {
 
 	r.GET("/twitsnap/all", postController.GetAllPosts)
 
+	r.POST("/twitsnap/bookmark/:id", postController.BookmarkPost)
+
+	r.DELETE("/twitsnap/bookmark/:id", postController.UnBookmarkPost)
+
+	r.GET("/twitsnap/bookmarks", postController.GetBookmarks)
+
 	r.NoRoute(postController.NoRoute)
 
 	return r
@@ -62,3 +68,4 @@ func setNewRelicConnection(r *gin.Engine) {
 	}
 	r.Use(nrgin.Middleware(app))
 }
+
