@@ -13,6 +13,8 @@ import (
 func CreateRouter(db database.Database) *gin.Engine {
 	r := gin.Default()
 
+	setNewRelicConnection(r)
+
 	r.Use(middleware.ErrorManager())
 	r.Use(middleware.AuthMiddleware())
 
