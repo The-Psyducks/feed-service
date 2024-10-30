@@ -33,7 +33,7 @@ func TestEditPostContent(t *testing.T) {
 
 	tags := []string{"tag1", "tag2"}
 
-	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], []string{"tag1", "tag2"}, true, "", r, t)
+	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	newContent := "new content"
 
@@ -78,7 +78,7 @@ func TestEditPostTags(t *testing.T) {
 
 	tags := []string{"tag1", "tag2"}
 
-	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], []string{"tag1", "tag2"}, true, "", r, t)
+	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	newTags := []string{"New", "Tags"}
 
@@ -128,7 +128,9 @@ func TestEditPostMediaURL(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, base_media_url, r, t)
+	tags := []string{"tag1", "tag2"}
+
+	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, base_media_url, r, t)
 
 	editInfo := struct {
 		MediaURL string `json:"media_url"`
@@ -173,7 +175,9 @@ func TestEditPostPublicToPrivate(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, public, "base_media_url", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, public, "base_media_url", r, t)
 
 	editInfo := struct {
 		Public bool `json:"public"`
@@ -218,7 +222,9 @@ func TestEditPostPrivateToPublic(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, public, "base_media_url", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, public, "base_media_url", r, t)
 
 	editInfo := struct {
 		Public bool `json:"public"`
@@ -255,7 +261,9 @@ func TestEditPost(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	newContent := "new content"
 	newTags := []string{"New", "Tags"}

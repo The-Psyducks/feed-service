@@ -1,7 +1,8 @@
 package models
 
 type UserInfoExpectedFormat struct {
-	Following bool                        `json:"following"`
+	OwnProfile bool						`json:"own_profile"`
+	Follows bool                        `json:"follows"`
 	Profile   PublicProfileExpectedFormat `json:"profile"`
 }
 

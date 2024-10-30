@@ -28,17 +28,25 @@ func TestHashagSearch(t *testing.T) {
 
 	tags_wanted := []string{"tag5", "tag6"}
 
-	_ = makeAndAssertPost(service.TEST_USER_ONE, "content", []string{service.TEST_TAG_ONE, tags_wanted[0]}, true, "", r, t)
+	tags := []string{service.TEST_TAG_ONE, tags_wanted[0]}
+
+	_ = makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2", []string{tags_wanted[0], tags_wanted[1]}, true, "", r, t)
+	tags = []string{tags_wanted[0], tags_wanted[1]}
+
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	_ = makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{service.TEST_TAG_THREE, tags_wanted[1]}, true, "", r, t)
+	tags = []string{service.TEST_TAG_THREE, tags_wanted[1]}
 
-	makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{"tag7", "tag8"}, true, "", r, t)
+	_ = makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+
+	tags = []string{"tag7", "tag8"}
+
+	makeAndAssertPost(service.TEST_USER_THREE, "content4 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	token, err := auth.GenerateToken("1", "username", true)
 
@@ -83,17 +91,25 @@ func TestHashagSearchNotFollowing(t *testing.T) {
 
 	tags_wanted := []string{"tag5", "tag6"}
 
-	makeAndAssertPost(service.TEST_NOT_FOLLOWING_ID, "content", []string{tags_wanted[0], tags_wanted[1]}, false, "", r, t)
+	tags := []string{tags_wanted[0], tags_wanted[1]}
+
+	makeAndAssertPost(service.TEST_NOT_FOLLOWING_ID, "content " + "#" + tags[0] + " #" + tags[1], tags, false, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2", []string{tags_wanted[0], tags_wanted[1]}, true, "", r, t)
+	tags = []string{tags_wanted[1], tags_wanted[0]}
+
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{service.TEST_TAG_THREE, "tag6"}, true, "", r, t)
+	tags = []string{service.TEST_TAG_THREE, "tags_wanted[1]"}
 
-	makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{"tag7", "tag8"}, true, "", r, t)
+	makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+
+	tags = []string{"tag7", "tag8"}
+
+	makeAndAssertPost(service.TEST_USER_THREE, "content4 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	token, err := auth.GenerateToken("1", "username", true)
 
@@ -136,17 +152,23 @@ func TestHashtagSearchFollowing(t *testing.T) {
 
 	tags_wanted := []string{"tag5", "tag6"}
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content", []string{tags_wanted[0], tags_wanted[1]}, false, "", r, t)
+	tags := []string{tags_wanted[0], tags_wanted[1]}
+
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, false, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2", []string{tags_wanted[0], tags_wanted[1]}, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	_ = makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{service.TEST_TAG_THREE, "tag6"}, true, "", r, t)
+	tags = []string{service.TEST_TAG_THREE, "tags_wanted[1]"}
 
-	makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{"tag7", "tag8"}, true, "", r, t)
+	_ = makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+
+	tags = []string{"tag7", "tag8"}
+
+	makeAndAssertPost(service.TEST_USER_THREE, "content4 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	token, err := auth.GenerateToken("1", "username", true)
 
@@ -190,15 +212,17 @@ func TestHashtagSearchNextOffset(t *testing.T) {
 
 	tags_wanted := []string{"tag5", "tag6"}
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content", []string{tags_wanted[1], tags_wanted[0]}, true, "", r, t)
+	tags := []string{tags_wanted[0], tags_wanted[1]}
+
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2", []string{tags_wanted[0], tags_wanted[1]}, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{tags_wanted[0], tags_wanted[1]}, true, "", r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	token, err := auth.GenerateToken(service.TEST_USER_ONE, "username", true)
 
