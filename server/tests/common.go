@@ -25,7 +25,7 @@ import (
 
 type PostBody struct {
 	Content  string   `json:"content"`
-	Tags     []string `json:"tags"`
+	Tags     []string `json:"-"`
 	Public   bool     `json:"public"`
 	MediaURL string   `json:"media_url"`
 }

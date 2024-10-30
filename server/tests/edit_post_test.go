@@ -31,7 +31,9 @@ func TestEditPostContent(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], []string{"tag1", "tag2"}, true, "", r, t)
 
 	newContent := "new content"
 
@@ -41,7 +43,7 @@ func TestEditPostContent(t *testing.T) {
 		Content: newContent,
 	}
 
-	newPostBody := PostBody{Content: newContent, Tags: ogPost.Tags, Public: ogPost.Public}
+	newPostBody := PostBody{Content: newContent, Tags: nil, Public: ogPost.Public}
 
 	marshalledData, _ := json.Marshal(editInfo)
 
@@ -74,7 +76,9 @@ func TestEditPostTags(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], []string{"tag1", "tag2"}, true, "", r, t)
 
 	newTags := []string{"New", "Tags"}
 

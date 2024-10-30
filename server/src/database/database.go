@@ -26,9 +26,14 @@ func (d *AppDatabase) AddNewPost(newPost models.DBPost) (models.FrontPost, error
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	_, err := postCollection.InsertOne(context.Background(), newPost)
 
-	frontPost := makeDBPostIntoFrontPost(newPost, false, false, false)
+	if err != nil {
+		log.Println(err)
+		return models.FrontPost{}, err
+	}
 
-	return frontPost, err
+	frontPost, err_2 := d.makeDBPostIntoFrontPost(newPost, newPost.Author_ID)
+
+	return frontPost, err_2
 }
 
 func (d *AppDatabase) AddNewRetweet(newRetweet models.DBPost) (models.FrontPost, error) {
@@ -59,15 +64,7 @@ func (d *AppDatabase) AddNewRetweet(newRetweet models.DBPost) (models.FrontPost,
 		return models.FrontPost{}, err
 	}
 
-	liked, err := d.hasLiked(newRetweet.Original_Post_ID, newRetweet.Retweet_Author_ID)
-
-	if err != nil {
-		return models.FrontPost{}, err
-	}
-
-	bookmarked, err := d.hasBookmark(newRetweet.Original_Post_ID, newRetweet.Retweet_Author_ID)
-
-	post := makeDBPostIntoFrontPost(newRetweet, liked, true, bookmarked)
+	post, err := d.makeDBPostIntoFrontPost(newRetweet, newRetweet.Retweet_Author_ID)
 
 	return post, err
 }
@@ -80,26 +77,9 @@ func (d *AppDatabase) GetPost(postID string, askerID string) (models.FrontPost, 
 		return models.FrontPost{}, err
 	}
 
-	liked, err := d.hasLiked(post.Original_Post_ID, askerID)
+	frontPost, err := d.makeDBPostIntoFrontPost(post, askerID)
 
-	if err != nil {
-		return models.FrontPost{}, err
-	}
-
-	retweeted, err_3 := d.hasRetweeted(post.Original_Post_ID, askerID)
-	if err_3 != nil {
-		return models.FrontPost{}, err_3
-	}
-
-	bookmarked, err_4 := d.hasBookmark(post.Original_Post_ID, askerID)
-
-	if err_4 != nil {
-		return models.FrontPost{}, err_4
-	}
-
-	frontPost := makeDBPostIntoFrontPost(post, liked, retweeted, bookmarked)
-
-	return frontPost, nil
+	return frontPost, err
 }
 
 func (d *AppDatabase) DeletePost(postID string) error {
@@ -177,12 +157,6 @@ func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFo
 		return post, err
 	}
 
-	err_2 := d.updatePostTags(postID, editInfo.Tags)
-
-	if err_2 != nil {
-		return post, err_2
-	}
-
 	err_3 := d.updatePostPublic(postID, editInfo.Public)
 
 	if err_3 != nil {
@@ -195,27 +169,13 @@ func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFo
 		return post, err_4
 	}
 
-	dbPost, err = d.findPost(postID, postCollection)
-
-	if err != nil {
-		return post, err
-	}
-
-	retweeted, err_5 := d.hasRetweeted(postID, askerID)
+	dbPost, err_5 := d.findPost(postID, postCollection)
 
 	if err_5 != nil {
 		return post, err_5
 	}
 
-	liked, err_5 := d.hasLiked(dbPost.Original_Post_ID, askerID)
-
-	if err_5 != nil {
-		return post, err_5
-	}
-
-	bookmarked, err_6 := d.hasBookmark(dbPost.Original_Post_ID, askerID)
-
-	frontPost := makeDBPostIntoFrontPost(dbPost, liked, retweeted, bookmarked)
+	frontPost, err_6 := d.makeDBPostIntoFrontPost(dbPost, askerID)
 
 	return frontPost, err_6
 }
@@ -235,6 +195,21 @@ func (d *AppDatabase) updatePostContent(postID string, newContent *string) error
 	if err != nil {
 		log.Println(err)
 	}
+
+	var tags []string
+	// var mentions []string
+
+	content :=  strings.Split(*newContent, " ")
+
+	for _, word := range content {
+		if strings.HasPrefix(word, "#") {
+			tags = append(tags, word)
+		} //  else if strings.HasPrefix(word, "@") {
+		// 	mentions = append(mentions, word)
+		// }
+	}
+
+	err = d.updatePostTags(postID, &tags)
 
 	return err
 }
@@ -785,36 +760,41 @@ func (d *AppDatabase) createPostList(cursor *mongo.Cursor, askerID string) ([]mo
 		if err != nil {
 			return nil, err
 		}
-		liked, err_2 := d.hasLiked(dbPost.Original_Post_ID, askerID)
+
+		frontPost, err_2 := d.makeDBPostIntoFrontPost(dbPost, askerID)
+
 		if err_2 != nil {
 			return nil, err_2
 		}
-		retweeted, err_3 := d.hasRetweeted(dbPost.Original_Post_ID, askerID)
-		if err_3 != nil {
-			return nil, err_3
-		}
 
-		bookmarked, err_4 := d.hasBookmark(dbPost.Post_ID, askerID)
-
-		if err_4 != nil {
-			return nil, err_4
-		}
-
-		frontPost := makeDBPostIntoFrontPost(dbPost, liked, retweeted, bookmarked)
 		posts = append(posts, frontPost)
 	}
 
 	return posts, err
 }
 
-func makeDBPostIntoFrontPost(post models.DBPost, liked bool, retweeted bool, bookmarked bool) models.FrontPost {
+func (d *AppDatabase) makeDBPostIntoFrontPost(post models.DBPost, askerID string) (models.FrontPost, error) {
 	author := models.AuthorInfo{
 		Author_ID: post.Author_ID,
 		Username:  "username",
 		Alias:     "alias",
 		PthotoURL: "photourl",
 	}
-	return models.NewFrontPost(post, author, liked, retweeted, bookmarked)
+	liked, err_2 := d.hasLiked(post.Original_Post_ID, askerID)
+	if err_2 != nil {
+		return models.FrontPost{}, err_2
+	}
+	
+	retweeted, err_3 := d.hasRetweeted(post.Original_Post_ID, askerID)
+	if err_3 != nil {
+		return models.FrontPost{}, err_3
+	}
+
+	bookmarked, err_4 := d.hasBookmark(post.Post_ID, askerID)
+	if err_4 != nil {
+		return models.FrontPost{}, err_4
+	}
+	return models.NewFrontPost(post, author, liked, retweeted, bookmarked), nil
 }
 
 func (d *AppDatabase) hasLiked(postID string, likerID string) (bool, error) {

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 
 	// "log"
 	"net/http"
@@ -178,6 +179,10 @@ func addAuthorInfoToPost(post models.FrontPost, token string) (models.FrontPost,
 	}
 
 	post.Author_Info = authorInfo
+
+	log.Println("Author info: ", post.Author_Info)
+	log.Println("Author info: ", authorInfo)
+
 
 	if post.Is_Retweet {
 		post, err = addRetweetAuthorInfoToPost(post, token)
