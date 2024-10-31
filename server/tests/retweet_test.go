@@ -27,7 +27,10 @@ func TestRetweetAPost(t *testing.T) {
 
 	tokenRetweeterer, err := auth.GenerateToken(retweeter_id, service.TEST_USER_TWO_USERNAME, true)
 	assert.Equal(t, err, nil, "Error should be nil")
-	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
+
+	tags := []string{"tag1", "tag2"}
+
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	retweetPost, _ := http.NewRequest("POST", "/twitsnap/retweet/"+post.Post_ID, nil)
 	addAuthorization(retweetPost, tokenRetweeterer)
@@ -88,15 +91,17 @@ func TestRetweetInFeedFollowing(t *testing.T) {
 
 	r := router.CreateRouter(db)
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2", []string{"tag3", "tag4"}, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{"tag5", "tag6"}, true, "", r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	token, err := auth.GenerateToken(service.TEST_USER_ONE, service.TEST_USER_ONE_USERNAME, false)
 
@@ -168,7 +173,10 @@ func TestUnRetweetAPost(t *testing.T) {
 	username := service.TEST_USER_TWO_USERNAME
 	tokenRetweeterer, err := auth.GenerateToken(retweeter_id, username, true)
 	assert.Equal(t, err, nil, "Error should be nil")
-	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
+
+	tags := []string{"tag1", "tag2"}
+
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	_ = retweetAPost(post, username, tokenRetweeterer, r, t)
 
@@ -224,15 +232,21 @@ func TestRetweetInFeedForyou(t *testing.T) {
 
 	r := router.CreateRouter(db)
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content", []string{service.TEST_TAG_ONE, "tag5"}, true, "", r, t)
+	tags := []string{service.TEST_TAG_ONE, "tag2"}
+
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], []string{service.TEST_TAG_ONE, "tag5"}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2", []string{"tag6", service.TEST_TAG_TWO}, true, "", r, t)
+	tags = []string{service.TEST_TAG_TWO, "tag4"}
+
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content3 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{service.TEST_TAG_THREE, "tag6"}, true, "", r, t)
+	tags = []string{service.TEST_TAG_THREE, "tag6"}
+
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content2 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	token, err := auth.GenerateToken(service.TEST_USER_ONE, service.TEST_USER_ONE_USERNAME, false)
 
@@ -284,15 +298,17 @@ func TestRetweetInSingleRetweeterFeed(t *testing.T) {
 
 	r := router.CreateRouter(db)
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{service.TEST_TAG_ONE, "tag2"}
+
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2", []string{"tag3", "tag4"}, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_ONE, "content3", []string{"tag5", "tag6"}, true, "", r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_ONE, "content3 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	token, err := auth.GenerateToken(service.TEST_USER_ONE, service.TEST_USER_ONE_USERNAME, false)
 
@@ -350,7 +366,10 @@ func TestRetweetAndLikeOriginal(t *testing.T) {
 
 	tokenRetweeterer, err := auth.GenerateToken(retweeter_id, username, true)
 	assert.Equal(t, err, nil, "Error should be nil")
-	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
+
+	tags := []string{"tag1", "tag2"}
+
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	likePost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Post_ID, nil)
 	addAuthorization(likePost, tokenRetweeterer)
@@ -400,7 +419,10 @@ func TestRetweetAndLikeOriginalAndRetweet(t *testing.T) {
 
 	tokenRetweeterer, err := auth.GenerateToken(retweeter_id, username, true)
 	assert.Equal(t, err, nil, "Error should be nil")
-	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
+
+	tags := []string{"tag1", "tag2"}
+
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	retweet_post := retweetAPost(post, username, tokenRetweeterer, r, t)
 
@@ -447,15 +469,17 @@ func TestRetwetSingleAuthorField(t *testing.T) {
 
 	r := router.CreateRouter(db)
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2", []string{"tag3", "tag4"}, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_ONE, "content3", []string{"tag5", "tag6"}, true, "", r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_ONE, "content3 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	token, err := auth.GenerateToken(service.TEST_USER_ONE, service.TEST_USER_ONE_USERNAME, false)
 

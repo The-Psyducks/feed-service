@@ -31,7 +31,9 @@ func TestBookmarkPost(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	bookmarkPost, _ := http.NewRequest("POST", "/twitsnap/bookmark/"+post.Original_Post_ID, nil)
 	addAuthorization(bookmarkPost, tokenLiker)
@@ -73,7 +75,9 @@ func TestUnBookmarkPost(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	bookmarkPost, _ := http.NewRequest("POST", "/twitsnap/bookmark/"+post.Original_Post_ID, nil)
 	addAuthorization(bookmarkPost, tokenLiker)
@@ -136,15 +140,17 @@ func TestFetchBookmarkedPosts(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2", []string{"tag3", "tag4"}, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{"tag5", "tag6"}, true, "", r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content 3 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	boookmarkPost(post1.Original_Post_ID, tokenLiker, r, t)
 
@@ -204,7 +210,9 @@ func TestBookmarkReTweetedPost(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	reTweetPost := retweetAPost(post, service.TEST_USER_THREE_USERNAME, tokenRetweeter, r, t)
 
