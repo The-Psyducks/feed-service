@@ -232,9 +232,9 @@ func TestRetweetInFeedForyou(t *testing.T) {
 
 	r := router.CreateRouter(db)
 
-	tags := []string{service.TEST_TAG_ONE, "tag2"}
+	tags := []string{service.TEST_TAG_ONE, "tag5"}
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], []string{service.TEST_TAG_ONE, "tag5"}, true, "", r, t)
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 

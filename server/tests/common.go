@@ -69,19 +69,10 @@ func connectToDatabase() database.Database {
 
 func makeResponseAsserions(t *testing.T, response int, result_post models.FrontPost, postBody PostBody, author_id string, code int) {
 
-	newTags := []string{}
-
-	for _, tag_og := range postBody.Tags {
-		
-		tag := "#" + tag_og
-
-		newTags = append(newTags, tag)
-	}
-
 	assert.Equal(t, response, code, "Response should be 201")
 	assert.Equal(t, result_post.Content, postBody.Content, "Content should be the same")
 	assert.Equal(t, result_post.Author_Info.Author_ID, author_id, "Author should be the same")
-	assert.Equal(t, result_post.Tags, newTags, "Tags should be the same")
+	assert.Equal(t, result_post.Tags, postBody.Tags, "Tags should be the same")
 	assert.Equal(t, result_post.Public, postBody.Public, "Public should be the same")
 	assert.Equal(t, result_post.Media_URL, postBody.MediaURL, "Media URL should be the same")
 }

@@ -67,8 +67,10 @@ func (c *Service) parsePost(post *models.PostExpectedFormat, author_id string) (
 
 	for _, word := range content {
 		if strings.HasPrefix(word, "#") {
+			word = word[1:]
 			tags = append(tags, word)
 		} else if strings.HasPrefix(word, "@") {
+			word = word[1:]
 			mentions = append(mentions, word)
 		}
 	}

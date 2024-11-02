@@ -43,9 +43,11 @@ func TestFeedForYou(t *testing.T) {
 
 	tags3 := []string{service.TEST_TAG_THREE, "tag6"}
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags[0] + " #" + tags[1], tags3, true, "", r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags3[0] + " #" + tags3[1], tags3, true, "", r, t)
 
-	makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{"tag7", "tag8"}, true, "", r, t)
+	tags4 := []string{"tag7", "tag8"}
+
+	makeAndAssertPost(service.TEST_NOT_FOLLOWING_ID, "content4 " + "#" + tags4[0] + " #" + tags4[1], tags4, true, "", r, t)
 
 	token, err := auth.GenerateToken("1", "username", true)
 
@@ -69,7 +71,7 @@ func TestFeedForYou(t *testing.T) {
 
 	err_2 := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
 
-	// log.Println(result)
+	log.Println(result)
 
 	assert.Equal(t, err_2, nil, "Error should be nil")
 	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")

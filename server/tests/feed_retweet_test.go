@@ -49,7 +49,9 @@ func TestGetFeedRetweet(t *testing.T) {
 	retweet_post1 := retweetAPost(post1, username, tokenRetweeterer, r, t)
 	retweet_post2 := retweetAPost(post2, username, tokenRetweeterer, r, t)
 
-	makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{"tag5", "tag6"}, true, "", r, t)
+	tags3 := []string{"tag5", "tag6"}
+
+	makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags3[0] + " #" + tags3[1], tags3, true, "", r, t)
 
 	assert.Equal(t, err, nil, "Error should be nil")
 

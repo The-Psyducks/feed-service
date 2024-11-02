@@ -220,10 +220,16 @@ func (d *AppDatabase) updatePostTags(postID string, newTags *[]string) error {
 		return nil
 	}
 
+	fixedTags := []string{}
+
+	for _, word := range *newTags {
+		fixedTags = append(fixedTags, word[1:])
+	}
+
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	filter := bson.M{POST_ID_FIELD: postID}
-	update := bson.M{"$set": bson.M{TAGS_FIELD: newTags}}
+	update := bson.M{"$set": bson.M{TAGS_FIELD: fixedTags}}
 
 	_, err := postCollection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
@@ -355,6 +361,8 @@ func (d *AppDatabase) GetUserFeedInterests(interests []string, following []strin
 		log.Println(err)
 	}
 
+	log.Println(interests)
+
 	filter := bson.M{TAGS_FIELD: bson.M{"$in": interests}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
 		{PUBLIC_FIELD: true},
 		{PUBLIC_FIELD: false, AUTHOR_ID_FIELD: bson.M{"$in": following}},
@@ -380,6 +388,8 @@ func (d *AppDatabase) GetUserFeedInterests(interests []string, following []strin
 	if hasMore {
 		posts = posts[:len(posts)-1]
 	}
+
+	log.Println(posts)
 
 	return posts, hasMore, err
 }
@@ -780,6 +790,11 @@ func (d *AppDatabase) makeDBPostIntoFrontPost(post models.DBPost, askerID string
 		Alias:     "alias",
 		PthotoURL: "photourl",
 	}
+
+	if len(post.Tags) == 0 {
+		post.Tags = []string{}
+	}
+
 	liked, err_2 := d.hasLiked(post.Original_Post_ID, askerID)
 	if err_2 != nil {
 		return models.FrontPost{}, err_2
