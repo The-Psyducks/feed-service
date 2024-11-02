@@ -29,15 +29,21 @@ func TestFeedFollowing(t *testing.T) {
 
 	r := router.CreateRouter(db)
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2", []string{"tag3", "tag4"}, true, "", r, t)
+	tags2 := []string{"tag3", "tag4"}
+
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content 2 " + "#" + tags2[0] + " #" + tags2[1], tags2, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{"tag5", "tag6"}, true, "", r, t)
+	tags3 := []string{"tag5", "tag6"}
+
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content 3 " + "#" + tags3[0] + " #" + tags3[1], tags3, true, "", r, t)
 
 	token, err := auth.GenerateToken(service.TEST_USER_ONE, "username", false)
 
@@ -78,15 +84,21 @@ func TestFeedFollowingNextOffset(t *testing.T) {
 
 	r := router.CreateRouter(db)
 
-	post1 := makeAndAssertPost(service.TEST_USER_TWO, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	post1 := makeAndAssertPost(service.TEST_USER_TWO, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_ONE, "content2", []string{"tag3", "tag4"}, true, "", r, t)
+	tags2 := []string{"tag3", "tag4"}
+
+	post2 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags2[0] + " #" + tags2[1], tags2, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{"tag5", "tag6"}, true, "", r, t)
+	tags3 := []string{"tag5", "tag6"}
+
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content " + "#" + tags3[0] + " #" + tags3[1], tags3, true, "", r, t)
 
 	token, err := auth.GenerateToken(service.TEST_USER_ONE, "username", false)
 

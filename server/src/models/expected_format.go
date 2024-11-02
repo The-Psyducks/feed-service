@@ -3,7 +3,7 @@ package models
 type PostExpectedFormat struct {
 	Content string   `json:"content" validate:"required"`
 	Public  bool     `json:"public"`
-	Tags    []string `json:"tags" validate:"dive,required"`
+	// Tags    []string `json:"tags" validate:"dive,required"`
 	MediaURL string `json:"media_url"`
 }
 

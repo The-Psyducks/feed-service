@@ -31,7 +31,9 @@ func TestBookmarkPost(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	bookmarkPost, _ := http.NewRequest("POST", "/twitsnap/bookmark/"+post.Original_Post_ID, nil)
 	addAuthorization(bookmarkPost, tokenLiker)
@@ -73,7 +75,9 @@ func TestUnBookmarkPost(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	post := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	bookmarkPost, _ := http.NewRequest("POST", "/twitsnap/bookmark/"+post.Original_Post_ID, nil)
 	addAuthorization(bookmarkPost, tokenLiker)
@@ -136,15 +140,17 @@ func TestFetchBookmarkedPosts(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2", []string{"tag3", "tag4"}, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{"tag5", "tag6"}, true, "", r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content 3 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	boookmarkPost(post1.Original_Post_ID, tokenLiker, r, t)
 
@@ -184,4 +190,71 @@ func TestFetchBookmarkedPosts(t *testing.T) {
 
 	assert.Equal(t, 6, result.Pagination.Limit, "Limit should be 6")
 	assert.Equal(t, 0, result.Pagination.Next_Offset, "Next offset should be 0")
+}
+
+func TestBookmarkReTweetedPost(t *testing.T) {
+	log.Println("TestBookmarkPost")
+
+	db := connectToDatabase()
+
+	r := router.CreateRouter(db)
+
+	author_id := service.TEST_USER_ONE
+	bookmarker_id := service.TEST_USER_TWO
+
+	tokenBookmarker, err := auth.GenerateToken(bookmarker_id, service.TEST_USER_TWO_USERNAME, true)
+
+	assert.Equal(t, err, nil, "Error should be nil")
+
+	tokenRetweeter, err := auth.GenerateToken(service.TEST_USER_THREE, service.TEST_USER_THREE_USERNAME, true)
+
+	assert.Equal(t, err, nil, "Error should be nil")
+
+	tags := []string{"tag1", "tag2"}
+
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+
+	reTweetPost := retweetAPost(post, service.TEST_USER_THREE_USERNAME, tokenRetweeter, r, t)
+
+	bookmarkPost, _ := http.NewRequest("POST", "/twitsnap/bookmark/"+reTweetPost.Original_Post_ID, nil)
+	addAuthorization(bookmarkPost, tokenBookmarker)
+
+	first := httptest.NewRecorder()
+	r.ServeHTTP(first, bookmarkPost)
+
+	assert.Equal(t, http.StatusNoContent, first.Code)
+
+	getPostBookmarked, _ := http.NewRequest("GET", "/twitsnap/"+post.Original_Post_ID, nil)
+	addAuthorization(getPostBookmarked, tokenBookmarker)
+
+	second := httptest.NewRecorder()
+	r.ServeHTTP(second, getPostBookmarked)
+
+	result_post := models.FrontPost{}
+
+	err = json.Unmarshal(second.Body.Bytes(), &result_post)
+
+	// log.Println(result_post)
+
+	assert.Equal(t, err, nil, "Error should be nil")
+
+	assert.Equal(t, http.StatusOK, second.Code, "Status should be 200")
+	assert.Equal(t, result_post.Bookmark, true, "Post should be bookmarked")
+
+	getPostRetweet, _ := http.NewRequest("GET", "/twitsnap/"+reTweetPost.Post_ID, nil)
+	addAuthorization(getPostRetweet, tokenBookmarker)
+
+	third := httptest.NewRecorder()
+	r.ServeHTTP(third, getPostRetweet)
+
+	result_rt_post := models.FrontPost{}
+
+	err = json.Unmarshal(second.Body.Bytes(), &result_rt_post)
+
+	// log.Println(result_post)
+
+	assert.Equal(t, err, nil, "Error should be nil")
+
+	assert.Equal(t, http.StatusOK, third.Code, "Status should be 200")
+	assert.Equal(t, result_rt_post.Bookmark, true, "Post should be bookmarked")
 }

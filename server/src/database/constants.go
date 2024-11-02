@@ -25,6 +25,7 @@ const (
 	RETWEET_AUTHOR_FIELD   = "retweet_author"
 	MEDIA_URL_FIELD        = "media_url"
 	BOOKMARK_FIELD         = "bookmark"
+	MENTIONS_FIELD         = "mentions"
 )
 
 const (

@@ -29,17 +29,25 @@ func TestFeedForYou(t *testing.T) {
 
 	r := router.CreateRouter(db)
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content", []string{service.TEST_TAG_ONE, "tag5"}, true, "", r, t)
+	tags := []string{service.TEST_TAG_ONE, "tag5"}
+
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2", []string{"tag6", service.TEST_TAG_TWO}, true, "", r, t)
+	tags2 := []string{"tag6", service.TEST_TAG_TWO}
+
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags2[0] + " #" + tags2[1], tags2, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{service.TEST_TAG_THREE, "tag6"}, true, "", r, t)
+	tags3 := []string{service.TEST_TAG_THREE, "tag6"}
 
-	makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{"tag7", "tag8"}, true, "", r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags3[0] + " #" + tags3[1], tags3, true, "", r, t)
+
+	tags4 := []string{"tag7", "tag8"}
+
+	makeAndAssertPost(service.TEST_NOT_FOLLOWING_ID, "content4 " + "#" + tags4[0] + " #" + tags4[1], tags4, true, "", r, t)
 
 	token, err := auth.GenerateToken("1", "username", true)
 
@@ -63,7 +71,7 @@ func TestFeedForYou(t *testing.T) {
 
 	err_2 := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
 
-	// log.Println(result)
+	log.Println(result)
 
 	assert.Equal(t, err_2, nil, "Error should be nil")
 	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
@@ -80,17 +88,25 @@ func TestFeedForyouNotFollowing(t *testing.T) {
 
 	r := router.CreateRouter(db)
 
-	post1 := makeAndAssertPost(service.TEST_NOT_FOLLOWING_ID, "content", []string{service.TEST_TAG_ONE, "tag5"}, true, "", r, t)
+	tags := []string{service.TEST_TAG_ONE, "tag5"}
+
+	post1 := makeAndAssertPost(service.TEST_NOT_FOLLOWING_ID, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_NOT_FOLLOWING_ID, "content2", []string{"tag6", service.TEST_TAG_TWO}, true, "", r, t)
+	tags2 := []string{"tag6", service.TEST_TAG_TWO}
+
+	post2 := makeAndAssertPost(service.TEST_NOT_FOLLOWING_ID, "content " + "#" + tags2[0] + " #" + tags2[1], tags2, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	_ = makeAndAssertPost(service.TEST_NOT_FOLLOWING_ID, "content3", []string{service.TEST_TAG_THREE, "tag6"}, false, "", r, t)
+	tags3 := []string{service.TEST_TAG_THREE, "tag6"}
 
-	makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{"tag7", "tag8"}, true, "", r, t)
+	_ = makeAndAssertPost(service.TEST_NOT_FOLLOWING_ID, "content " + "#" + tags3[0] + " #" + tags3[1], tags3, false, "", r, t)
+
+	tags4 := []string{"tag7", "tag8"}
+
+	makeAndAssertPost(service.TEST_USER_THREE, "content " + "#" + tags4[0] + " #" + tags4[1], tags4, true, "", r, t)
 
 	token, err := auth.GenerateToken("1", "username", true)
 
@@ -132,15 +148,21 @@ func TestFeedForyouNextOffset(t *testing.T) {
 
 	r := router.CreateRouter(db)
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content", []string{service.TEST_TAG_ONE, "tag5"}, true, "", r, t)
+	tags := []string{service.TEST_TAG_ONE, "tag5"}
+
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2", []string{"tag6", service.TEST_TAG_TWO}, true, "", r, t)
+	tags2 := []string{"tag6", service.TEST_TAG_TWO}
+
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content " + "#" + tags2[0] + " #" + tags2[1], tags2, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{service.TEST_TAG_THREE, "tag6"}, true, "", r, t)
+	tags3 := []string{service.TEST_TAG_THREE, "tag6"}
+
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content " + "#" + tags3[0] + " #" + tags3[1], tags3, true, "", r, t)
 
 	token, err := auth.GenerateToken(service.TEST_USER_ONE, "username", true)
 

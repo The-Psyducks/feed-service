@@ -31,7 +31,9 @@ func TestEditPostContent(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	newContent := "new content"
 
@@ -41,7 +43,7 @@ func TestEditPostContent(t *testing.T) {
 		Content: newContent,
 	}
 
-	newPostBody := PostBody{Content: newContent, Tags: ogPost.Tags, Public: ogPost.Public}
+	newPostBody := PostBody{Content: newContent, Tags: []string{}, Public: ogPost.Public}
 
 	marshalledData, _ := json.Marshal(editInfo)
 
@@ -55,6 +57,8 @@ func TestEditPostContent(t *testing.T) {
 	result_post := models.FrontPost{}
 
 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
+
+	// log.Println(result_post)
 
 	assert.Equal(t, err, nil, "Error should be nil")
 	makeResponseAsserions(t, http.StatusOK, result_post, newPostBody, author_id, second.Code)
@@ -74,17 +78,21 @@ func TestEditPostTags(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	newTags := []string{"New", "Tags"}
 
+	newContent := "content " + "#" + newTags[0] + " #" + newTags[1]
+
 	editInfo := struct {
-		Tags []string `json:"tags"`
+		Content string `json:"content"`
 	}{
-		Tags: newTags,
+		Content: newContent,
 	}
 
-	newPostBody := PostBody{Content: ogPost.Content, Tags: newTags, Public: ogPost.Public}
+	newPostBody := PostBody{Content: newContent, Tags: newTags, Public: ogPost.Public}
 
 	marshalledData, _ := json.Marshal(editInfo)
 
@@ -124,7 +132,9 @@ func TestEditPostMediaURL(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, base_media_url, r, t)
+	tags := []string{"tag1", "tag2"}
+
+	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, base_media_url, r, t)
 
 	editInfo := struct {
 		MediaURL string `json:"media_url"`
@@ -132,7 +142,7 @@ func TestEditPostMediaURL(t *testing.T) {
 		MediaURL: edit_media_url,
 	}
 
-	newPostBody := PostBody{Content: ogPost.Content, Tags: ogPost.Tags, Public: ogPost.Public, MediaURL: edit_media_url}
+	newPostBody := PostBody{Content: ogPost.Content, Tags: tags, Public: ogPost.Public, MediaURL: edit_media_url}
 
 	marshalledData, _ := json.Marshal(editInfo)
 
@@ -169,7 +179,9 @@ func TestEditPostPublicToPrivate(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, public, "base_media_url", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, public, "base_media_url", r, t)
 
 	editInfo := struct {
 		Public bool `json:"public"`
@@ -177,7 +189,7 @@ func TestEditPostPublicToPrivate(t *testing.T) {
 		Public: newPublic,
 	}
 
-	newPostBody := PostBody{Content: ogPost.Content, Tags: ogPost.Tags, Public: newPublic, MediaURL: ogPost.Media_URL}
+	newPostBody := PostBody{Content: ogPost.Content, Tags: tags, Public: newPublic, MediaURL: ogPost.Media_URL}
 
 	marshalledData, _ := json.Marshal(editInfo)
 
@@ -191,6 +203,8 @@ func TestEditPostPublicToPrivate(t *testing.T) {
 	result_post := models.FrontPost{}
 
 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
+
+	log.Println(result_post)
 
 	assert.Equal(t, err, nil, "Error should be nil")
 	makeResponseAsserions(t, http.StatusOK, result_post, newPostBody, author_id, second.Code)
@@ -214,7 +228,9 @@ func TestEditPostPrivateToPublic(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, public, "base_media_url", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, public, "base_media_url", r, t)
 
 	editInfo := struct {
 		Public bool `json:"public"`
@@ -222,7 +238,7 @@ func TestEditPostPrivateToPublic(t *testing.T) {
 		Public: newPublic,
 	}
 
-	newPostBody := PostBody{Content: ogPost.Content, Tags: ogPost.Tags, Public: newPublic, MediaURL: ogPost.Media_URL}
+	newPostBody := PostBody{Content: ogPost.Content, Tags: tags, Public: newPublic, MediaURL: ogPost.Media_URL}
 
 	marshalledData, _ := json.Marshal(editInfo)
 
@@ -251,10 +267,12 @@ func TestEditPost(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
 
-	newContent := "new content"
+	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+
 	newTags := []string{"New", "Tags"}
+	newContent := "new content " + "#" + newTags[0] + " #" + newTags[1]
 	edit_media_url := "media_url_edited"
 	pubic := false
 

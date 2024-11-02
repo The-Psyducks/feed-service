@@ -25,7 +25,7 @@ import (
 
 type PostBody struct {
 	Content  string   `json:"content"`
-	Tags     []string `json:"tags"`
+	Tags     []string `json:"-"`
 	Public   bool     `json:"public"`
 	MediaURL string   `json:"media_url"`
 }
@@ -68,6 +68,7 @@ func connectToDatabase() database.Database {
 }
 
 func makeResponseAsserions(t *testing.T, response int, result_post models.FrontPost, postBody PostBody, author_id string, code int) {
+
 	assert.Equal(t, response, code, "Response should be 201")
 	assert.Equal(t, result_post.Content, postBody.Content, "Content should be the same")
 	assert.Equal(t, result_post.Author_Info.Author_ID, author_id, "Author should be the same")

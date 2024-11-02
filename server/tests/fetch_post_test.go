@@ -29,7 +29,9 @@ func TestGetPostWithValidID(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	getPost, _ := http.NewRequest("GET", "/twitsnap/"+ogPost.Post_ID, nil)
 	addAuthorization(getPost, token)
@@ -61,7 +63,9 @@ func TestGetPostWithInvalidID(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	ogPost := makeAndAssertPost(author_id, "content", []string{"tag1", "tag2"}, true, "", r, t)
+	tags := []string{"tag1", "tag2"}
+
+	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
 
 	getPost, _ := http.NewRequest("GET", "/twitsnap/"+ogPost.Post_ID+"invalid", nil)
 	addAuthorization(getPost, token)

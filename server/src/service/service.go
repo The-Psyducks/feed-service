@@ -2,6 +2,8 @@ package service
 
 import (
 	"errors"
+	"strings"
+
 	// "log"
 	postErrors "server/src/all_errors"
 	"server/src/database"
@@ -27,16 +29,11 @@ func NewService(db database.Database) *Service {
 
 func (c *Service) CreatePost(newPost *models.PostExpectedFormat, author_id string, token string) (*models.FrontPost, error) {
 
-	validate := validator.New()
-	if err := validate.Struct(newPost); err != nil {
-		return nil, postErrors.TwitSnapImportantFieldsMissing(err)
-	}
+	postNew, err := c.parsePost(newPost, author_id)
 
-	if len(newPost.Content) > 280 {
-		return nil, postErrors.TwitsnapTooLong()
+	if err != nil {
+		return nil, err
 	}
-
-	postNew := models.NewDBPost(author_id, newPost.Content, newPost.Tags, newPost.Public, newPost.MediaURL)
 
 	newPosted, err := c.db.AddNewPost(postNew)
 
@@ -51,6 +48,37 @@ func (c *Service) CreatePost(newPost *models.PostExpectedFormat, author_id strin
 	}
 
 	return &newPosted, nil
+}
+
+func (c *Service) parsePost(post *models.PostExpectedFormat, author_id string) (models.DBPost, error) {
+	validate := validator.New()
+	if err := validate.Struct(post); err != nil {
+		return models.DBPost{}, postErrors.TwitSnapImportantFieldsMissing(err)
+	}
+
+	if len(post.Content) > 280 {
+		return models.DBPost{}, postErrors.TwitsnapTooLong()
+	}
+
+	var tags []string
+	var mentions []string
+
+	content :=  strings.Split(post.Content, " ")
+
+	for _, word := range content {
+		if strings.HasPrefix(word, "#") {
+			word = word[1:]
+			tags = append(tags, word)
+		} else if strings.HasPrefix(word, "@") {
+			word = word[1:]
+			mentions = append(mentions, word)
+		}
+	}
+
+	postNew := models.NewDBPost(author_id, post.Content, tags, post.Public, post.MediaURL, mentions)
+
+
+	return postNew, nil
 }
 
 func (c *Service) FetchPostByID(postID string, token string, userID string) (*models.FrontPost, error) {
