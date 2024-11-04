@@ -197,19 +197,25 @@ func (d *AppDatabase) updatePostContent(postID string, newContent *string) error
 	}
 
 	var tags []string
-	// var mentions []string
+	var mentions []string
 
 	content :=  strings.Split(*newContent, " ")
 
 	for _, word := range content {
 		if strings.HasPrefix(word, "#") {
 			tags = append(tags, word)
-		} //  else if strings.HasPrefix(word, "@") {
-		// 	mentions = append(mentions, word)
-		// }
+		}  else if strings.HasPrefix(word, "@") {
+			mentions = append(mentions, word)
+		}
 	}
 
 	err = d.updatePostTags(postID, &tags)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	err = d.updatePostMentions(postID, &mentions)
 
 	return err
 }
@@ -230,6 +236,31 @@ func (d *AppDatabase) updatePostTags(postID string, newTags *[]string) error {
 
 	filter := bson.M{POST_ID_FIELD: postID}
 	update := bson.M{"$set": bson.M{TAGS_FIELD: fixedTags}}
+
+	_, err := postCollection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return err
+}
+
+func (d *AppDatabase) updatePostMentions(postID string, newMentions *[]string) error {
+
+	if newMentions == nil {
+		return nil
+	}
+
+	fixedMentions := []string{}
+
+	for _, word := range *newMentions {
+		fixedMentions = append(fixedMentions, word[1:])
+	}
+
+	postCollection := d.db.Collection(FEED_COLLECTION)
+
+	filter := bson.M{POST_ID_FIELD: postID}
+	update := bson.M{"$set": bson.M{MENTIONS_FIELD: fixedMentions}}
 
 	_, err := postCollection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
@@ -539,7 +570,6 @@ func (d *AppDatabase) WordSearchPosts(words string, following []string, askerID 
 
 	for _, word := range strings.Split(words, " ") {
 		if word != "" {
-			log.Println(word)
 			filters = append(filters, bson.M{CONTENT_FIELD: bson.M{"$regex": word, "$options": "i"}})
 		}
 	}
@@ -793,6 +823,10 @@ func (d *AppDatabase) makeDBPostIntoFrontPost(post models.DBPost, askerID string
 
 	if len(post.Tags) == 0 {
 		post.Tags = []string{}
+	}
+
+	if len(post.Mentions) == 0 {
+		post.Mentions = []string{}
 	}
 
 	liked, err_2 := d.hasLiked(post.Original_Post_ID, askerID)

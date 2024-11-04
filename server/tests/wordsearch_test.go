@@ -33,18 +33,18 @@ func TestWordsearch(t *testing.T) {
 
 	tags := []string{service.TEST_TAG_ONE, "tag5"}
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[0], tags, true, "", r, t)
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[0], tags, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[1], tags, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[1], tags, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[2], tags, true, "", r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[2], tags, []string{}, true, "", r, t)
 
 	
-	makeAndAssertPost(service.TEST_USER_THREE, "content4 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+	makeAndAssertPost(service.TEST_USER_THREE, "content4 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
 	token, err := auth.GenerateToken("1", "username", true)
 
@@ -93,17 +93,17 @@ func TestWordSearchNotFollowing(t *testing.T) {
 
 	tags := []string{"tags_wanted", "tags"}
 
-	makeAndAssertPost(service.TEST_NOT_FOLLOWING_ID, "content " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[2], tags, false, "", r, t)
+	makeAndAssertPost(service.TEST_NOT_FOLLOWING_ID, "content " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[2], tags, []string{}, false, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[0], tags, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[0], tags, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{}, true, "", r, t)
+	makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{}, []string{}, true, "", r, t)
 
-	makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{}, true, "", r, t)
+	makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{}, []string{}, true, "", r, t)
 
 	token, err := auth.GenerateToken("1", "username", true)
 
@@ -150,17 +150,17 @@ func TestWordSearchFollowing(t *testing.T) {
 
 	tags := []string{"tags_wanted", "tags_wanted[1]"}
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[1], tags, false, "", r, t)
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[1], tags, []string{}, false, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1] + " " + words_wanted_list[0], tags, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1] + " " + words_wanted_list[0], tags, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	_ = makeAndAssertPost(service.TEST_USER_THREE, "content " + "#" + tags[0] + " #" + tags[1] + " ", tags, true, "", r, t)
+	_ = makeAndAssertPost(service.TEST_USER_THREE, "content " + "#" + tags[0] + " #" + tags[1] + " ", tags, []string{}, true, "", r, t)
 
-	makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{}, true, "", r, t)
+	makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{}, []string{}, true, "", r, t)
 
 	token, err := auth.GenerateToken("1", "username", true)
 
@@ -208,15 +208,15 @@ func TestWordSearchNextOffset(t *testing.T) {
 
 	tags := []string{service.TEST_TAG_ONE, "tag5"}
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[0], tags, true, "", r, t)
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[0], tags, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content22 " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[1], tags, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content22 " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[1], tags, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[2], tags, true, "", r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[2], tags, []string{}, true, "", r, t)
 
 	token, err := auth.GenerateToken(service.TEST_USER_ONE, "username", true)
 

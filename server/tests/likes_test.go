@@ -31,7 +31,7 @@ func TestLikingAPost(t *testing.T) {
 
 	tags := []string{"tag1", "tag2"}
 
-	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
 	getPost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Post_ID, nil)
 	addAuthorization(getPost, tokenLiker)
@@ -72,7 +72,7 @@ func TestUnlikingAPost(t *testing.T) {
 
 	tags := []string{"tag1", "tag2"}
 
-	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
 	getPost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Post_ID, nil)
 	addAuthorization(getPost, tokenLiker)
@@ -136,11 +136,11 @@ func TestSeeLikedTweetInFeedFollowing(t *testing.T) {
 
 	tags := []string{"tag1", "tag2"}
 
-	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 	time.Sleep(1 * time.Second)
-	makeAndAssertPost(service.TEST_USER_THREE, "content2 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+	makeAndAssertPost(service.TEST_USER_THREE, "content2 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 	time.Sleep(1 * time.Second)
-	makeAndAssertPost(author_id, "content3 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+	makeAndAssertPost(author_id, "content3 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
 	getPost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Post_ID, nil)
 	addAuthorization(getPost, tokenLiker)
@@ -193,7 +193,7 @@ func TestUserCanNotLikeTwice(t *testing.T) {
 
 	tags := []string{"tag1", "tag2"}
 
-	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
 	getPost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Post_ID, nil)
 	addAuthorization(getPost, tokenLiker)
