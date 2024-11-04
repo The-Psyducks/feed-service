@@ -31,13 +31,13 @@ func TestGetFeedRetweet(t *testing.T) {
 
 	tags := []string{"tag1", "tag2"}
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
 	tags2 := []string{"tag3", "tag4"}
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content " + "#" + tags2[0] + " #" + tags2[1], tags2, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content " + "#" + tags2[0] + " #" + tags2[1], tags2, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
@@ -51,7 +51,7 @@ func TestGetFeedRetweet(t *testing.T) {
 
 	tags3 := []string{"tag5", "tag6"}
 
-	makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags3[0] + " #" + tags3[1], tags3, true, "", r, t)
+	makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags3[0] + " #" + tags3[1], tags3, []string{}, true, "", r, t)
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
@@ -96,13 +96,13 @@ func TestGetFeedRetweetNotFollowing(t *testing.T) {
 
 	tags := []string{"tag1", "tag2"}
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
 	tags2 := []string{"tag3", "tag4"}
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags2[0] + " #" + tags2[1], tags2, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags2[0] + " #" + tags2[1], tags2, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
@@ -116,7 +116,7 @@ func TestGetFeedRetweetNotFollowing(t *testing.T) {
 
 	tags3 := []string{"tag5", "tag6"}
 
-	makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags3[0] + " #" + tags3[1], tags3, true, "", r, t)
+	makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags3[0] + " #" + tags3[1], tags3, []string{}, true, "", r, t)
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
@@ -161,19 +161,19 @@ func TestFeedRetweetNextOffset(t *testing.T) {
 
 	tags := []string{service.TEST_TAG_ONE, "tag5"}
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], []string{service.TEST_TAG_ONE, "tag5"}, true, "", r, t)
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
 	tags2 := []string{"tag6", service.TEST_TAG_TWO}
 
-	post2 := makeAndAssertPost(service.TEST_USER_ONE, "content2 " + "#" + tags2[0] + " #" + tags2[1], tags2, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_ONE, "content2 " + "#" + tags2[0] + " #" + tags2[1], tags2, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
 	tags3 := []string{service.TEST_TAG_THREE, "tag6"}
 
-	post3 := makeAndAssertPost(service.TEST_USER_ONE, "content3 " + "#" + tags3[0] + " #" + tags3[1], tags3, false, "", r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_ONE, "content3 " + "#" + tags3[0] + " #" + tags3[1], tags3, []string{}, false, "", r, t)
 
 	token, err := auth.GenerateToken(service.TEST_USER_ONE, "username", true)
 

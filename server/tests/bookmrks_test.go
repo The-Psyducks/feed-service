@@ -33,7 +33,7 @@ func TestBookmarkPost(t *testing.T) {
 
 	tags := []string{"tag1", "tag2"}
 
-	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
 	bookmarkPost, _ := http.NewRequest("POST", "/twitsnap/bookmark/"+post.Original_Post_ID, nil)
 	addAuthorization(bookmarkPost, tokenLiker)
@@ -77,7 +77,7 @@ func TestUnBookmarkPost(t *testing.T) {
 
 	tags := []string{"tag1", "tag2"}
 
-	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
 	bookmarkPost, _ := http.NewRequest("POST", "/twitsnap/bookmark/"+post.Original_Post_ID, nil)
 	addAuthorization(bookmarkPost, tokenLiker)
@@ -142,15 +142,15 @@ func TestFetchBookmarkedPosts(t *testing.T) {
 
 	tags := []string{"tag1", "tag2"}
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content 3 " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content 3 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
 	boookmarkPost(post1.Original_Post_ID, tokenLiker, r, t)
 
@@ -212,7 +212,7 @@ func TestBookmarkReTweetedPost(t *testing.T) {
 
 	tags := []string{"tag1", "tag2"}
 
-	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, true, "", r, t)
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
 	reTweetPost := retweetAPost(post, service.TEST_USER_THREE_USERNAME, tokenRetweeter, r, t)
 

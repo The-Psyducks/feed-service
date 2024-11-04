@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"os"
 	"context"
 	"server/src/database"
 	"server/src/router"
-
-	"server/src/config"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -17,16 +16,14 @@ import (
 
 func main() {
 
-	config := config.ConfigEnv()
-
-	gin.SetMode(config.Gin_Mode)
+	gin.SetMode(os.Getenv("GIN_MODE"))
 
 	gin.ForceConsoleColor()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.Mongo_URI))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("MONGO_URI")))
 
 	if err != nil {
 		log.Fatal("Error connecting to MongoDB: ", err)
@@ -47,7 +44,7 @@ func main() {
 
 	r := router.CreateRouter(db)
 
-	address := fmt.Sprintf("%s:%s", config.Host, config.Port)
+	address := fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("PORT"))
 
 	if err := r.Run(address); err != nil {
 		log.Fatal("Error running server: ", err)

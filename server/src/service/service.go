@@ -175,6 +175,10 @@ func (c *Service) FetchAllPosts(limitConfig models.LimitConfig, token string) ([
 		return []models.FrontPost{}, false, err
 	}
 
+	if len(posts) == 0 {
+		return []models.FrontPost{}, false, nil
+	}
+
 	posts, err = addAuthorInfoToPosts(posts, token)
 
 	return posts, hasMore, err
