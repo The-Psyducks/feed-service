@@ -19,9 +19,10 @@ type DBPost struct {
 	Original_Post_ID  string    `bson:"original_post_id"`
 	Retweet_Author_ID string    `bson:"retweet_author"`
 	Media_URL          string    `bson:"media_url"`
+	Mentions 		[]string  `bson:"mentions"`
 }
 
-func NewDBPost(author_id string, content string, tags []string, privacy bool, mediaUrl string) DBPost {
+func NewDBPost(author_id string, content string, tags []string, privacy bool, mediaUrl string, mentions []string) DBPost {
 	postID := uuid.NewString()
 	return DBPost{
 		Post_ID:           postID,
@@ -36,6 +37,7 @@ func NewDBPost(author_id string, content string, tags []string, privacy bool, me
 		Retweet_Author_ID: author_id,
 		Is_Retweet:        false,
 		Media_URL:          mediaUrl,
+		Mentions:  mentions,
 	}
 }
 
@@ -52,7 +54,8 @@ func NewRetweetDBPost(post FrontPost, author_id string) DBPost {
 		Retweet_Author_ID: author_id,
 		Original_Post_ID:  post.Original_Post_ID,
 		Is_Retweet:        true,
-		Media_URL:          post.Media_URL,
+		Media_URL:         post.Media_URL,
+		Mentions: 			post.Mentions,
 	}
 }
 
@@ -79,6 +82,7 @@ type FrontPost struct {
 	Retweet_Author   string     `json:"retweet_author"`
 	Media_URL        string     `json:"media_url"`
 	Bookmark		 bool       `json:"bookmark"`
+	Mentions 		[]string  `bson:"mentions"`
 }
 
 func NewFrontPost(post DBPost, author AuthorInfo, liked bool, retweeted bool, bookmarked bool) FrontPost {
@@ -98,6 +102,7 @@ func NewFrontPost(post DBPost, author AuthorInfo, liked bool, retweeted bool, bo
 		Is_Retweet:       post.Is_Retweet,
 		Retweet_Author:   post.Retweet_Author_ID,
 		Bookmark:		  bookmarked,
+		Mentions: 		post.Mentions,
 	}
 
 }

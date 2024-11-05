@@ -31,17 +31,20 @@ func TestWordsearch(t *testing.T) {
 
 	words_wanted_list := strings.Split(words_wanted, " ")
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content "+words_wanted_list[0], []string{service.TEST_TAG_ONE, "tag5"}, true, "", r, t)
+	tags := []string{service.TEST_TAG_ONE, "tag5"}
+
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[0], tags, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 "+words_wanted_list[1], []string{"tag6", "tag5"}, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[1], tags, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 "+words_wanted_list[2], []string{service.TEST_TAG_THREE, "tag6"}, true, "", r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[2], tags, []string{}, true, "", r, t)
 
-	makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{"tag7", "tag8"}, true, "", r, t)
+	
+	makeAndAssertPost(service.TEST_USER_THREE, "content4 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
 	token, err := auth.GenerateToken("1", "username", true)
 
@@ -88,17 +91,19 @@ func TestWordSearchNotFollowing(t *testing.T) {
 
 	words_wanted_list := strings.Split(words_wanted, " ")
 
-	makeAndAssertPost(service.TEST_NOT_FOLLOWING_ID, "content"+words_wanted_list[2], []string{"tags", "tags1"}, false, "", r, t)
+	tags := []string{"tags_wanted", "tags"}
+
+	makeAndAssertPost(service.TEST_NOT_FOLLOWING_ID, "content " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[2], tags, []string{}, false, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2"+words_wanted_list[0], []string{"tags_wanted[0]", "tags_wanted[1]"}, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[0], tags, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{service.TEST_TAG_THREE, "tag6"}, true, "", r, t)
+	makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{}, []string{}, true, "", r, t)
 
-	makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{"tag7", "tag8"}, true, "", r, t)
+	makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{}, []string{}, true, "", r, t)
 
 	token, err := auth.GenerateToken("1", "username", true)
 
@@ -143,17 +148,19 @@ func TestWordSearchFollowing(t *testing.T) {
 
 	words_wanted_list := strings.Split(words_wanted, " ")
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content"+words_wanted_list[1], []string{"tags_wanted", " tags_wanted[1]"}, false, "", r, t)
+	tags := []string{"tags_wanted", "tags_wanted[1]"}
+
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[1], tags, []string{}, false, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2"+words_wanted_list[0], []string{"tags_wanted[0]", "tags_wanted[1]"}, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1] + " " + words_wanted_list[0], tags, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	_ = makeAndAssertPost(service.TEST_USER_THREE, "content3", []string{service.TEST_TAG_THREE, "tag6"}, true, "", r, t)
+	_ = makeAndAssertPost(service.TEST_USER_THREE, "content " + "#" + tags[0] + " #" + tags[1] + " ", tags, []string{}, true, "", r, t)
 
-	makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{"tag7", "tag8"}, true, "", r, t)
+	makeAndAssertPost(service.TEST_USER_THREE, "content4", []string{}, []string{}, true, "", r, t)
 
 	token, err := auth.GenerateToken("1", "username", true)
 
@@ -199,15 +206,17 @@ func TestWordSearchNextOffset(t *testing.T) {
 
 	words_wanted_list := strings.Split(words_wanted, " ")
 
-	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content "+words_wanted_list[0], []string{service.TEST_TAG_ONE, "tag5"}, true, "", r, t)
+	tags := []string{service.TEST_TAG_ONE, "tag5"}
+
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[0], tags, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 "+words_wanted_list[1], []string{"tag6", "tag5"}, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content22 " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[1], tags, []string{}, true, "", r, t)
 
 	time.Sleep(1 * time.Second)
 
-	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 "+words_wanted_list[2], []string{service.TEST_TAG_THREE, "tag6"}, true, "", r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags[0] + " #" + tags[1] + " " +words_wanted_list[2], tags, []string{}, true, "", r, t)
 
 	token, err := auth.GenerateToken(service.TEST_USER_ONE, "username", true)
 

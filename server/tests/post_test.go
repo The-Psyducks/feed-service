@@ -26,7 +26,7 @@ func TestNewPost(t *testing.T) {
 	r := router.CreateRouter(db)
 
 	author_id := "1234"
-	postBody := PostBody{Content: "content", Tags: []string{"tag1", "tag2"}, Public: true}
+	postBody := PostBody{Content: "content #tag1 #tag2", Tags: []string{"tag1", "tag2"}, Mentions: []string{}, Public: true}
 	req := newPostRequest(postBody)
 
 	token, err := auth.GenerateToken(author_id, "username", true)
@@ -57,7 +57,7 @@ func TestNewPostWithMissInf(t *testing.T) {
 	r := router.CreateRouter(db)
 
 	author_id := "1234"
-	postBody := PostBody{Content: "", Tags: []string{"tag1", "tag2"}, Public: true}
+	postBody := PostBody{Content: "", Tags: []string{"tag1", "tag2"}, Public: true, Mentions: []string{}}
 	req := newPostRequest(postBody)
 
 	token, err := auth.GenerateToken(author_id, "username", true)
@@ -75,8 +75,10 @@ func TestNewPostWithMissInf(t *testing.T) {
 
 	err = json.Unmarshal(first.Body.Bytes(), &result)
 
-	newPost := models.PostExpectedFormat{Content: "", Tags: []string{"tag1", "tag2"}, Public: true}
+	newPost := models.PostExpectedFormat{Content: "", Public: true}
+
 	validate := validator.New()
+
 	var errFMT postErrors.TwitSnapError
 	if wrongFmtErr := validate.Struct(newPost); wrongFmtErr != nil {
 		errFMT = postErrors.TwitSnapImportantFieldsMissing(wrongFmtErr)
