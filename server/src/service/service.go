@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"log"
 	"strings"
 
 	// "log"
@@ -60,6 +61,8 @@ func (c *Service) parsePost(post *models.PostExpectedFormat, author_id string) (
 		return models.DBPost{}, postErrors.TwitsnapTooLong()
 	}
 
+	log.Println(post.MediaInfo)
+
 	var tags []string
 	var mentions []string
 
@@ -72,11 +75,10 @@ func (c *Service) parsePost(post *models.PostExpectedFormat, author_id string) (
 		} else if strings.HasPrefix(word, "@") {
 			word = word[1:]
 			mentions = append(mentions, word)
-		}
+		} 
 	}
 
-	postNew := models.NewDBPost(author_id, post.Content, tags, post.Public, post.MediaURL, mentions)
-
+	postNew := models.NewDBPost(author_id, post.Content, tags, post.Public, post.MediaInfo, mentions)
 
 	return postNew, nil
 }

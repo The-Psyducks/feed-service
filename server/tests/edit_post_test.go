@@ -136,13 +136,15 @@ func TestEditPostMediaURL(t *testing.T) {
 
 	ogPost := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, base_media_url, r, t)
 
+	newMedia := models.MediaInfo{Media_URL: edit_media_url, Media_Type: "IMAGE"}
+
 	editInfo := struct {
-		MediaURL string `json:"media_url"`
+		Media_Info models.MediaInfo `json:"media_info"`
 	}{
-		MediaURL: edit_media_url,
+		Media_Info: newMedia,
 	}
 
-	newPostBody := PostBody{Content: ogPost.Content, Tags: tags, Public: ogPost.Public, MediaURL: edit_media_url, Mentions: []string{}}
+	newPostBody := PostBody{Content: ogPost.Content, Tags: tags, Public: ogPost.Public, MediaInfo: newMedia, Mentions: []string{}}
 
 	marshalledData, _ := json.Marshal(editInfo)
 
@@ -189,7 +191,7 @@ func TestEditPostPublicToPrivate(t *testing.T) {
 		Public: newPublic,
 	}
 
-	newPostBody := PostBody{Content: ogPost.Content, Tags: tags, Public: newPublic, MediaURL: ogPost.Media_URL, Mentions: []string{}}
+	newPostBody := PostBody{Content: ogPost.Content, Tags: tags, Public: newPublic, MediaInfo: ogPost.Media_Info, Mentions: []string{}}
 
 	marshalledData, _ := json.Marshal(editInfo)
 
@@ -238,7 +240,7 @@ func TestEditPostPrivateToPublic(t *testing.T) {
 		Public: newPublic,
 	}
 
-	newPostBody := PostBody{Content: ogPost.Content, Tags: tags, Public: newPublic, MediaURL: ogPost.Media_URL, Mentions: []string{}}
+	newPostBody := PostBody{Content: ogPost.Content, Tags: tags, Public: newPublic, MediaInfo: ogPost.Media_Info, Mentions: []string{}}
 
 	marshalledData, _ := json.Marshal(editInfo)
 
@@ -377,19 +379,21 @@ func TestEditPost(t *testing.T) {
 	edit_media_url := "media_url_edited"
 	pubic := false
 
+	newMedia := models.MediaInfo{Media_URL: edit_media_url, Media_Type: "IMAGE"}
+
 	editInfo := struct {
 		Content  string   `json:"content"`
 		Tags     []string `json:"tags"`
-		MediaURL string   `json:"media_url"`
+		MediaURL models.MediaInfo   `json:"media_info"`
 		Public   bool     `json:"public"`
 	}{
 		Content:  newContent,
 		Tags:     newTags,
-		MediaURL: edit_media_url,
+		MediaURL: newMedia,
 		Public:   pubic,
 	}
 
-	newPostBody := PostBody{Content: newContent, Tags: newTags, Public: pubic, MediaURL: edit_media_url, Mentions: []string{}}
+	newPostBody := PostBody{Content: newContent, Tags: newTags, Public: pubic, MediaInfo: newMedia, Mentions: []string{}}
 
 	marshalledData, _ := json.Marshal(editInfo)
 

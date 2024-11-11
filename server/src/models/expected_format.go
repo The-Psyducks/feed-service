@@ -4,7 +4,7 @@ type PostExpectedFormat struct {
 	Content string   `json:"content" validate:"required"`
 	Public  bool     `json:"public"`
 	// Tags    []string `json:"tags" validate:"dive,required"`
-	MediaURL string `json:"media_url"`
+	MediaInfo MediaInfo `json:"media_info"`
 }
 
 type LikeExpectedFormat struct {
@@ -15,7 +15,7 @@ type EditPostExpectedFormat struct {
 	Content *string   `json:"content"`
 	Tags    *[]string `json:"tags"`
 	Public 	*bool     `json:"public"`
-	MediaURL *string `json:"media_url"`
+	MediaInfo *MediaInfo `json:"media_info"`
 }
 
 type ReturnPaginatedPosts struct {

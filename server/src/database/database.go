@@ -163,7 +163,7 @@ func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFo
 		return post, err_3
 	}
 
-	err_4 := d.updatePostMediaURL(postID, editInfo.MediaURL)
+	err_4 := d.updatePostMediaURL(postID, editInfo.MediaInfo)
 
 	if err_4 != nil {
 		return post, err_4
@@ -289,16 +289,16 @@ func (d *AppDatabase) updatePostPublic(postID string, newPublic *bool) error {
 	return err
 }
 
-func (d *AppDatabase) updatePostMediaURL(postID string, newMediaURL *string) error {
+func (d *AppDatabase) updatePostMediaURL(postID string, newMediaInfo *models.MediaInfo) error {
 
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
-	if newMediaURL == nil {
+	if newMediaInfo == nil {
 		return nil
 	}
 
 	filter := bson.M{POST_ID_FIELD: postID}
-	update := bson.M{"$set": bson.M{MEDIA_URL_FIELD: newMediaURL}}
+	update := bson.M{"$set": bson.M{MEDIA_INFO_FIELD: newMediaInfo}}
 
 	_, err := postCollection.UpdateOne(context.Background(), filter, update)
 	if err != nil {

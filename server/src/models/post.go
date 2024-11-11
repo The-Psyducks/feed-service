@@ -2,9 +2,22 @@ package models
 
 import (
 	"time"
-
+	
 	"github.com/google/uuid"
 )
+
+
+type AuthorInfo struct {
+	Author_ID string `json:"author_id"`
+	Username  string `json:"username"`
+	Alias     string `json:"alias"`
+	PthotoURL string `json:"photo_url"`
+}
+
+type MediaInfo struct {
+	Media_URL string `json:"media_url"`
+	Media_Type string `json:"media_type"`
+}
 
 type DBPost struct {
 	Post_ID           string    `bson:"post_id"`
@@ -18,11 +31,11 @@ type DBPost struct {
 	Is_Retweet        bool      `bson:"is_retweet"`
 	Original_Post_ID  string    `bson:"original_post_id"`
 	Retweet_Author_ID string    `bson:"retweet_author"`
-	Media_URL          string    `bson:"media_url"`
+	Media_Info        MediaInfo    `bson:"media_info"`
 	Mentions 		[]string  `bson:"mentions"`
 }
 
-func NewDBPost(author_id string, content string, tags []string, privacy bool, mediaUrl string, mentions []string) DBPost {
+func NewDBPost(author_id string, content string, tags []string, privacy bool, mediaInfo MediaInfo, mentions []string) DBPost {
 	postID := uuid.NewString()
 	return DBPost{
 		Post_ID:           postID,
@@ -36,7 +49,7 @@ func NewDBPost(author_id string, content string, tags []string, privacy bool, me
 		Original_Post_ID:  postID,
 		Retweet_Author_ID: author_id,
 		Is_Retweet:        false,
-		Media_URL:          mediaUrl,
+		Media_Info:          mediaInfo,
 		Mentions:  mentions,
 	}
 }
@@ -54,17 +67,11 @@ func NewRetweetDBPost(post FrontPost, author_id string) DBPost {
 		Retweet_Author_ID: author_id,
 		Original_Post_ID:  post.Original_Post_ID,
 		Is_Retweet:        true,
-		Media_URL:         post.Media_URL,
+		Media_Info:         post.Media_Info,
 		Mentions: 			post.Mentions,
 	}
 }
 
-type AuthorInfo struct {
-	Author_ID string `json:"author_id"`
-	Username  string `json:"username"`
-	Alias     string `json:"alias"`
-	PthotoURL string `json:"photo_url"`
-}
 
 type FrontPost struct {
 	Post_ID          string     `json:"post_id"`
@@ -80,7 +87,7 @@ type FrontPost struct {
 	Is_Retweet       bool       `json:"is_retweet"`
 	Original_Post_ID string     `json:"original_post_id"`
 	Retweet_Author   string     `json:"retweet_author"`
-	Media_URL        string     `json:"media_url"`
+	Media_Info       MediaInfo     `json:"media_info"`
 	Bookmark		 bool       `json:"bookmark"`
 	Mentions 		[]string  `bson:"mentions"`
 }
@@ -97,7 +104,7 @@ func NewFrontPost(post DBPost, author AuthorInfo, liked bool, retweeted bool, bo
 		Retweets:         post.Retweets,
 		User_Liked:       liked,
 		User_Retweet:     retweeted,
-		Media_URL:        post.Media_URL,
+		Media_Info:        post.Media_Info,
 		Original_Post_ID: post.Original_Post_ID,
 		Is_Retweet:       post.Is_Retweet,
 		Retweet_Author:   post.Retweet_Author_ID,

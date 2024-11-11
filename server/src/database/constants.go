@@ -23,7 +23,7 @@ const (
 	RETWEET_FIELD          = "retweets"
 	RETWEETERS_FIELD       = "retweeters"
 	RETWEET_AUTHOR_FIELD   = "retweet_author"
-	MEDIA_URL_FIELD        = "media_url"
+	MEDIA_INFO_FIELD        = "media_info"
 	BOOKMARK_FIELD         = "bookmark"
 	MENTIONS_FIELD         = "mentions"
 )

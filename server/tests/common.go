@@ -27,7 +27,7 @@ type PostBody struct {
 	Content  string   `json:"content"`
 	Tags     []string `json:"-"`
 	Public   bool     `json:"public"`
-	MediaURL string   `json:"media_url"`
+	MediaInfo models.MediaInfo   `json:"media_info"`
 	Mentions []string `json:"mentions"`
 }
 
@@ -75,13 +75,15 @@ func makeResponseAsserions(t *testing.T, response int, result_post models.FrontP
 	assert.Equal(t, result_post.Author_Info.Author_ID, author_id, "Author should be the same")
 	assert.Equal(t, result_post.Tags, postBody.Tags, "Tags should be the same")
 	assert.Equal(t, result_post.Public, postBody.Public, "Public should be the same")
-	assert.Equal(t, result_post.Media_URL, postBody.MediaURL, "Media URL should be the same")
+	assert.Equal(t, result_post.Media_Info.Media_URL, postBody.MediaInfo.Media_URL, "Media URL should be the same")
 	assert.Equal(t, result_post.Mentions, postBody.Mentions, "Mentions should be the same")
 }
 
 func makeAndAssertPost(authorId string, content string, tags []string, mentions []string, public bool, media_url string, r *gin.Engine, t *testing.T) models.FrontPost {
 
-	postBody := PostBody{Content: content, Tags: tags, Public: public, MediaURL: media_url, Mentions: mentions}
+	media := models.MediaInfo{Media_URL: media_url, Media_Type: "IMAGE"}
+
+	postBody := PostBody{Content: content, Tags: tags, Public: public, MediaInfo: media, Mentions: mentions}
 	req := newPostRequest(postBody)
 
 	token, err := auth.GenerateToken(authorId, "username", false)
