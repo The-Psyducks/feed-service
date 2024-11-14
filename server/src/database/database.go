@@ -610,6 +610,62 @@ func (d *AppDatabase) WordSearchPosts(words string, following []string, askerID 
 	return posts, hasMore, err
 }
 
+func (d *AppDatabase) GetUserMetrics(userID string, limits models.MetricLimits) (models.Metrics, error) {
+	postCollection := d.db.Collection(FEED_COLLECTION)
+
+	parsedFromTime, err := time.Parse(time.RFC3339, limits.FromTime)
+	if err != nil {
+		log.Println(err)
+		return models.Metrics{}, err
+	}
+
+	parsedToTime, err := time.Parse(time.RFC3339, limits.ToTime)
+	if err != nil {
+		log.Println(err)
+		return models.Metrics{}, err
+	}
+
+	pipeline := mongo.Pipeline{
+
+		bson.D{{Key: "$match", Value: bson.D{
+			{Key: TIME_FIELD, Value: bson.D{{Key: "$gte", Value: parsedFromTime.UTC()}, {Key: "$lt", Value: parsedToTime.UTC()}}},
+			{Key: AUTHOR_ID_FIELD, Value: userID},
+			{Key: IS_RETWEET_FIELD, Value: false},
+		}}},
+
+		bson.D{{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: nil},
+			{Key: "likes", Value: bson.D{{Key: "$sum", Value: "$" + LIKES_FIELD}}},
+			{Key: "retweets", Value: bson.D{{Key: "$sum", Value: "$" + RETWEET_FIELD}}},
+			{Key: "posts", Value: bson.D{{Key: "$sum", Value: 1}}},
+		}}},
+	}
+
+	cursor, err := postCollection.Aggregate(context.Background(), pipeline)
+
+	if err != nil {
+		log.Println(err)
+		return models.Metrics{}, err
+	}
+
+	var result []bson.M
+
+	if err := cursor.All(context.Background(), &result); err != nil {
+		log.Fatal(err)
+	}
+
+	var metrics models.Metrics
+
+	if len(result) > 0 {
+	
+		metrics = models.Metrics{Likes: convertToInt(result[0]["likes"]), Retweets: convertToInt(result[0]["retweets"]), Posts: convertToInt(result[0]["posts"])}
+	} else {
+		metrics = models.Metrics{Likes: 0, Retweets: 0, Posts: 0}
+	}
+
+	return metrics, nil
+}
+
 func (d *AppDatabase) LikeAPost(postID string, likerID string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	likesCollection := d.db.Collection(LIKES_COLLECTION)
@@ -900,4 +956,18 @@ func (d *AppDatabase) hasBookmark(postID string, userID string) (bool, error) {
 	}
 
 	return err != mongo.ErrNoDocuments, nil
+}
+
+func convertToInt(value interface{}) int {
+
+	switch v:=  value.(type) {
+		case int:	
+			return v
+		case int32:
+			return int(v)
+		case int64:
+			return int(v)
+		default:
+			return 0
+		}
 }

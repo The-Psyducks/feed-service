@@ -143,7 +143,7 @@ func postsHaveAtLeastOneWord(result []models.FrontPost, words_wanted_list []stri
 }
 
 func retweetAPost(post models.FrontPost, username, tokenRetweeterer string, r *gin.Engine, t *testing.T) models.FrontPost {
-	retweetPost, _ := http.NewRequest("POST", "/twitsnap/retweet/"+post.Post_ID, nil)
+	retweetPost, _ := http.NewRequest("POST", "/twitsnap/retweet/"+post.Original_Post_ID, nil)
 	addAuthorization(retweetPost, tokenRetweeterer)
 
 	first := httptest.NewRecorder()
