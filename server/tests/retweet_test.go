@@ -61,7 +61,7 @@ func TestRetweetAPost(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	log.Println(result_post)
+	// log.Println(result_post)
 	assert.Equal(t, http.StatusOK, second.Code)
 	assert.Equal(t, true, result_post.User_Retweet)
 	assert.Equal(t, result_post.Retweets, 1)
@@ -129,7 +129,7 @@ func TestRetweetInFeedFollowing(t *testing.T) {
 	assert.Equal(t, retweet_post.Tags, post1.Tags)
 	assert.Equal(t, retweet_post.Retweet_Author, service.TEST_USER_TWO_USERNAME)
 
-	log.Println(retweet_post)
+	// log.Println(retweet_post)
 
 	expectedPosts := []models.FrontPost{retweet_post, post3, post2, post1}
 
@@ -192,7 +192,7 @@ func TestUnRetweetAPost(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	log.Println(result_post)
+	// log.Println(result_post)
 	assert.Equal(t, http.StatusOK, second.Code)
 	assert.Equal(t, true, result_post.User_Retweet)
 	assert.Equal(t, result_post.Retweets, 1)
@@ -219,14 +219,14 @@ func TestUnRetweetAPost(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	log.Println(result_post)
+	// log.Println(result_post)
 	assert.Equal(t, http.StatusOK, fourth.Code)
 	assert.Equal(t, false, result_post_no_retweet.User_Retweet)
 	assert.Equal(t, result_post_no_retweet.Retweets, 0)
 }
 
 func TestRetweetInFeedForyou(t *testing.T) {
-	log.Println("TestRetweetInFeedFollowing")
+	log.Println("TestRetweetInFeedForyou")
 
 	db := connectToDatabase()
 
@@ -292,7 +292,7 @@ func TestRetweetInFeedForyou(t *testing.T) {
 }
 
 func TestRetweetInSingleRetweeterFeed(t *testing.T) {
-	log.Println("TestRetweetInFeedFollowing")
+	log.Println("TestRetweetInSingleRetweeterFeed")
 
 	db := connectToDatabase()
 
@@ -402,7 +402,7 @@ func TestRetweetAndLikeOriginal(t *testing.T) {
 }
 
 func TestRetweetAndLikeOriginalAndRetweet(t *testing.T) {
-	log.Println("TestRetweetAndLikeOriginal")
+	log.Println("TestRetweetAndLikeOriginalAndRetweet")
 
 	db := connectToDatabase()
 

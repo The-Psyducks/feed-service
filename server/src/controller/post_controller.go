@@ -18,6 +18,7 @@ const (
 	WORDS = "words"
 	HASTAGS = "tags"
 	WANTED_ID = "wanted_user_id"
+	END_TIME = "end_time"
 )
 
 type PostController struct {
@@ -263,6 +264,25 @@ func (c *PostController) WordsSearch(context *gin.Context) {
 
 	context.JSON(http.StatusOK, result)
 }
+
+func (c *PostController) GetUserMetrics(context *gin.Context) {
+	userID, _ := context.Get("session_user_id")
+	time := context.Query(TIME)
+	end_time := context.Query(END_TIME)
+
+
+	limits := models.MetricLimits{FromTime: time, ToTime: end_time}
+
+	metrics, err := c.sv.GetUserMetrics(userID.(string), limits)
+
+	if err != nil {
+		_ = context.Error(err)
+		return
+	}
+
+	context.JSON(http.StatusOK, metrics)
+}
+
 
 func (c *PostController) LikePost(context *gin.Context) {
 	postID := context.Param("id")

@@ -206,7 +206,7 @@ func TestEditPostPublicToPrivate(t *testing.T) {
 
 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
 
-	log.Println(result_post)
+	// log.Println(result_post)
 
 	assert.Equal(t, err, nil, "Error should be nil")
 	makeResponseAsserions(t, http.StatusOK, result_post, newPostBody, author_id, second.Code)

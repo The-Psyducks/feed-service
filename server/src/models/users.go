@@ -34,3 +34,9 @@ type PrivateProfileExpectedFormat struct {
 	Followers int    `json:"followers"`
 	PicturePath string    `json:"picture_path"`
 }
+
+type Metrics struct {
+	Likes   int `json:"likes"`
+	Retweets int `json:"retweets"`
+	Posts   int `json:"posts"`
+}

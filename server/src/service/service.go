@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"log"
 	"strings"
 
 	// "log"
@@ -60,8 +59,6 @@ func (c *Service) parsePost(post *models.PostExpectedFormat, author_id string) (
 	if len(post.Content) > 280 {
 		return models.DBPost{}, postErrors.TwitsnapTooLong()
 	}
-
-	log.Println(post.MediaInfo)
 
 	var tags []string
 	var mentions []string
@@ -329,6 +326,16 @@ func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig, user
 	posts, err = addAuthorInfoToPosts(posts, token)
 
 	return posts, hasMore, err
+}
+
+func (c *Service) GetUserMetrics(userID string, limits models.MetricLimits) (models.Metrics, error) {
+	metrics, err := c.db.GetUserMetrics(userID, limits)
+
+	if err != nil {
+		return models.Metrics{}, err
+	}
+
+	return metrics, nil
 }
 
 func (c *Service) LikePost(postID string, userID string) error {

@@ -31,6 +31,8 @@ type Database interface {
 
 	GetUserHashtags(hashtags []string, following []string, askerID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
 
+	GetUserMetrics(userID string, limits models.MetricLimits) (models.Metrics, error)
+
 	LikeAPost(postID string, likerID string) error
 
 	UnLikeAPost(postID string, likerID string) error

@@ -41,7 +41,7 @@ func TestLikingAPost(t *testing.T) {
 
 	assert.Equal(t, http.StatusNoContent, first.Code)
 
-	getPostLiked, _ := http.NewRequest("GET", "/twitsnap/"+post.Post_ID, nil)
+	getPostLiked, _ := http.NewRequest("GET", "/twitsnap/"+post.Original_Post_ID, nil)
 	addAuthorization(getPostLiked, tokenLiker)
 
 	second := httptest.NewRecorder()
@@ -74,7 +74,7 @@ func TestUnlikingAPost(t *testing.T) {
 
 	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
-	getPost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Post_ID, nil)
+	getPost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Original_Post_ID, nil)
 	addAuthorization(getPost, tokenLiker)
 
 	first := httptest.NewRecorder()
@@ -82,7 +82,7 @@ func TestUnlikingAPost(t *testing.T) {
 
 	assert.Equal(t, http.StatusNoContent, first.Code)
 
-	getPostLiked, _ := http.NewRequest("GET", "/twitsnap/"+post.Post_ID, nil)
+	getPostLiked, _ := http.NewRequest("GET", "/twitsnap/"+post.Original_Post_ID, nil)
 	addAuthorization(getPostLiked, tokenLiker)
 
 	second := httptest.NewRecorder()
@@ -98,7 +98,7 @@ func TestUnlikingAPost(t *testing.T) {
 	assert.Equal(t, result_post.Likes, 1)
 	assert.Equal(t, result_post.User_Liked, true)
 
-	getPostUnlike, _ := http.NewRequest("DELETE", "/twitsnap/like/"+post.Post_ID, nil)
+	getPostUnlike, _ := http.NewRequest("DELETE", "/twitsnap/like/"+post.Original_Post_ID, nil)
 	addAuthorization(getPostUnlike, tokenLiker)
 
 	third := httptest.NewRecorder()
@@ -142,7 +142,7 @@ func TestSeeLikedTweetInFeedFollowing(t *testing.T) {
 	time.Sleep(1 * time.Second)
 	makeAndAssertPost(author_id, "content3 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
-	getPost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Post_ID, nil)
+	getPost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Original_Post_ID, nil)
 	addAuthorization(getPost, tokenLiker)
 
 	first := httptest.NewRecorder()
@@ -195,7 +195,7 @@ func TestUserCanNotLikeTwice(t *testing.T) {
 
 	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
-	getPost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Post_ID, nil)
+	getPost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Original_Post_ID, nil)
 	addAuthorization(getPost, tokenLiker)
 
 	first := httptest.NewRecorder()
@@ -203,7 +203,7 @@ func TestUserCanNotLikeTwice(t *testing.T) {
 
 	assert.Equal(t, http.StatusNoContent, first.Code)
 
-	getPostLiked, _ := http.NewRequest("GET", "/twitsnap/"+post.Post_ID, nil)
+	getPostLiked, _ := http.NewRequest("GET", "/twitsnap/"+post.Original_Post_ID, nil)
 	addAuthorization(getPostLiked, tokenLiker)
 
 	second := httptest.NewRecorder()
@@ -219,7 +219,7 @@ func TestUserCanNotLikeTwice(t *testing.T) {
 	assert.Equal(t, result_post.Likes, 1)
 	assert.Equal(t, result_post.User_Liked, true)
 
-	getPost2, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Post_ID, nil)
+	getPost2, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Original_Post_ID, nil)
 	addAuthorization(getPost2, tokenLiker)
 
 	third := httptest.NewRecorder()

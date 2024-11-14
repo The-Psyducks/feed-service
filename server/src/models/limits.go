@@ -13,6 +13,11 @@ type LimitConfig struct {
 	Limit int
 }
 
+type MetricLimits struct {
+	FromTime string
+	ToTime string
+}
+
 func NewLimitConfig(fromTime string, skipS string, limitS string) LimitConfig {
 	skip, _ := strconv.Atoi(skipS)
 	limit, _ := strconv.Atoi(limitS)
