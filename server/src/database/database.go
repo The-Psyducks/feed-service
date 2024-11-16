@@ -169,15 +169,21 @@ func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFo
 		return post, err_4
 	}
 
-	dbPost, err_5 := d.findPost(postID, postCollection)
+	err_5 := d.updatePostMentions(postID, &editInfo.Mentions)
 
 	if err_5 != nil {
 		return post, err_5
 	}
 
-	frontPost, err_6 := d.makeDBPostIntoFrontPost(dbPost, askerID)
+	dbPost, err_6 := d.findPost(postID, postCollection)
 
-	return frontPost, err_6
+	if err_6 != nil {
+		return post, err_6
+	}
+
+	frontPost, err_7 := d.makeDBPostIntoFrontPost(dbPost, askerID)
+
+	return frontPost, err_7
 }
 
 func (d *AppDatabase) updatePostContent(postID string, newContent *string) error {
@@ -197,25 +203,16 @@ func (d *AppDatabase) updatePostContent(postID string, newContent *string) error
 	}
 
 	var tags []string
-	var mentions []string
 
 	content :=  strings.Split(*newContent, " ")
 
 	for _, word := range content {
 		if strings.HasPrefix(word, "#") {
 			tags = append(tags, word)
-		}  else if strings.HasPrefix(word, "@") {
-			mentions = append(mentions, word)
 		}
 	}
 
 	err = d.updatePostTags(postID, &tags)
-
-	if err != nil {
-		log.Println(err)
-	}
-
-	err = d.updatePostMentions(postID, &mentions)
 
 	return err
 }
@@ -250,17 +247,11 @@ func (d *AppDatabase) updatePostMentions(postID string, newMentions *[]string) e
 	if newMentions == nil {
 		return nil
 	}
-
-	fixedMentions := []string{}
-
-	for _, word := range *newMentions {
-		fixedMentions = append(fixedMentions, word[1:])
-	}
-
+	
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	filter := bson.M{POST_ID_FIELD: postID}
-	update := bson.M{"$set": bson.M{MENTIONS_FIELD: fixedMentions}}
+	update := bson.M{"$set": bson.M{MENTIONS_FIELD: newMentions}}
 
 	_, err := postCollection.UpdateOne(context.Background(), filter, update)
 	if err != nil {

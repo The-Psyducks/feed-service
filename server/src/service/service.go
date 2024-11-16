@@ -47,6 +47,15 @@ func (c *Service) CreatePost(newPost *models.PostExpectedFormat, author_id strin
 		return nil, postErrors.UserInfoError(err.Error())
 	}
 
+	for _, user := range newPost.Mentions {
+		newMentionNotif := models.MentionNotificationRequest{UserId: user, TaggerId: newPosted.Author_Info.Author_ID, PostId: newPosted.Original_Post_ID}
+		err = sendMentionNotif(newMentionNotif, token)
+
+		if err != nil {
+			return nil, postErrors.NotificationError(err.Error())
+		}
+	}
+
 	return &newPosted, nil
 }
 
@@ -61,7 +70,6 @@ func (c *Service) parsePost(post *models.PostExpectedFormat, author_id string) (
 	}
 
 	var tags []string
-	var mentions []string
 
 	content :=  strings.Split(post.Content, " ")
 
@@ -69,13 +77,10 @@ func (c *Service) parsePost(post *models.PostExpectedFormat, author_id string) (
 		if strings.HasPrefix(word, "#") {
 			word = word[1:]
 			tags = append(tags, word)
-		} else if strings.HasPrefix(word, "@") {
-			word = word[1:]
-			mentions = append(mentions, word)
-		} 
+		}
 	}
 
-	postNew := models.NewDBPost(author_id, post.Content, tags, post.Public, post.MediaInfo, mentions)
+	postNew := models.NewDBPost(author_id, post.Content, tags, post.Public, post.MediaInfo, post.Mentions)
 
 	return postNew, nil
 }
