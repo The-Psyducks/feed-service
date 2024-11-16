@@ -61,7 +61,6 @@ func (c *Service) parsePost(post *models.PostExpectedFormat, author_id string) (
 	}
 
 	var tags []string
-	var mentions []string
 
 	content :=  strings.Split(post.Content, " ")
 
@@ -69,13 +68,10 @@ func (c *Service) parsePost(post *models.PostExpectedFormat, author_id string) (
 		if strings.HasPrefix(word, "#") {
 			word = word[1:]
 			tags = append(tags, word)
-		} else if strings.HasPrefix(word, "@") {
-			word = word[1:]
-			mentions = append(mentions, word)
-		} 
+		}
 	}
 
-	postNew := models.NewDBPost(author_id, post.Content, tags, post.Public, post.MediaInfo, mentions)
+	postNew := models.NewDBPost(author_id, post.Content, tags, post.Public, post.MediaInfo, post.Mentions)
 
 	return postNew, nil
 }

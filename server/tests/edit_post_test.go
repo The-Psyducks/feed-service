@@ -283,8 +283,10 @@ func TestEditMentions(t *testing.T) {
 
 	editInfo := struct {
 		Content string `json:"content"`
+		Mentions []string `json:"mentions"`
 	}{
 		Content: newContent,
+		Mentions: newMentions,
 	}
 
 	newPostBody := PostBody{Content: newContent, Tags: []string{}, Public: ogPost.Public, Mentions: newMentions}
@@ -302,7 +304,7 @@ func TestEditMentions(t *testing.T) {
 
 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
 
-	// log.Println(result_post)
+	log.Println(result_post)
 
 	assert.Equal(t, err, nil, "Error should be nil")
 	makeResponseAsserions(t, http.StatusOK, result_post, newPostBody, author_id, second.Code)
@@ -334,8 +336,10 @@ func TestEditPostTagsAndMentions(t *testing.T) {
 
 	editInfo := struct {
 		Content string `json:"content"`
+		Mentions []string `json:"mentions"`
 	}{
 		Content: newContent,
+		Mentions: newMentions,
 	}
 
 	newPostBody := PostBody{Content: newContent, Tags: newTags, Public: ogPost.Public, Mentions: newMentions}
