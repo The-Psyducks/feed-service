@@ -47,6 +47,15 @@ func (c *Service) CreatePost(newPost *models.PostExpectedFormat, author_id strin
 		return nil, postErrors.UserInfoError(err.Error())
 	}
 
+	for _, user := range newPost.Mentions {
+		newMentionNotif := models.MentionNotificationRequest{UserId: user, TaggerId: newPosted.Author_Info.Author_ID, PostId: newPosted.Original_Post_ID}
+		err = sendMentionNotif(newMentionNotif, token)
+
+		if err != nil {
+			return nil, postErrors.NotificationError(err.Error())
+		}
+	}
+
 	return &newPosted, nil
 }
 

@@ -138,6 +138,17 @@ func UserInfoError(err string) TwitSnapError {
 	return error
 }
 
+func NotificationError(err string) TwitSnapError {
+	error := TwitSnapError{
+		"about:blank",
+		"Database Error",
+		http.StatusInternalServerError,
+		"There was an error with the notification service: " + err,
+		"/twitsnap",
+	}
+	return error
+}
+
 func AuthenticationErrorHeaderRequired() TwitSnapError {
 	error := TwitSnapError{
 		"about:blank",

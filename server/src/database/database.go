@@ -247,13 +247,7 @@ func (d *AppDatabase) updatePostMentions(postID string, newMentions *[]string) e
 	if newMentions == nil {
 		return nil
 	}
-
-	// fixedMentions := []string{}
-
-	// for _, word := range *newMentions {
-	// 	fixedMentions = append(fixedMentions, word[1:])
-	// }
-
+	
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	filter := bson.M{POST_ID_FIELD: postID}
