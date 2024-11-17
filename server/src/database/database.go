@@ -247,7 +247,7 @@ func (d *AppDatabase) updatePostMentions(postID string, newMentions *[]string) e
 	if newMentions == nil {
 		return nil
 	}
-	
+
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	filter := bson.M{POST_ID_FIELD: postID}
@@ -308,7 +308,7 @@ func (d *AppDatabase) GetAllPosts(limitConfig models.LimitConfig, askerID string
 		log.Println(err)
 	}
 
-	filter := bson.M{TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}}
+	filter := bson.M{TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, BLOCKED_FIELD: false}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
 		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
@@ -344,10 +344,13 @@ func (d *AppDatabase) GetUserFeedFollowing(following []string, askerID string, l
 		log.Println(err)
 	}
 
-	filter := bson.M{TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
+	filter := bson.M{TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, 
+		"$or": []bson.M{
 		{AUTHOR_ID_FIELD: bson.M{"$in": following}},
 		{RETWEET_AUTHOR_FIELD: bson.M{"$in": following}},
-	}}
+		},
+		BLOCKED_FIELD: false,
+	}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
 		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
@@ -389,7 +392,8 @@ func (d *AppDatabase) GetUserFeedInterests(interests []string, following []strin
 		{PUBLIC_FIELD: true},
 		{PUBLIC_FIELD: false, AUTHOR_ID_FIELD: bson.M{"$in": following}},
 		{PUBLIC_FIELD: false, RETWEET_AUTHOR_FIELD: bson.M{"$in": following}},
-	}}
+	}, BLOCKED_FIELD: false}
+	
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
 		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
@@ -438,6 +442,7 @@ func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitC
 				{PUBLIC_FIELD: false, RETWEET_AUTHOR_FIELD: bson.M{"$in": following}},
 			}},
 		},
+		BLOCKED_FIELD: false,
 	}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
@@ -486,6 +491,7 @@ func (d *AppDatabase) GetUserFeedRetweet(userId string, limitConfig models.Limit
 				{PUBLIC_FIELD: false, RETWEET_AUTHOR_FIELD: bson.M{"$in": following}},
 			}},
 		},
+		BLOCKED_FIELD: false,
 	}
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
@@ -527,8 +533,8 @@ func (d *AppDatabase) GetUserHashtags(interests []string, following []string, as
 	filter := bson.M{TAGS_FIELD: bson.M{"$all": interests}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
 		{PUBLIC_FIELD: true},
 		{PUBLIC_FIELD: false, AUTHOR_ID_FIELD: bson.M{"$in": following}},
-		{PUBLIC_FIELD: false, RETWEET_AUTHOR_FIELD: bson.M{"$in": following}},
-	}}
+		{PUBLIC_FIELD: false, RETWEET_AUTHOR_FIELD: bson.M{"$in": following}},}, BLOCKED_FIELD: false}
+
 
 	cursor, err := postCollection.Find(context.Background(), filter, options.Find().
 		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
@@ -571,7 +577,7 @@ func (d *AppDatabase) WordSearchPosts(words string, following []string, askerID 
 		log.Println(err)
 	}
 
-	filter := bson.M{"$and": []bson.M{{"$or": filters}, {TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}}, {"$or": []bson.M{
+	filter := bson.M{"$and": []bson.M{{"$or": filters}, {TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}}, {BLOCKED_FIELD: false}, {"$or": []bson.M{
 		{PUBLIC_FIELD: true},
 		{PUBLIC_FIELD: false, AUTHOR_ID_FIELD: bson.M{"$in": following}},
 		{PUBLIC_FIELD: false, RETWEET_AUTHOR_FIELD: bson.M{"$in": following}},
@@ -622,6 +628,7 @@ func (d *AppDatabase) GetUserMetrics(userID string, limits models.MetricLimits) 
 			{Key: TIME_FIELD, Value: bson.D{{Key: "$gte", Value: parsedFromTime.UTC()}, {Key: "$lt", Value: parsedToTime.UTC()}}},
 			{Key: AUTHOR_ID_FIELD, Value: userID},
 			{Key: IS_RETWEET_FIELD, Value: false},
+			{Key: BLOCKED_FIELD, Value: false},
 		}}},
 
 		bson.D{{Key: "$group", Value: bson.D{
@@ -667,7 +674,7 @@ func (d *AppDatabase) LikeAPost(postID string, likerID string) error {
 		return postErrors.AlreadyLiked(postID)
 	}
 
-	filter := bson.M{ORIGINAL_POST_ID_FIELD: postID}
+	filter := bson.M{ORIGINAL_POST_ID_FIELD: postID, BLOCKED_FIELD: false}
 	update := bson.M{"$inc": bson.M{LIKES_FIELD: 1}}
 
 	liker := bson.M{"$addToSet": bson.M{LIKERS_FIELD: likerID}}
@@ -691,7 +698,7 @@ func (d *AppDatabase) UnLikeAPost(postID string, likerID string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	likesCollection := d.db.Collection(LIKES_COLLECTION)
 
-	filter := bson.M{ORIGINAL_POST_ID_FIELD: postID}
+	filter := bson.M{ORIGINAL_POST_ID_FIELD: postID, BLOCKED_FIELD: false}
 	update := bson.M{"$inc": bson.M{LIKES_FIELD: -1}}
 
 	liker := bson.M{"$pull": bson.M{LIKERS_FIELD: likerID}}
@@ -714,7 +721,7 @@ func (d *AppDatabase) UnLikeAPost(postID string, likerID string) error {
 func (d *AppDatabase) AddFavorite(postID string, userID string) error {
 	favoritesCollection := d.db.Collection(BOOKMARK_COLLECTION)
 
-	filter := bson.M{AUTHOR_ID_FIELD: userID}
+	filter := bson.M{AUTHOR_ID_FIELD: userID, BLOCKED_FIELD: false}
 	update := bson.M{"$addToSet": bson.M{POST_ID_FIELD: postID}}
 
 	_, err := favoritesCollection.UpdateOne(context.Background(), filter, update, options.Update().SetUpsert(true))
@@ -729,7 +736,7 @@ func (d *AppDatabase) AddFavorite(postID string, userID string) error {
 func (d *AppDatabase) RemoveFavorite(postID string, userID string) error {
 	favoritesCollection := d.db.Collection(BOOKMARK_COLLECTION)
 
-	filter := bson.M{AUTHOR_ID_FIELD: userID}
+	filter := bson.M{AUTHOR_ID_FIELD: userID,BLOCKED_FIELD: false}
 	update := bson.M{"$pull": bson.M{POST_ID_FIELD: postID}}
 
 	_, err := favoritesCollection.UpdateOne(context.Background(), filter, update)
@@ -785,7 +792,7 @@ func (d *AppDatabase) GetUserFavorites(userID string, limitConfig models.LimitCo
 		}
 	}
 
-	filter = bson.M{POST_ID_FIELD: bson.M{"$in": postIDs}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}}
+	filter = bson.M{POST_ID_FIELD: bson.M{"$in": postIDs}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, BLOCKED_FIELD: false}
 
 	cursor, err = postCollection.Find(context.Background(), filter, options.Find().
 
@@ -809,6 +816,38 @@ func (d *AppDatabase) GetUserFavorites(userID string, limitConfig models.LimitCo
 	return posts, hasMore, nil
 }
 
+func (d *AppDatabase) BlockTwitsnap(postID string) error {
+	postCollection := d.db.Collection(FEED_COLLECTION)
+
+	filter := bson.M{ORIGINAL_POST_ID_FIELD: postID}
+	update := bson.M{"$set": bson.M{BLOCKED_FIELD: true}}
+
+	_, err := postCollection.UpdateMany(context.Background(), filter, update)
+
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func (d *AppDatabase) UnBlockTwitsnap(postID string) error {
+	postCollection := d.db.Collection(FEED_COLLECTION)
+
+	filter := bson.M{ORIGINAL_POST_ID_FIELD: postID}
+	update := bson.M{"$set": bson.M{BLOCKED_FIELD: false}}
+
+	_, err := postCollection.UpdateMany(context.Background(), filter, update)
+
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
+
 func (d *AppDatabase) ClearDB() error {
 	err := d.db.Collection(FEED_COLLECTION).Drop(context.Background())
 	if err != nil {
@@ -828,7 +867,7 @@ func (d *AppDatabase) ClearDB() error {
 
 func (d *AppDatabase) findPost(postID string, postCollection *mongo.Collection) (models.DBPost, error) {
 	var post models.DBPost
-	filter := bson.M{POST_ID_FIELD: postID}
+	filter := bson.M{POST_ID_FIELD: postID, BLOCKED_FIELD: false}
 	err := postCollection.FindOne(context.Background(), filter).Decode(&post)
 	if err != nil {
 		log.Println(err)

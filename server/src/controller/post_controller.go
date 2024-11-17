@@ -370,6 +370,34 @@ func (c *PostController) GetBookmarks(context *gin.Context) {
 	context.JSON(http.StatusOK, result)
 }
 
+func (c *PostController) BlockTwitsnap(context *gin.Context) {
+
+	postID := context.Param("id")
+
+	err := c.sv.BlockTwitsnap(postID)
+
+	if err != nil {
+		_ = context.Error(err)
+		return
+	}
+
+	context.JSON(http.StatusNoContent, gin.H{})
+}
+
+func (c *PostController) UnBlockTwitsnap(context *gin.Context) {
+
+	postID := context.Param("id")
+
+	err := c.sv.UnBlockTwitsnap(postID)
+
+	if err != nil {
+		_ = context.Error(err)
+		return
+	}
+
+	context.JSON(http.StatusNoContent, gin.H{})
+}
+
 func (c *PostController) NoRoute(context *gin.Context) {
 	_ = context.Error(postErrors.NotFound())
 }

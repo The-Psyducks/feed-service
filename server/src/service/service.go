@@ -394,3 +394,23 @@ func (c *Service) GetUserFavorites(userID string, limitiConfig models.LimitConfi
 
 	return posts, hasMore, nil
 }
+
+func (c *Service) BlockTwitsnap(postID string) error {
+	err := c.db.BlockTwitsnap(postID)
+
+	if err != nil {
+		return postErrors.TwitsnapNotFound(postID)
+	}
+
+	return nil
+}
+
+func (c *Service) UnBlockTwitsnap(postID string) error {
+	err := c.db.UnBlockTwitsnap(postID)
+
+	if err != nil {
+		return postErrors.TwitsnapNotFound(postID)
+	}
+
+	return nil
+}

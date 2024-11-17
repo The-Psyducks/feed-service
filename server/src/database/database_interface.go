@@ -43,5 +43,9 @@ type Database interface {
 
 	GetUserFavorites(userID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
 
+	BlockTwitsnap(postID string) error
+
+	UnBlockTwitsnap(postID string) error
+
 	ClearDB() error
 }
