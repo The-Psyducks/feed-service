@@ -15,6 +15,11 @@ import (
 
 func sendMentionNotif(newMentionNotification models.MentionNotificationRequest, token string) error {
 
+	if os.Getenv("ENVIROMENT") == "test" {
+		log.Println("Notification sent to ", newMentionNotification.UserId)
+		return nil
+	}
+
 	url := "http://" + os.Getenv("NOTIF_HOST") + "/notification/mention"
 
 	marshalledData, _ := json.Marshal(newMentionNotification)

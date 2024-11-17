@@ -91,6 +91,8 @@ func TestMetricsLikes(t *testing.T) {
 
 	err = json.Unmarshal(third.Body.Bytes(), &result_post)
 
+	log.Println(result_post)
+
 	assert.Equal(t, err, nil, "Error should be nil")
 
 	assert.Equal(t, http.StatusOK, third.Code, "Status should be 200")
