@@ -159,7 +159,7 @@ func retweetAPost(post models.FrontPost, username, tokenRetweeterer string, r *g
 	assert.Equal(t, retweet_post.Content, post.Content, "Content should be the same")
 	assert.Equal(t, retweet_post.Tags, post.Tags, "Tags should be the same")
 	assert.Equal(t, retweet_post.Retweet_Author, username, "Retweet author should be the retweeter (Retweet)")
-	assert.Equal(t, retweet_post.Retweets, post.Retweets, "Retweets should be the same")
+	assert.Equal(t, retweet_post.Retweets, post.Retweets + 1, "Retweets should be the same")
 
 	return retweet_post
 }

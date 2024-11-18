@@ -43,5 +43,9 @@ type Database interface {
 
 	GetUserFavorites(userID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
 
+	BlockPost(postID string) error
+
+	UnBlockPost(postID string) error
+
 	ClearDB() error
 }

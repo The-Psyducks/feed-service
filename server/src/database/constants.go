@@ -26,6 +26,7 @@ const (
 	MEDIA_INFO_FIELD        = "media_info"
 	BOOKMARK_FIELD         = "bookmark"
 	MENTIONS_FIELD         = "mentions"
+	BLOCKED_FIELD		  = "blocked"
 )
 
 const (

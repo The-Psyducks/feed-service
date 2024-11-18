@@ -1,499 +1,315 @@
 package test
 
-// import (
-// 	"encoding/json"
-// 	"log"
-// 	"net/http"
-// 	"net/http/httptest"
-// 	"server/src/auth"
-// 	"server/src/models"
-// 	"server/src/router"
-// 	"server/src/service"
-// 	"testing"
-// 	// "time"
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"server/src/auth"
+	"server/src/models"
+	"server/src/router"
+	"server/src/service"
+	"testing"
+	"time"
 
-// 	"github.com/stretchr/testify/assert"
-// )
+	"github.com/stretchr/testify/assert"
+)
 
-// func TestBlockedPost(t *testing.T) {
-// 	log.Println("TestBlockedPost")
+func TestBlockedPost(t *testing.T) {
+	log.Println("TestBlockedPost")
 
-// 	db := connectToDatabase()
+	db := connectToDatabase()
 
-// 	r := router.CreateRouter(db)
+	r := router.CreateRouter(db)
 
-// 	author_id := service.TEST_USER_ONE
-// 	retweeter_id := service.TEST_USER_TWO
+	author_id := service.TEST_USER_ONE
+	retweeter_id := service.TEST_USER_TWO
 
-// 	tokenRetweeterer, err := auth.GenerateToken(retweeter_id, service.TEST_USER_TWO_USERNAME, true)
-// 	assert.Equal(t, err, nil, "Error should be nil")
+	tokenRetweeterer, err := auth.GenerateToken(retweeter_id, service.TEST_USER_TWO_USERNAME, true)
+	assert.Equal(t, err, nil, "Error should be nil")
 
-// 	tags := []string{"tag1", "tag2"}
+	tags := []string{"tag1", "tag2"}
 
-// 	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
-// 	retweetPost, _ := http.NewRequest("POST", "/twitsnap/block/"+post.Post_ID, nil)
-// 	addAuthorization(retweetPost, tokenRetweeterer)
+	blockPost, _ := http.NewRequest("POST", "/twitsnap/block/"+post.Post_ID, nil)
+	addAuthorization(blockPost, tokenRetweeterer)
 
-// 	first := httptest.NewRecorder()
-// 	r.ServeHTTP(first, retweetPost)
+	first := httptest.NewRecorder()
+	r.ServeHTTP(first, blockPost)
 
 
-// 	assert.Equal(t, err, nil, "Error should be nil")
-// 	assert.Equal(t, http.StatusNoContent, first.Code)
+	assert.Equal(t, err, nil, "Error should be nil")
+	assert.Equal(t, http.StatusNoContent, first.Code)
 
 
-// 	getPostAfterRetweet, _ := http.NewRequest("GET", "/twitsnap/"+post.Post_ID, nil)
-// 	addAuthorization(getPostAfterRetweet, tokenRetweeterer)
+	getPostAfterRetweet, _ := http.NewRequest("GET", "/twitsnap/"+post.Post_ID, nil)
+	addAuthorization(getPostAfterRetweet, tokenRetweeterer)
 
-// 	second := httptest.NewRecorder()
-// 	r.ServeHTTP(second, getPostAfterRetweet)
+	second := httptest.NewRecorder()
+	r.ServeHTTP(second, getPostAfterRetweet)
 
-// 	result_post := models.FrontPost{}
+	result_post := models.FrontPost{}
 
-// 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
+	err = json.Unmarshal(second.Body.Bytes(), &result_post)
 
-// 	assert.Equal(t, err, nil, "Error should be nil")
+	assert.Equal(t, err, nil, "Error should be nil")
 
-// 	// log.Println(result_post)
-// 	assert.Equal(t, http.StatusNotFound, second.Code)
-// }
+	// log.Println(result_post)
+	assert.Equal(t, http.StatusNotFound, second.Code)
+}
 
-// func TestBlockeedInFeedFollowing(t *testing.T) {
-// 	log.Println("TestBlockeedInFeedFollowing")
+func TestBlockeedInFeedFollowing(t *testing.T) {
+	log.Println("TestBlockeedInFeedFollowing")
 
-// 	db := connectToDatabase()
+	db := connectToDatabase()
 
-// 	r := router.CreateRouter(db)
+	r := router.CreateRouter(db)
 
-// 	tags := []string{"tag1", "tag2"}
+	tags := []string{"tag1", "tag2"}
 
-// 	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
-// 	time.Sleep(1 * time.Second)
+	time.Sleep(1 * time.Second)
 
-// 	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
-// 	time.Sleep(1 * time.Second)
+	time.Sleep(1 * time.Second)
 
-// 	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
-// 	token, err := auth.GenerateToken(service.TEST_USER_ONE, service.TEST_USER_ONE_USERNAME, false)
+	token, err := auth.GenerateToken(service.TEST_USER_ONE, service.TEST_USER_ONE_USERNAME, false)
 
-// 	assert.Equal(t, err, nil, "Error should be nil")
+	assert.Equal(t, err, nil, "Error should be nil")
 
-// 	retweeter := service.TEST_USER_TWO
-// 	tokenRetweeterer, err := auth.GenerateToken(retweeter, service.TEST_USER_TWO_USERNAME, false)
+	retweeter := service.TEST_USER_TWO
+	tokenRetweeterer, err := auth.GenerateToken(retweeter, service.TEST_USER_TWO_USERNAME, false)
 
-// 	assert.Equal(t, err, nil, "Error should be nil")
+	assert.Equal(t, err, nil, "Error should be nil")
 
-// 	retweetPost, _ := http.NewRequest("POST", "/twitsnap/retweet/"+post1.Post_ID, nil)
-// 	addAuthorization(retweetPost, tokenRetweeterer)
+	retweetPost, _ := http.NewRequest("POST", "/twitsnap/block/"+post1.Post_ID, nil)
+	addAuthorization(retweetPost, tokenRetweeterer)
 
-// 	first := httptest.NewRecorder()
-// 	r.ServeHTTP(first, retweetPost)
+	first := httptest.NewRecorder()
+	r.ServeHTTP(first, retweetPost)
 
-// 	retweet_post := models.FrontPost{}
+	assert.Equal(t, http.StatusNoContent, first.Code)
 
-// 	err = json.Unmarshal(first.Body.Bytes(), &retweet_post)
+	expectedPosts := []models.FrontPost{post3, post2}
 
-// 	assert.Equal(t, err, nil, "Error should be nil")
-// 	assert.Equal(t, http.StatusCreated, first.Code)
-// 	assert.Equal(t, true, retweet_post.User_Retweet)
-// 	assert.Equal(t, retweet_post.Content, post1.Content)
-// 	assert.Equal(t, retweet_post.Tags, post1.Tags)
-// 	assert.Equal(t, retweet_post.Retweet_Author, service.TEST_USER_TWO_USERNAME)
+	result := models.ReturnPaginatedPosts{}
 
-// 	// log.Println(retweet_post)
+	time.Sleep(1 * time.Second)
+	time := time.Now().Format(time.RFC3339)
 
-// 	expectedPosts := []models.FrontPost{retweet_post, post3, post2, post1}
+	skip := "0"
+	limit := "6"
 
-// 	result := models.ReturnPaginatedPosts{}
+	getFeed, _ := http.NewRequest("GET", "/twitsnap/feed?time="+time+"&skip="+skip+"&limit="+limit+"&feed_type="+FEED_TYPE_F+"&wanted_user_id="+"", nil)
+	addAuthorization(getFeed, token)
 
-// 	time.Sleep(1 * time.Second)
-// 	time := time.Now().Format(time.RFC3339)
+	feedRecorder := httptest.NewRecorder()
+	r.ServeHTTP(feedRecorder, getFeed)
 
-// 	skip := "0"
-// 	limit := "6"
+	err_2 := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
 
-// 	getFeed, _ := http.NewRequest("GET", "/twitsnap/feed?time="+time+"&skip="+skip+"&limit="+limit+"&feed_type="+FEED_TYPE_F+"&wanted_user_id="+"", nil)
-// 	addAuthorization(getFeed, token)
+	// log.Println(result)
 
-// 	feedRecorder := httptest.NewRecorder()
-// 	r.ServeHTTP(feedRecorder, getFeed)
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
 
-// 	err_2 := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
+	compareOrderAsExpected(expectedPosts, result.Data, t)
+	assert.Equal(t, 6, result.Pagination.Limit)
+	assert.Equal(t, 0, result.Pagination.Next_Offset)
 
-// 	// log.Println(result)
+}
 
-// 	assert.Equal(t, err_2, nil, "Error should be nil")
-// 	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
+func TestUnBlockAPost(t *testing.T) {
+	log.Println("TestUnRetweetAPost")
 
-// 	compareOrderAsExpected(expectedPosts, result.Data, t)
-// 	checkRetweetPost(result.Data[0], service.TEST_USER_TWO_USERNAME, t)
-// 	assert.Equal(t, 6, result.Pagination.Limit)
-// 	assert.Equal(t, 0, result.Pagination.Next_Offset)
+	db := connectToDatabase()
 
-// }
+	r := router.CreateRouter(db)
 
-// func TestUnBlockAPost(t *testing.T) {
-// 	log.Println("TestUnRetweetAPost")
+	author_id := "1"
+	retweeter_id := service.TEST_USER_TWO
+	username := service.TEST_USER_TWO_USERNAME
+	tokenRetweeterer, err := auth.GenerateToken(retweeter_id, username, true)
+	assert.Equal(t, err, nil, "Error should be nil")
 
-// 	db := connectToDatabase()
+	tags := []string{"tag1", "tag2"}
 
-// 	r := router.CreateRouter(db)
+	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
-// 	author_id := "1"
-// 	retweeter_id := service.TEST_USER_TWO
-// 	username := service.TEST_USER_TWO_USERNAME
-// 	tokenRetweeterer, err := auth.GenerateToken(retweeter_id, username, true)
-// 	assert.Equal(t, err, nil, "Error should be nil")
+	blockPost, _ := http.NewRequest("POST", "/twitsnap/block/"+post.Original_Post_ID, nil)
+	addAuthorization(blockPost, tokenRetweeterer)
 
-// 	tags := []string{"tag1", "tag2"}
+	first := httptest.NewRecorder()
+	r.ServeHTTP(first, blockPost)
 
-// 	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
+	getPostAfterRetweet, _ := http.NewRequest("GET", "/twitsnap/"+post.Original_Post_ID, nil)
+	addAuthorization(getPostAfterRetweet, tokenRetweeterer)
 
-// 	_ = retweetAPost(post, username, tokenRetweeterer, r, t)
+	second := httptest.NewRecorder()
+	r.ServeHTTP(second, getPostAfterRetweet)
 
-// 	getPostAfterRetweet, _ := http.NewRequest("GET", "/twitsnap/"+post.Post_ID, nil)
-// 	addAuthorization(getPostAfterRetweet, tokenRetweeterer)
+	assert.Equal(t, err, nil, "Error should be nil")
+	assert.Equal(t, http.StatusNoContent, first.Code)
 
-// 	second := httptest.NewRecorder()
-// 	r.ServeHTTP(second, getPostAfterRetweet)
+	unretweetPost, _ := http.NewRequest("DELETE", "/twitsnap/block/"+post.Original_Post_ID, nil)
+	addAuthorization(unretweetPost, tokenRetweeterer)
 
-// 	result_post := models.FrontPost{}
+	third := httptest.NewRecorder()
+	r.ServeHTTP(third, unretweetPost)
 
-// 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
+	assert.Equal(t, http.StatusNoContent, third.Code)
 
-// 	assert.Equal(t, err, nil, "Error should be nil")
+	getPostAfterUnRetweet, _ := http.NewRequest("GET", "/twitsnap/"+post.Original_Post_ID, nil)
+	addAuthorization(getPostAfterUnRetweet, tokenRetweeterer)
 
-// 	// log.Println(result_post)
-// 	assert.Equal(t, http.StatusOK, second.Code)
-// 	assert.Equal(t, true, result_post.User_Retweet)
-// 	assert.Equal(t, result_post.Retweets, 1)
-// 	assert.Equal(t, result_post.Content, post.Content)
-// 	assert.Equal(t, result_post.Tags, post.Tags)
+	fourth := httptest.NewRecorder()
+	r.ServeHTTP(fourth, getPostAfterUnRetweet)
 
-// 	unretweetPost, _ := http.NewRequest("DELETE", "/twitsnap/retweet/"+post.Post_ID, nil)
-// 	addAuthorization(unretweetPost, tokenRetweeterer)
+	result_post_no_block := models.FrontPost{}
 
-// 	third := httptest.NewRecorder()
-// 	r.ServeHTTP(third, unretweetPost)
+	err = json.Unmarshal(fourth.Body.Bytes(), &result_post_no_block)
 
-// 	assert.Equal(t, http.StatusNoContent, third.Code)
+	assert.Equal(t, err, nil, "Error should be nil")
 
-// 	getPostAfterUnRetweet, _ := http.NewRequest("GET", "/twitsnap/"+post.Post_ID, nil)
-// 	addAuthorization(getPostAfterUnRetweet, tokenRetweeterer)
+	// log.Println(result_post)
+	assert.Equal(t, http.StatusOK, fourth.Code)
+	assert.Equal(t, false, result_post_no_block.User_Retweet)
+	assert.Equal(t, result_post_no_block.Retweets, 0)
+}
 
-// 	fourth := httptest.NewRecorder()
-// 	r.ServeHTTP(fourth, getPostAfterUnRetweet)
+func TestBlockInFeedForyou(t *testing.T) {
+	log.Println("TestBlockInFeedForyou")
 
-// 	result_post_no_retweet := models.FrontPost{}
+	db := connectToDatabase()
 
-// 	err = json.Unmarshal(fourth.Body.Bytes(), &result_post)
+	r := router.CreateRouter(db)
 
-// 	assert.Equal(t, err, nil, "Error should be nil")
+	tags := []string{service.TEST_TAG_ONE, "tag5"}
 
-// 	// log.Println(result_post)
-// 	assert.Equal(t, http.StatusOK, fourth.Code)
-// 	assert.Equal(t, false, result_post_no_retweet.User_Retweet)
-// 	assert.Equal(t, result_post_no_retweet.Retweets, 0)
-// }
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
-// func TestBlockInFeedForyou(t *testing.T) {
-// 	log.Println("TestRetweetInFeedForyou")
+	time.Sleep(1 * time.Second)
 
-// 	db := connectToDatabase()
+	tags = []string{service.TEST_TAG_TWO, "tag4"}
 
-// 	r := router.CreateRouter(db)
+	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content3 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
-// 	tags := []string{service.TEST_TAG_ONE, "tag5"}
+	time.Sleep(1 * time.Second)
 
-// 	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
+	tags = []string{service.TEST_TAG_THREE, "tag6"}
 
-// 	time.Sleep(1 * time.Second)
+	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content2 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
-// 	tags = []string{service.TEST_TAG_TWO, "tag4"}
+	token, err := auth.GenerateToken(service.TEST_USER_ONE, service.TEST_USER_ONE_USERNAME, false)
 
-// 	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content3 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
+	assert.Equal(t, err, nil, "Error should be nil")
 
-// 	time.Sleep(1 * time.Second)
+	retweeter := service.TEST_USER_TWO
+	username := service.TEST_USER_TWO_USERNAME
+	tokenRetweeterer, err := auth.GenerateToken(retweeter, username, false)
 
-// 	tags = []string{service.TEST_TAG_THREE, "tag6"}
+	assert.Equal(t, err, nil, "Error should be nil")
 
-// 	post3 := makeAndAssertPost(service.TEST_USER_THREE, "content2 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
+	blockPost, _ := http.NewRequest("POST", "/twitsnap/block/"+post2.Original_Post_ID, nil)
+	addAuthorization(blockPost, tokenRetweeterer)
 
-// 	token, err := auth.GenerateToken(service.TEST_USER_ONE, service.TEST_USER_ONE_USERNAME, false)
+	first := httptest.NewRecorder()
+	r.ServeHTTP(first, blockPost)
 
-// 	assert.Equal(t, err, nil, "Error should be nil")
+	// log.Println(retweet_post)
 
-// 	retweeter := service.TEST_USER_TWO
-// 	username := service.TEST_USER_TWO_USERNAME
-// 	tokenRetweeterer, err := auth.GenerateToken(retweeter, username, false)
+	expectedPosts := []models.FrontPost{post3, post1}
 
-// 	assert.Equal(t, err, nil, "Error should be nil")
+	result := models.ReturnPaginatedPosts{}
 
-// 	retweet_post := retweetAPost(post1, username, tokenRetweeterer, r, t)
+	time.Sleep(1 * time.Second)
+	time := time.Now().Format(time.RFC3339)
 
-// 	// log.Println(retweet_post)
+	skip := "0"
+	limit := "6"
 
-// 	expectedPosts := []models.FrontPost{retweet_post, post3, post2, post1}
+	getFeed, _ := http.NewRequest("GET", "/twitsnap/feed?time="+time+"&skip="+skip+"&limit="+limit+"&feed_type="+FEED_TYPE_Y+"&wanted_user_id="+"", nil)
+	addAuthorization(getFeed, token)
 
-// 	result := models.ReturnPaginatedPosts{}
+	feedRecorder := httptest.NewRecorder()
+	r.ServeHTTP(feedRecorder, getFeed)
 
-// 	time.Sleep(1 * time.Second)
-// 	time := time.Now().Format(time.RFC3339)
+	err_2 := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
 
-// 	skip := "0"
-// 	limit := "6"
+	// log.Println(result)
 
-// 	getFeed, _ := http.NewRequest("GET", "/twitsnap/feed?time="+time+"&skip="+skip+"&limit="+limit+"&feed_type="+FEED_TYPE_Y+"&wanted_user_id="+"", nil)
-// 	addAuthorization(getFeed, token)
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
 
-// 	feedRecorder := httptest.NewRecorder()
-// 	r.ServeHTTP(feedRecorder, getFeed)
+	compareOrderAsExpected(expectedPosts, result.Data, t)
+	assert.Equal(t, 6, result.Pagination.Limit)
+	assert.Equal(t, 0, result.Pagination.Next_Offset)
+}
 
-// 	err_2 := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
+func TestBlockInSingleRetweeterFeed(t *testing.T) {
+	log.Println("TestRetweetInSingleRetweeterFeed")
 
-// 	// log.Println(result)
+	db := connectToDatabase()
 
-// 	assert.Equal(t, err_2, nil, "Error should be nil")
-// 	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
+	r := router.CreateRouter(db)
 
-// 	compareOrderAsExpected(expectedPosts, result.Data, t)
-// 	checkRetweetPost(result.Data[0], username, t)
-// 	assert.Equal(t, 6, result.Pagination.Limit)
-// 	assert.Equal(t, 0, result.Pagination.Next_Offset)
-// }
+	tags := []string{service.TEST_TAG_ONE, "tag2"}
 
-// func TestBlockInSingleRetweeterFeed(t *testing.T) {
-// 	log.Println("TestRetweetInSingleRetweeterFeed")
+	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
-// 	db := connectToDatabase()
+	time.Sleep(1 * time.Second)
 
-// 	r := router.CreateRouter(db)
+	post2 := makeAndAssertPost(service.TEST_USER_ONE, "content2 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
-// 	tags := []string{service.TEST_TAG_ONE, "tag2"}
+	time.Sleep(1 * time.Second)
 
-// 	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
+	post3 := makeAndAssertPost(service.TEST_USER_ONE, "content3 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
 
-// 	time.Sleep(1 * time.Second)
+	token, err := auth.GenerateToken(service.TEST_USER_ONE, service.TEST_USER_ONE_USERNAME, false)
 
-// 	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
+	assert.Equal(t, err, nil, "Error should be nil")
 
-// 	time.Sleep(1 * time.Second)
+	retweeter := service.TEST_USER_ONE
+	username := service.TEST_USER_ONE_USERNAME
+	tokenRetweeterer, err := auth.GenerateToken(retweeter, username, false)
 
-// 	post3 := makeAndAssertPost(service.TEST_USER_ONE, "content3 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
+	assert.Equal(t, err, nil, "Error should be nil")
 
-// 	token, err := auth.GenerateToken(service.TEST_USER_ONE, service.TEST_USER_ONE_USERNAME, false)
+	blockPost, _ := http.NewRequest("POST", "/twitsnap/block/"+post1.Original_Post_ID, nil)
+	addAuthorization(blockPost, tokenRetweeterer)
 
-// 	assert.Equal(t, err, nil, "Error should be nil")
+	first := httptest.NewRecorder()
+	r.ServeHTTP(first, blockPost)
 
-// 	retweeter := service.TEST_USER_ONE
-// 	username := service.TEST_USER_ONE_USERNAME
-// 	tokenRetweeterer, err := auth.GenerateToken(retweeter, username, false)
+	expectedPosts := []models.FrontPost{post3, post2}
 
-// 	assert.Equal(t, err, nil, "Error should be nil")
+	result := models.ReturnPaginatedPosts{}
 
-// 	retweet_post := retweetAPost(post2, username, tokenRetweeterer, r, t)
+	time.Sleep(1 * time.Second)
+	time := time.Now().Format(time.RFC3339)
 
-// 	// log.Println(retweet_post)
+	skip := "0"
+	limit := "6"
 
-// 	expectedPosts := []models.FrontPost{retweet_post, post3, post1}
+	getFeed, _ := http.NewRequest("GET", "/twitsnap/feed?time="+time+"&skip="+skip+"&limit="+limit+"&feed_type="+FEED_TYPE_S+"&wanted_user_id="+retweeter, nil)
+	addAuthorization(getFeed, token)
 
-// 	result := models.ReturnPaginatedPosts{}
+	feedRecorder := httptest.NewRecorder()
+	r.ServeHTTP(feedRecorder, getFeed)
 
-// 	time.Sleep(1 * time.Second)
-// 	time := time.Now().Format(time.RFC3339)
+	err_2 := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
 
-// 	skip := "0"
-// 	limit := "6"
+	// log.Println(result)
 
-// 	getFeed, _ := http.NewRequest("GET", "/twitsnap/feed?time="+time+"&skip="+skip+"&limit="+limit+"&feed_type="+FEED_TYPE_S+"&wanted_user_id="+retweeter, nil)
-// 	addAuthorization(getFeed, token)
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
 
-// 	feedRecorder := httptest.NewRecorder()
-// 	r.ServeHTTP(feedRecorder, getFeed)
-
-// 	err_2 := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
-
-// 	// log.Println(result)
-
-// 	assert.Equal(t, err_2, nil, "Error should be nil")
-// 	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
-
-// 	compareOrderAsExpected(expectedPosts, result.Data, t)
-// 	checkRetweetPost(result.Data[0], username, t)
-// 	assert.Equal(t, 6, result.Pagination.Limit)
-// 	assert.Equal(t, 0, result.Pagination.Next_Offset)
-// }
-
-// func TestBlockAndLikeOriginal(t *testing.T) {
-// 	log.Println("TestRetweetAndLikeOriginal")
-
-// 	db := connectToDatabase()
-
-// 	r := router.CreateRouter(db)
-
-// 	author_id := service.TEST_USER_ONE
-// 	retweeter_id := service.TEST_USER_TWO
-// 	username := service.TEST_USER_TWO_USERNAME
-
-// 	tokenRetweeterer, err := auth.GenerateToken(retweeter_id, username, true)
-// 	assert.Equal(t, err, nil, "Error should be nil")
-
-// 	tags := []string{"tag1", "tag2"}
-
-// 	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
-
-// 	likePost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Post_ID, nil)
-// 	addAuthorization(likePost, tokenRetweeterer)
-
-// 	first := httptest.NewRecorder()
-// 	r.ServeHTTP(first, likePost)
-
-// 	retweet_post := retweetAPost(post, username, tokenRetweeterer, r, t)
-
-
-// 	assert.Equal(t, http.StatusNoContent, first.Code, "Status should be 204")
-
-// 	getRetweet, _ := http.NewRequest("GET", "/twitsnap/"+retweet_post.Post_ID, nil)
-// 	addAuthorization(getRetweet, tokenRetweeterer)
-
-// 	second := httptest.NewRecorder()
-// 	r.ServeHTTP(second, getRetweet)
-
-// 	retweet_result := models.FrontPost{}
-
-// 	err = json.Unmarshal(second.Body.Bytes(), &retweet_result)
-
-// 	assert.Equal(t, err, nil, "Error should be nil")
-
-// 	assert.Equal(t, http.StatusOK, second.Code, "Status should be 200")
-// 	assert.Equal(t, true, retweet_result.User_Retweet, "User should have retweeted")
-// 	assert.Equal(t, 1, retweet_result.Retweets, "Retweets should be 1")
-// 	assert.Equal(t, 1, retweet_result.Likes, "Likes should be 1")
-// 	assert.Equal(t, retweet_result.User_Liked, true, "Original post should be liked")
-// }
-
-// func TestBlockAndLikeOriginalAndRetweet(t *testing.T) {
-// 	log.Println("TestRetweetAndLikeOriginalAndRetweet")
-
-// 	db := connectToDatabase()
-
-// 	r := router.CreateRouter(db)
-
-// 	author_id := service.TEST_USER_ONE
-// 	retweeter_id := service.TEST_USER_TWO
-// 	username := service.TEST_USER_TWO_USERNAME
-
-// 	liker_id := service.TEST_USER_THREE
-// 	tokenLiker, err := auth.GenerateToken(liker_id, service.TEST_USER_THREE_USERNAME, true)
-
-// 	assert.Equal(t, err, nil, "Error should be nil")
-
-// 	tokenRetweeterer, err := auth.GenerateToken(retweeter_id, username, true)
-// 	assert.Equal(t, err, nil, "Error should be nil")
-
-// 	tags := []string{"tag1", "tag2"}
-
-// 	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
-
-// 	retweet_post := retweetAPost(post, username, tokenRetweeterer, r, t)
-
-// 	likePost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Post_ID, nil)
-// 	addAuthorization(likePost, tokenRetweeterer)
-
-// 	first := httptest.NewRecorder()
-// 	r.ServeHTTP(first, likePost)
-
-// 	assert.Equal(t, http.StatusNoContent, first.Code, "Status should be 204")
-
-// 	likePostViaRt, _ := http.NewRequest("POST", "/twitsnap/like/"+retweet_post.Original_Post_ID, nil)
-// 	addAuthorization(likePostViaRt, tokenLiker)
-
-// 	third := httptest.NewRecorder()
-// 	r.ServeHTTP(third, likePostViaRt)
-
-// 	assert.Equal(t, http.StatusNoContent, third.Code, "Status should be 204")
-
-// 	getRetweet, _ := http.NewRequest("GET", "/twitsnap/"+retweet_post.Post_ID, nil)
-// 	addAuthorization(getRetweet, tokenRetweeterer)
-
-// 	second := httptest.NewRecorder()
-// 	r.ServeHTTP(second, getRetweet)
-
-// 	retweet_result := models.FrontPost{}
-
-// 	err = json.Unmarshal(second.Body.Bytes(), &retweet_result)
-
-// 	assert.Equal(t, err, nil, "Error should be nil")
-
-// 	assert.Equal(t, http.StatusOK, second.Code, "Status should be 200")
-// 	assert.Equal(t, true, retweet_result.User_Retweet, "User should have retweeted")
-// 	assert.Equal(t, 1, retweet_result.Retweets, "Retweets should be 1")
-// 	assert.Equal(t, 2, retweet_result.Likes, "Likes should be 2")
-// 	assert.Equal(t, retweet_result.User_Liked, true, "Original post should be liked")
-
-// }
-
-// func TestBlockSingleAuthorField(t *testing.T) {
-// 	log.Println("TestRetwetSingleAuthorField")
-
-// 	db := connectToDatabase()
-
-// 	r := router.CreateRouter(db)
-
-// 	tags := []string{"tag1", "tag2"}
-
-// 	post1 := makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
-
-// 	time.Sleep(1 * time.Second)
-
-// 	post2 := makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
-
-// 	time.Sleep(1 * time.Second)
-
-// 	post3 := makeAndAssertPost(service.TEST_USER_ONE, "content3 " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
-
-// 	token, err := auth.GenerateToken(service.TEST_USER_ONE, service.TEST_USER_ONE_USERNAME, false)
-
-// 	assert.Equal(t, err, nil, "Error should be nil")
-
-// 	retweeter := service.TEST_USER_THREE
-// 	username := service.TEST_USER_THREE_USERNAME
-// 	tokenRetweeterer, err := auth.GenerateToken(retweeter, username, false)
-
-// 	assert.Equal(t, err, nil, "Error should be nil")
-
-// 	_ = retweetAPost(post2, username, tokenRetweeterer, r, t)
-
-// 	// log.Println(retweet_post)
-
-// 	expectedPosts := []models.FrontPost{post3, post1}
-
-// 	result := models.ReturnPaginatedPosts{}
-
-// 	time.Sleep(1 * time.Second)
-// 	time := time.Now().Format(time.RFC3339)
-
-// 	skip := "0"
-// 	limit := "6"
-
-// 	getFeed, _ := http.NewRequest("GET", "/twitsnap/feed?time="+time+"&skip="+skip+"&limit="+limit+"&feed_type="+FEED_TYPE_S+"&wanted_user_id="+service.TEST_USER_ONE, nil)
-// 	addAuthorization(getFeed, token)
-
-// 	feedRecorder := httptest.NewRecorder()
-// 	r.ServeHTTP(feedRecorder, getFeed)
-
-// 	err_2 := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
-
-// 	// log.Println(result)
-
-// 	assert.Equal(t, err_2, nil, "Error should be nil")
-// 	assert.Equal(t, http.StatusOK, feedRecorder.Code, "Status should be 200")
-
-// 	compareOrderAsExpected(expectedPosts, result.Data, t)
-// 	assert.Equal(t, 6, result.Pagination.Limit)
-// 	assert.Equal(t, 0, result.Pagination.Next_Offset)
-// }
+	compareOrderAsExpected(expectedPosts, result.Data, t)
+	assert.Equal(t, 6, result.Pagination.Limit)
+	assert.Equal(t, 0, result.Pagination.Next_Offset)
+}
