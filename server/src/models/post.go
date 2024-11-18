@@ -33,6 +33,7 @@ type DBPost struct {
 	Retweet_Author_ID string    `bson:"retweet_author"`
 	Media_Info        MediaInfo    `bson:"media_info"`
 	Mentions 		[]string  `bson:"mentions"`
+	Blocked			 bool	  `bson:"blocked"`
 }
 
 func NewDBPost(author_id string, content string, tags []string, privacy bool, mediaInfo MediaInfo, mentions []string) DBPost {
@@ -49,8 +50,9 @@ func NewDBPost(author_id string, content string, tags []string, privacy bool, me
 		Original_Post_ID:  postID,
 		Retweet_Author_ID: author_id,
 		Is_Retweet:        false,
-		Media_Info:          mediaInfo,
-		Mentions:  mentions,
+		Media_Info:        mediaInfo,
+		Mentions:  			mentions,
+		Blocked: 			false,
 	}
 }
 

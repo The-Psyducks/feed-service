@@ -64,7 +64,14 @@ func (d *AppDatabase) AddNewRetweet(newRetweet models.DBPost) (models.FrontPost,
 		return models.FrontPost{}, err
 	}
 
-	post, err := d.makeDBPostIntoFrontPost(newRetweet, newRetweet.Retweet_Author_ID)
+	newPostRetweet, err := d.findPost(newRetweet.Post_ID, postCollection)
+
+	if err != nil {
+		log.Println(err)
+		return models.FrontPost{}, err
+	}
+
+	post, err := d.makeDBPostIntoFrontPost(newPostRetweet, newPostRetweet.Retweet_Author_ID)
 
 	return post, err
 }
@@ -118,32 +125,28 @@ func (d *AppDatabase) DeletePost(postID string) error {
 }
 
 func (d *AppDatabase) DeleteRetweet(postID string, userID string) error {
+
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	retweetCollection := d.db.Collection(RETWEET_COLLECTION)
 
-	filter := bson.M{ORIGINAL_POST_ID_FIELD: postID, RETWEET_AUTHOR_FIELD: userID}
+	filter := bson.M{ORIGINAL_POST_ID_FIELD: postID}
 	update := bson.M{"$inc": bson.M{RETWEET_FIELD: -1}}
+
 	retweeter := bson.M{"$pull": bson.M{RETWEETERS_FIELD: userID}}
 
-	result, err := postCollection.DeleteOne(context.Background(), filter)
-
+	_, err := postCollection.UpdateMany(context.Background(), filter, update)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
-	if result.DeletedCount == 0 {
-		return postErrors.ErrTwitsnapNotFound
+	_, err = retweetCollection.UpdateOne(context.Background(), filter, retweeter)
+
+	if err != nil {
+		log.Println(err)
 	}
 
-	_, err_2 := postCollection.UpdateOne(context.Background(), filter, update)
-
-	if err_2 != nil {
-		return err_2
-	}
-
-	_, err_3 := retweetCollection.UpdateOne(context.Background(), filter, retweeter)
-
-	return err_3
+	return err
 }
 
 func (d *AppDatabase) EditPost(postID string, editInfo models.EditPostExpectedFormat, askerID string) (models.FrontPost, error) {
@@ -344,7 +347,7 @@ func (d *AppDatabase) GetUserFeedFollowing(following []string, askerID string, l
 		log.Println(err)
 	}
 
-	filter := bson.M{TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
+	filter := bson.M{TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, BLOCKED_FIELD: false, "$or": []bson.M{
 		{AUTHOR_ID_FIELD: bson.M{"$in": following}},
 		{RETWEET_AUTHOR_FIELD: bson.M{"$in": following}},
 	}}
@@ -385,7 +388,7 @@ func (d *AppDatabase) GetUserFeedInterests(interests []string, following []strin
 
 	log.Println(interests)
 
-	filter := bson.M{TAGS_FIELD: bson.M{"$in": interests}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, "$or": []bson.M{
+	filter := bson.M{TAGS_FIELD: bson.M{"$in": interests}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, BLOCKED_FIELD: false, "$or": []bson.M{
 		{PUBLIC_FIELD: true},
 		{PUBLIC_FIELD: false, AUTHOR_ID_FIELD: bson.M{"$in": following}},
 		{PUBLIC_FIELD: false, RETWEET_AUTHOR_FIELD: bson.M{"$in": following}},
@@ -427,6 +430,7 @@ func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitC
 
 	filter := bson.M{
 		TIME_FIELD: bson.M{"$lt": parsedTime.UTC()},
+		BLOCKED_FIELD: false,
 		"$and": []bson.M{
 			{"$or": []bson.M{
 				{AUTHOR_ID_FIELD: userId, IS_RETWEET_FIELD: false},
@@ -711,6 +715,36 @@ func (d *AppDatabase) UnLikeAPost(postID string, likerID string) error {
 	return err
 }
 
+func (d *AppDatabase) BlockPost(postId string) error {
+	postCollection := d.db.Collection(FEED_COLLECTION)
+
+	filter := bson.M{POST_ID_FIELD: postId}
+	update := bson.M{"$set": bson.M{BLOCKED_FIELD: true}}
+
+	_, err := postCollection.UpdateOne(context.Background(), filter, update)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	return err
+}
+
+func (d *AppDatabase) UnBlockPost(postId string) error {
+	postCollection := d.db.Collection(FEED_COLLECTION)
+
+	filter := bson.M{POST_ID_FIELD: postId}
+	update := bson.M{"$set": bson.M{BLOCKED_FIELD: false}}
+
+	_, err := postCollection.UpdateOne(context.Background(), filter, update)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	return err
+}
+
 func (d *AppDatabase) AddFavorite(postID string, userID string) error {
 	favoritesCollection := d.db.Collection(BOOKMARK_COLLECTION)
 
@@ -828,7 +862,7 @@ func (d *AppDatabase) ClearDB() error {
 
 func (d *AppDatabase) findPost(postID string, postCollection *mongo.Collection) (models.DBPost, error) {
 	var post models.DBPost
-	filter := bson.M{POST_ID_FIELD: postID}
+	filter := bson.M{POST_ID_FIELD: postID, BLOCKED_FIELD: false}
 	err := postCollection.FindOne(context.Background(), filter).Decode(&post)
 	if err != nil {
 		log.Println(err)

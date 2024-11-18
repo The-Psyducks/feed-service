@@ -47,14 +47,14 @@ func (c *Service) CreatePost(newPost *models.PostExpectedFormat, author_id strin
 		return nil, postErrors.UserInfoError(err.Error())
 	}
 
-	for _, user := range newPost.Mentions {
-		newMentionNotif := models.MentionNotificationRequest{UserId: user, TaggerId: newPosted.Author_Info.Author_ID, PostId: newPosted.Original_Post_ID}
-		err = sendMentionNotif(newMentionNotif, token)
+	// for _, user := range newPost.Mentions {
+	// 	newMentionNotif := models.MentionNotificationRequest{UserId: user, TaggerId: newPosted.Author_Info.Author_ID, PostId: newPosted.Original_Post_ID}
+	// 	err = sendMentionNotif(newMentionNotif, token)
 
-		if err != nil {
-			return nil, postErrors.NotificationError(err.Error())
-		}
-	}
+	// 	if err != nil {
+	// 		return nil, postErrors.NotificationError(err.Error())
+	// 	}
+	// }
 
 	return &newPosted, nil
 }
@@ -351,6 +351,26 @@ func (c *Service) LikePost(postID string, userID string) error {
 
 func (c *Service) UnLikePost(postID string, userID string) error {
 	err := c.db.UnLikeAPost(postID, userID)
+
+	if err != nil {
+		return postErrors.TwitsnapNotFound(postID)
+	}
+
+	return nil
+}
+
+func (c *Service) BlockPost(postID string) error {
+	err := c.db.BlockPost(postID)
+
+	if err != nil {
+		return postErrors.TwitsnapNotFound(postID)
+	}
+
+	return nil
+}
+
+func (c *Service) UnBlockPost(postID string) error {
+	err := c.db.UnBlockPost(postID)
 
 	if err != nil {
 		return postErrors.TwitsnapNotFound(postID)

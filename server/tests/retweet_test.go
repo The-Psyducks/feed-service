@@ -213,16 +213,17 @@ func TestUnRetweetAPost(t *testing.T) {
 	fourth := httptest.NewRecorder()
 	r.ServeHTTP(fourth, getPostAfterUnRetweet)
 
-	result_post_no_retweet := models.FrontPost{}
+	// result_post_no_retweet := models.FrontPost{}
 
 	err = json.Unmarshal(fourth.Body.Bytes(), &result_post)
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	// log.Println(result_post)
+	log.Println(result_post)
+	
 	assert.Equal(t, http.StatusOK, fourth.Code)
-	assert.Equal(t, false, result_post_no_retweet.User_Retweet)
-	assert.Equal(t, result_post_no_retweet.Retweets, 0)
+	assert.Equal(t, false, result_post.User_Retweet)
+	assert.Equal(t, result_post.Retweets, 0)
 }
 
 func TestRetweetInFeedForyou(t *testing.T) {

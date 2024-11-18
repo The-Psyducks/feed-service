@@ -312,6 +312,32 @@ func (c *PostController) UnLikePost(context *gin.Context) {
 	context.JSON(http.StatusNoContent, gin.H{})
 }
 
+func (c *PostController) BlockPost(context *gin.Context) {
+	postID := context.Param("id")
+
+	err := c.sv.BlockPost(postID)
+
+	if err != nil {
+		_ = context.Error(err)
+		return
+	}
+
+	context.JSON(http.StatusNoContent, gin.H{})
+}
+
+func (c *PostController) UnBlockPost(context *gin.Context) {
+	postID := context.Param("id")
+
+	err := c.sv.UnBlockPost(postID)
+
+	if err != nil {
+		_ = context.Error(err)
+		return
+	}
+
+	context.JSON(http.StatusNoContent, gin.H{})
+}
+
 func (c *PostController) BookmarkPost(context *gin.Context) {
 	postID := context.Param("id")
 	userID, _ := context.Get("session_user_id")

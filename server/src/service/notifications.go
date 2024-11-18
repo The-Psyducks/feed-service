@@ -1,44 +1,49 @@
 package service
 
-import (
-	"bytes"
-	"encoding/json"
-	"errors"
-	"log"
-	"strconv"
+// import (
+// 	"bytes"
+// 	"encoding/json"
+// 	"errors"
+// 	"log"
+// 	"strconv"
 
-	"net/http"
-	"os"
-	"server/src/models"
-)
+// 	"net/http"
+// 	"os"
+// 	"server/src/models"
+// )
 
 
-func sendMentionNotif(newMentionNotification models.MentionNotificationRequest, token string) error {
+// func sendMentionNotif(newMentionNotification models.MentionNotificationRequest, token string) error {
 
-	url := "http://" + os.Getenv("NOTIF_HOST") + "/notification/mention"
+// 	if os.Getenv("ENVIROMENT") == "test" {
+// 		log.Println("Notification sent to ", newMentionNotification.UserId)
+// 		return nil
+// 	}
 
-	marshalledData, _ := json.Marshal(newMentionNotification)
+// 	url := "http://" + os.Getenv("NOTIF_HOST") + "/notification/mention"
 
-	req, err := http.NewRequest("POST", url, bytes.NewReader(marshalledData))
+// 	marshalledData, _ := json.Marshal(newMentionNotification)
 
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
+// 	req, err := http.NewRequest("POST", url, bytes.NewReader(marshalledData))
 
-	if err != nil {
-		return errors.New("error creating request")
-	}
+// 	req.Header.Set("Content-Type", "application/json")
+// 	req.Header.Set("Authorization", "Bearer "+token)
 
-	resp, err := http.DefaultClient.Do(req)
+// 	if err != nil {
+// 		return errors.New("error creating request")
+// 	}
 
-	if err != nil {
-		return errors.New("error sending request, " + err.Error())
-	}
+// 	resp, err := http.DefaultClient.Do(req)
 
-	if resp.StatusCode != http.StatusOK {
-		return errors.New("error sending request, status code: "  + strconv.Itoa(resp.StatusCode))
-	}
+// 	if err != nil {
+// 		return errors.New("error sending request, " + err.Error())
+// 	}
 
-	log.Println("Notification sent to ", newMentionNotification.UserId)
+// 	if resp.StatusCode != http.StatusOK {
+// 		return errors.New("error sending request, status code: "  + strconv.Itoa(resp.StatusCode))
+// 	}
 
-	return nil
-}
+// 	log.Println("Notification sent to ", newMentionNotification.UserId)
+
+// 	return nil
+// }
