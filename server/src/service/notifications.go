@@ -1,49 +1,49 @@
 package service
 
-// import (
-// 	"bytes"
-// 	"encoding/json"
-// 	"errors"
-// 	"log"
-// 	"strconv"
+import (
+	"bytes"
+	"encoding/json"
+	"errors"
+	"log"
+	"strconv"
 
-// 	"net/http"
-// 	"os"
-// 	"server/src/models"
-// )
+	"net/http"
+	"os"
+	"server/src/models"
+)
 
 
-// func sendMentionNotif(newMentionNotification models.MentionNotificationRequest, token string) error {
+func sendMentionNotif(newMentionNotification models.MentionNotificationRequest, token string) error {
 
-// 	if os.Getenv("ENVIROMENT") == "test" {
-// 		log.Println("Notification sent to ", newMentionNotification.UserId)
-// 		return nil
-// 	}
+	if os.Getenv("ENVIROMENT") == "test" {
+		log.Println("Notification sent to ", newMentionNotification.UserId)
+		return nil
+	}
 
-// 	url := "http://" + os.Getenv("NOTIF_HOST") + "/notification/mention"
+	url := "http://" + os.Getenv("NOTIF_HOST") + "/notification/mention"
 
-// 	marshalledData, _ := json.Marshal(newMentionNotification)
+	marshalledData, _ := json.Marshal(newMentionNotification)
 
-// 	req, err := http.NewRequest("POST", url, bytes.NewReader(marshalledData))
+	req, err := http.NewRequest("POST", url, bytes.NewReader(marshalledData))
 
-// 	req.Header.Set("Content-Type", "application/json")
-// 	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
 
-// 	if err != nil {
-// 		return errors.New("error creating request")
-// 	}
+	if err != nil {
+		return errors.New("error creating request")
+	}
 
-// 	resp, err := http.DefaultClient.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 
-// 	if err != nil {
-// 		return errors.New("error sending request, " + err.Error())
-// 	}
+	if err != nil {
+		return errors.New("error sending request, " + err.Error())
+	}
 
-// 	if resp.StatusCode != http.StatusOK {
-// 		return errors.New("error sending request, status code: "  + strconv.Itoa(resp.StatusCode))
-// 	}
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("error sending request, status code: "  + strconv.Itoa(resp.StatusCode))
+	}
 
-// 	log.Println("Notification sent to ", newMentionNotification.UserId)
+	log.Println("Notification sent to ", newMentionNotification.UserId)
 
-// 	return nil
-// }
+	return nil
+}
