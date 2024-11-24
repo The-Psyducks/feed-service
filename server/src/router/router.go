@@ -1,14 +1,17 @@
 package router
 
 import (
-	"server/src/database"
+	"fmt"
 	"server/src/controller"
-	"github.com/gin-gonic/gin"
+	"server/src/database"
 	"server/src/middleware"
 	"fmt"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	nrgin "github.com/newrelic/go-agent/v3/integrations/nrgin"
+	"github.com/newrelic/go-agent/v3/newrelic"
+
 )
 
 func CreateRouter(db database.Database) *gin.Engine {
@@ -83,3 +86,4 @@ func setNewRelicConnection(r *gin.Engine) {
 	}
 	r.Use(nrgin.Middleware(app))
 }
+
