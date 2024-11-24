@@ -5,8 +5,10 @@ import (
 	"server/src/controller"
 	"server/src/database"
 	"server/src/middleware"
+	"fmt"
+	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-
 	nrgin "github.com/newrelic/go-agent/v3/integrations/nrgin"
 	"github.com/newrelic/go-agent/v3/newrelic"
 
@@ -15,6 +17,7 @@ import (
 func CreateRouter(db database.Database) *gin.Engine {
 	r := gin.Default()
 
+	addCorsConfiguration(r)
 	setNewRelicConnection(r)
 
 	r.Use(middleware.ErrorManager())
@@ -61,6 +64,15 @@ func CreateRouter(db database.Database) *gin.Engine {
 	r.NoRoute(postController.NoRoute)
 
 	return r
+}
+
+func addCorsConfiguration(r *gin.Engine) {
+	config := cors.DefaultConfig()
+	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
+	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
+	config.AllowAllOrigins = true
+	config.AllowCredentials = true
+	r.Use(cors.New(config))
 }
 
 func setNewRelicConnection(r *gin.Engine) {
