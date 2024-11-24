@@ -1,12 +1,10 @@
 package router
 
 import (
-	"fmt"
 	"server/src/controller"
 	"server/src/database"
 	"server/src/middleware"
 	"fmt"
-	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	nrgin "github.com/newrelic/go-agent/v3/integrations/nrgin"
