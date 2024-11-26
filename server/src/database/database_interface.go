@@ -47,5 +47,7 @@ type Database interface {
 
 	UnBlockPost(postID string) error
 
+	GetTrendingTopics() ([]string, error)
+
 	ClearDB() error
 }

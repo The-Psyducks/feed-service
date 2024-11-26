@@ -91,7 +91,7 @@ type FrontPost struct {
 	Retweet_Author   string     `json:"retweet_author"`
 	Media_Info       MediaInfo  `json:"media_info"`
 	Bookmark		 bool       `json:"bookmark"`
-	Mentions 		[]string  	`bson:"mentions"`
+	Mentions 		[]string  	`json:"mentions"`
 }
 
 func NewFrontPost(post DBPost, author AuthorInfo, liked bool, retweeted bool, bookmarked bool) FrontPost {
@@ -113,5 +113,4 @@ func NewFrontPost(post DBPost, author AuthorInfo, liked bool, retweeted bool, bo
 		Bookmark:		  bookmarked,
 		Mentions: 		post.Mentions,
 	}
-
 }

@@ -661,6 +661,65 @@ func (d *AppDatabase) GetUserMetrics(userID string, limits models.MetricLimits) 
 	return metrics, nil
 }
 
+func (d *AppDatabase) GetTrendingTopics() ([]string, error) {
+	postCollection := d.db.Collection(FEED_COLLECTION)
+
+	pipeline := mongo.Pipeline{
+		{{ Key:   "$unwind", Value: bson.D{{Key: "path", Value: "$TAGS_FIELD"}}, }},
+		{{
+			Key: "$project",
+			Value: bson.D{
+				{Key: "TAGS_FIELD", Value: 1},
+				{Key: "timeDifference", Value: bson.D{
+					{Key: "$divide", Value: bson.A{
+						bson.D{{Key: "$subtract", Value: bson.A{time.Now(), "$TIME_FIELD"}}},
+						1000 * 60 * 60,
+					}},
+				}},
+			},
+		}},
+		{{
+			Key: "$group",
+			Value: bson.D{
+				{Key: "_id", Value: "$TAGS_FIELD"},
+				{Key: "totalOccurrences", Value: bson.D{{Key: "$sum", Value: 1}}},
+				{Key: "averageTimeDifference", Value: bson.D{{Key: "$avg", Value: "$timeDifference"}}},
+			},
+		}},
+		{{
+			Key: "$project",
+			Value: bson.D{
+				{Key: "TAGS_FIELD", Value: "$_id"},
+				{Key: "score", Value: bson.D{
+					{Key: "$multiply", Value: bson.A{
+						"$totalOccurrences",
+						bson.D{{Key: "$exp", Value: bson.D{
+							{Key: "$multiply", Value: bson.A{-0.1, "$averageTimeDifference"}},
+						}}},
+					}},
+				}},
+			},
+		}},
+		{{ Key:   "$sort", Value: bson.D{{Key: "score", Value: -1}},}},
+		{{ Key:   "$limit", Value: 20,}},
+	}
+
+	cursor, err := postCollection.Aggregate(context.Background(), pipeline)
+	if err != nil {
+		log.Println(err)
+		return nil, postErrors.DatabaseError(err.Error())
+	}
+
+	var trendingTags []string
+
+	if err = cursor.All(context.Background(), &trendingTags); err != nil {
+		log.Println(err)
+		return nil, postErrors.DatabaseError(err.Error())
+	}
+
+	return trendingTags, nil
+}
+
 func (d *AppDatabase) LikeAPost(postID string, likerID string) error {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 	likesCollection := d.db.Collection(LIKES_COLLECTION)
