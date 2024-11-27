@@ -219,7 +219,7 @@ func TestUnRetweetAPost(t *testing.T) {
 
 	assert.Equal(t, err, nil, "Error should be nil")
 
-	log.Println(result_post)
+	// log.Println(result_post)
 	
 	assert.Equal(t, http.StatusOK, fourth.Code)
 	assert.Equal(t, false, result_post.User_Retweet)

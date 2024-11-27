@@ -125,7 +125,7 @@ func TestBlockeedInFeedFollowing(t *testing.T) {
 }
 
 func TestUnBlockAPost(t *testing.T) {
-	log.Println("TestUnRetweetAPost")
+	log.Println("TestUnBlockAPost")
 
 	db := connectToDatabase()
 

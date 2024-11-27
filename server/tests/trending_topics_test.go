@@ -33,9 +33,11 @@ func TestGetTrending(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	makeAndAssertPost(author_id, "content " + "#" + tags[0], tags, []string{}, true, "", r, t)
+	tags2 := []string{tags[0]}
 
-	getPostLiked, _ := http.NewRequest("GET", "/twitsnap/trnding", nil)
+	makeAndAssertPost(author_id, "content " + "#" + tags2[0], tags2, []string{}, true, "", r, t)
+
+	getPostLiked, _ := http.NewRequest("GET", "/twitsnap/trending", nil)
 	addAuthorization(getPostLiked, tokenAsker)
 
 	second := httptest.NewRecorder()
@@ -46,7 +48,11 @@ func TestGetTrending(t *testing.T) {
 	err = json.Unmarshal(second.Body.Bytes(), &result_post)
 
 	assert.Equal(t, err, nil, "Error should be nil")
-
+	
 	assert.Equal(t, http.StatusOK, second.Code, "Status should be 200")
 	assert.Equal(t, len(result_post), 2, "Should have 2 trending topics")
+	
+	for i := 0; i < len(tags); i++ {
+		assert.Equal(t, result_post[i], tags[i], "Trending topic should be " + tags[i])
+	}
 }
