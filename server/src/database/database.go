@@ -386,8 +386,6 @@ func (d *AppDatabase) GetUserFeedInterests(interests []string, following []strin
 		log.Println(err)
 	}
 
-	log.Println(interests)
-
 	filter := bson.M{TAGS_FIELD: bson.M{"$in": interests}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}, BLOCKED_FIELD: false, "$or": []bson.M{
 		{PUBLIC_FIELD: true},
 		{PUBLIC_FIELD: false, AUTHOR_ID_FIELD: bson.M{"$in": following}},
@@ -413,8 +411,6 @@ func (d *AppDatabase) GetUserFeedInterests(interests []string, following []strin
 	if hasMore {
 		posts = posts[:len(posts)-1]
 	}
-
-	log.Println(posts)
 
 	return posts, hasMore, err
 }
@@ -659,6 +655,78 @@ func (d *AppDatabase) GetUserMetrics(userID string, limits models.MetricLimits) 
 	}
 
 	return metrics, nil
+}
+
+func (d *AppDatabase) GetTrendingTopics() ([]string, error) {
+	postCollection := d.db.Collection(FEED_COLLECTION)
+
+	pipeline := mongo.Pipeline{
+		{{ Key: "$unwind", Value: bson.D{{Key: "path", Value: "$" + TAGS_FIELD}}, }},
+		{{Key: "$match", Value: bson.D{
+			{Key: TAGS_FIELD, Value: bson.D{{Key: "$type", Value: "string"}}},
+			{Key: TIME_FIELD, Value: bson.D{{Key: "$type", Value: "date"}}},
+		}}},
+		{{ Key: "$project",
+			Value: bson.D{
+				{Key: TAGS_FIELD, Value: 1},
+				{Key: "timeDifference", Value: bson.D{
+					{Key: "$divide", Value: bson.A{
+						bson.D{{Key: "$subtract", Value: bson.A{
+							bson.D{{Key: "$literal", Value: time.Now()}}, 
+							"$" + TIME_FIELD,                            
+						}}},
+						1000 * 60 * 60, 
+					}},
+				}},
+			},
+		}},
+		{{
+			Key: "$group",
+			Value: bson.D{
+				{Key: "_id", Value: "$" + TAGS_FIELD},
+				{Key: "totalOccurrences", Value: bson.D{{Key: "$sum", Value: 1}}},
+				{Key: "averageTimeDifference", Value: bson.D{{Key: "$avg", Value: "$timeDifference"}}},
+			},
+		}},
+		{{
+			Key: "$project",
+			Value: bson.D{
+				{Key: TAGS_FIELD, Value: "$_id"},
+				{Key: "score", Value: bson.D{
+					{Key: "$multiply", Value: bson.A{
+						"$totalOccurrences",
+						bson.D{{Key: "$exp", Value: bson.D{
+							{Key: "$multiply", Value: bson.A{-0.1, "$averageTimeDifference"}},
+						}}},
+					}},
+				}},
+			},
+		}},
+		{{ Key:   "$sort", Value: bson.D{{Key: "score", Value: -1}},}},
+		{{ Key:   "$limit", Value: 20,}},
+	}
+
+	cursor, err := postCollection.Aggregate(context.Background(), pipeline)
+	if err != nil {
+		log.Println(err)
+		return nil, postErrors.DatabaseError(err.Error())
+	}
+
+	var trendingTags []struct {
+		Tag string `bson:"tags"`
+	}
+	
+	if err = cursor.All(context.Background(), &trendingTags); err != nil {
+		log.Println("Error decoding aggregation results:", err)
+		return nil, postErrors.DatabaseError("Error decoding aggregation results")
+	}
+	
+	tags := make([]string, len(trendingTags))
+	for i, t := range trendingTags {
+		tags[i] = t.Tag
+	}
+	
+	return tags, nil
 }
 
 func (d *AppDatabase) LikeAPost(postID string, likerID string) error {

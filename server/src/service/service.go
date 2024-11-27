@@ -343,6 +343,16 @@ func (c *Service) GetUserMetrics(userID string, limits models.MetricLimits) (mod
 	return metrics, nil
 }
 
+func (c *Service) GetTrendingTopics() ([]string, error) {
+	topics, err := c.db.GetTrendingTopics()
+
+	if err != nil {
+		return []string{}, err
+	}
+
+	return topics, nil
+}
+
 func (c *Service) LikePost(postID string, userID string) error {
 	err := c.db.LikeAPost(postID, userID)
 

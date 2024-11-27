@@ -283,6 +283,17 @@ func (c *PostController) GetUserMetrics(context *gin.Context) {
 	context.JSON(http.StatusOK, metrics)
 }
 
+func (c *PostController) GetTrendingTopics(context *gin.Context) {
+	tokens, err := c.sv.GetTrendingTopics()
+
+	if err != nil {
+		_ = context.Error(err)
+		return
+	}
+
+	context.JSON(http.StatusOK, tokens)
+}
+
 
 func (c *PostController) LikePost(context *gin.Context) {
 	postID := context.Param("id")

@@ -23,6 +23,11 @@ type ReturnPaginatedPosts struct {
 	Pagination  Pagination  `json:"pagination"`
 }
 
+type ReturnPaginatesdTrendingTopics struct {
+	Topics        []string `json:"topics"`
+	Pagination  Pagination  `json:"pagination"`
+}
+
 type FeedRequesst struct {
 	FeedType     string `json:"feed_type"`
 	WantedUserID string `json:"wanted_user_id"`

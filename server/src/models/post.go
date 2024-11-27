@@ -113,5 +113,4 @@ func NewFrontPost(post DBPost, author AuthorInfo, liked bool, retweeted bool, bo
 		Bookmark:		  bookmarked,
 		Mentions: 		post.Mentions,
 	}
-
 }
