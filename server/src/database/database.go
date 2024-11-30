@@ -207,7 +207,7 @@ func (d *AppDatabase) updatePostContent(postID string, newContent *string) error
 
 	var tags []string
 
-	content :=  strings.Split(*newContent, " ")
+	content := strings.Split(*newContent, " ")
 
 	for _, word := range content {
 		if strings.HasPrefix(word, "#") {
@@ -250,7 +250,7 @@ func (d *AppDatabase) updatePostMentions(postID string, newMentions *[]string) e
 	if newMentions == nil {
 		return nil
 	}
-	
+
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	filter := bson.M{POST_ID_FIELD: postID}
@@ -425,7 +425,7 @@ func (d *AppDatabase) GetUserFeedSingle(userId string, limitConfig models.LimitC
 	}
 
 	filter := bson.M{
-		TIME_FIELD: bson.M{"$lt": parsedTime.UTC()},
+		TIME_FIELD:    bson.M{"$lt": parsedTime.UTC()},
 		BLOCKED_FIELD: false,
 		"$and": []bson.M{
 			{"$or": []bson.M{
@@ -601,19 +601,19 @@ func (d *AppDatabase) WordSearchPosts(words string, following []string, askerID 
 	return posts, hasMore, err
 }
 
-func (d *AppDatabase) GetUserMetrics(userID string, limits models.MetricLimits) (models.Metrics, error) {
+func (d *AppDatabase) GetUserMetrics(userID string, limits models.MetricLimits) (models.UserMetrics, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	parsedFromTime, err := time.Parse(time.RFC3339, limits.FromTime)
 	if err != nil {
 		log.Println(err)
-		return models.Metrics{}, err
+		return models.UserMetrics{}, err
 	}
 
 	parsedToTime, err := time.Parse(time.RFC3339, limits.ToTime)
 	if err != nil {
 		log.Println(err)
-		return models.Metrics{}, err
+		return models.UserMetrics{}, err
 	}
 
 	pipeline := mongo.Pipeline{
@@ -636,7 +636,7 @@ func (d *AppDatabase) GetUserMetrics(userID string, limits models.MetricLimits) 
 
 	if err != nil {
 		log.Println(err)
-		return models.Metrics{}, err
+		return models.UserMetrics{}, err
 	}
 
 	var result []bson.M
@@ -645,13 +645,13 @@ func (d *AppDatabase) GetUserMetrics(userID string, limits models.MetricLimits) 
 		log.Fatal(err)
 	}
 
-	var metrics models.Metrics
+	var metrics models.UserMetrics
 
 	if len(result) > 0 {
-	
-		metrics = models.Metrics{Likes: convertToInt(result[0]["likes"]), Retweets: convertToInt(result[0]["retweets"]), Posts: convertToInt(result[0]["posts"])}
+
+		metrics = models.UserMetrics{Likes: convertToInt(result[0]["likes"]), Retweets: convertToInt(result[0]["retweets"]), Posts: convertToInt(result[0]["posts"])}
 	} else {
-		metrics = models.Metrics{Likes: 0, Retweets: 0, Posts: 0}
+		metrics = models.UserMetrics{Likes: 0, Retweets: 0, Posts: 0}
 	}
 
 	return metrics, nil
@@ -661,21 +661,21 @@ func (d *AppDatabase) GetTrendingTopics() ([]string, error) {
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
 	pipeline := mongo.Pipeline{
-		{{ Key: "$unwind", Value: bson.D{{Key: "path", Value: "$" + TAGS_FIELD}}, }},
+		{{Key: "$unwind", Value: bson.D{{Key: "path", Value: "$" + TAGS_FIELD}}}},
 		{{Key: "$match", Value: bson.D{
 			{Key: TAGS_FIELD, Value: bson.D{{Key: "$type", Value: "string"}}},
 			{Key: TIME_FIELD, Value: bson.D{{Key: "$type", Value: "date"}}},
 		}}},
-		{{ Key: "$project",
+		{{Key: "$project",
 			Value: bson.D{
 				{Key: TAGS_FIELD, Value: 1},
 				{Key: "timeDifference", Value: bson.D{
 					{Key: "$divide", Value: bson.A{
 						bson.D{{Key: "$subtract", Value: bson.A{
-							bson.D{{Key: "$literal", Value: time.Now()}}, 
-							"$" + TIME_FIELD,                            
+							bson.D{{Key: "$literal", Value: time.Now()}},
+							"$" + TIME_FIELD,
 						}}},
-						1000 * 60 * 60, 
+						1000 * 60 * 60,
 					}},
 				}},
 			},
@@ -702,8 +702,8 @@ func (d *AppDatabase) GetTrendingTopics() ([]string, error) {
 				}},
 			},
 		}},
-		{{ Key:   "$sort", Value: bson.D{{Key: "score", Value: -1}},}},
-		{{ Key:   "$limit", Value: 20,}},
+		{{Key: "$sort", Value: bson.D{{Key: "score", Value: -1}}}},
+		{{Key: "$limit", Value: 20}},
 	}
 
 	cursor, err := postCollection.Aggregate(context.Background(), pipeline)
@@ -715,17 +715,17 @@ func (d *AppDatabase) GetTrendingTopics() ([]string, error) {
 	var trendingTags []struct {
 		Tag string `bson:"tags"`
 	}
-	
+
 	if err = cursor.All(context.Background(), &trendingTags); err != nil {
 		log.Println("Error decoding aggregation results:", err)
 		return nil, postErrors.DatabaseError("Error decoding aggregation results")
 	}
-	
+
 	tags := make([]string, len(trendingTags))
 	for i, t := range trendingTags {
 		tags[i] = t.Tag
 	}
-	
+
 	return tags, nil
 }
 
@@ -848,7 +848,6 @@ func (d *AppDatabase) GetUserFavorites(userID string, limitConfig models.LimitCo
 	favoritesCollection := d.db.Collection(BOOKMARK_COLLECTION)
 	postCollection := d.db.Collection(FEED_COLLECTION)
 
-
 	parsedTime, err := time.Parse(time.RFC3339, limitConfig.FromTime)
 
 	if err != nil {
@@ -890,7 +889,6 @@ func (d *AppDatabase) GetUserFavorites(userID string, limitConfig models.LimitCo
 	filter = bson.M{POST_ID_FIELD: bson.M{"$in": postIDs}, TIME_FIELD: bson.M{"$lt": parsedTime.UTC()}}
 
 	cursor, err = postCollection.Find(context.Background(), filter, options.Find().
-
 		SetSort(bson.M{TIME_FIELD: -1}).SetSkip(int64(limitConfig.Skip)).SetLimit(int64(limitConfig.Limit)+1))
 
 	if err != nil {
@@ -906,7 +904,6 @@ func (d *AppDatabase) GetUserFavorites(userID string, limitConfig models.LimitCo
 	}
 
 	hasMore := len(posts) > limitConfig.Limit
-
 
 	return posts, hasMore, nil
 }
@@ -982,7 +979,7 @@ func (d *AppDatabase) makeDBPostIntoFrontPost(post models.DBPost, askerID string
 	if err_2 != nil {
 		return models.FrontPost{}, err_2
 	}
-	
+
 	retweeted, err_3 := d.hasRetweeted(post.Original_Post_ID, askerID)
 	if err_3 != nil {
 		return models.FrontPost{}, err_3
@@ -1052,15 +1049,14 @@ func (d *AppDatabase) hasBookmark(postID string, userID string) (bool, error) {
 }
 
 func convertToInt(value interface{}) int {
-
-	switch v:=  value.(type) {
-		case int:	
-			return v
-		case int32:
-			return int(v)
-		case int64:
-			return int(v)
-		default:
-			return 0
-		}
+	switch v := value.(type) {
+	case int:
+		return v
+	case int32:
+		return int(v)
+	case int64:
+		return int(v)
+	default:
+		return 0
+	}
 }

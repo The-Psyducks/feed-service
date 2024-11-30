@@ -1,15 +1,16 @@
 package router
 
 import (
+	"fmt"
+	"log"
 	"server/src/controller"
 	"server/src/database"
 	"server/src/middleware"
-	"fmt"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	nrgin "github.com/newrelic/go-agent/v3/integrations/nrgin"
 	"github.com/newrelic/go-agent/v3/newrelic"
-
 )
 
 func CreateRouter(db database.Database) *gin.Engine {
@@ -21,7 +22,12 @@ func CreateRouter(db database.Database) *gin.Engine {
 	r.Use(middleware.ErrorManager())
 	r.Use(middleware.AuthMiddleware())
 
-	postController := controller.NewPostController(db)
+	amqp, err := CreateProducer()
+	if err != nil {
+		log.Fatalf("failed to create producer: %v", err)
+	}
+
+	postController := controller.NewPostController(db, amqp)
 
 	r.POST("/twitsnap", postController.NewPost)
 	

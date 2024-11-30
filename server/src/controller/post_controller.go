@@ -8,6 +8,7 @@ import (
 	"server/src/service"
 
 	"github.com/gin-gonic/gin"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 const (
@@ -25,8 +26,8 @@ type PostController struct {
 	sv *service.Service
 }
 
-func NewPostController(sv database.Database) *PostController {
-	return &PostController{sv: service.NewService(sv)}
+func NewPostController(sv database.Database, queue *amqp.Channel) *PostController {
+	return &PostController{sv: service.NewService(sv, queue)}
 }
 
 func (c *PostController) NewPost(context *gin.Context) {
