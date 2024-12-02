@@ -105,17 +105,6 @@ func NoTagsFound() TwitSnapError {
 	return error
 }
 
-func NoWordssFound() TwitSnapError {
-	error := TwitSnapError{
-		"about:blank",
-		"No posts with the tags found",
-		http.StatusBadRequest,
-		"There are no twitsnaps with any of the words provided",
-		"/twitsnap",
-	}
-	return error
-}
-
 func AlreadyLiked(postID string) TwitSnapError {
 	error := TwitSnapError{
 		"about:blank",

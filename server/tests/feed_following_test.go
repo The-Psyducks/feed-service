@@ -16,6 +16,8 @@ import (
 	"server/src/models"
 	"server/src/router"
 	"server/src/service"
+
+	postErrors "server/src/all_errors"
 )
 
 const (
@@ -150,4 +152,36 @@ func TestFeedFollowingNextOffset(t *testing.T) {
 	compareOrderAsExpected(expectedPosts2, result2.Data, t)
 	assert.Equal(t, 2, result2.Pagination.Limit, "Limit should be 2")
 	assert.Equal(t, 0, result2.Pagination.Next_Offset, "Next offset should be 0")
+}
+
+func TestFeedBadRequestFollowing(t *testing.T) {
+	log.Println("FeedBadRequestFollowing")
+
+	db := connectToDatabase()
+
+	r := router.CreateRouter(db)
+
+	token, err := auth.GenerateToken(service.TEST_USER_ONE, "username", false)
+
+	assert.Equal(t, err, nil, "Error should be nil")
+	
+	time.Sleep(1 * time.Second)
+	time := time.Now().Format(time.RFC3339)
+	
+	skip := "0"
+	limit := "6"
+	feed := "following_bad"
+	
+	getFeed, _ := http.NewRequest("GET", "/twitsnap/feed?time="+time+"&skip="+skip+"&limit="+limit+"&feed_type="+feed, nil)
+	addAuthorization(getFeed, token)
+	
+	feedRecorder := httptest.NewRecorder()
+	r.ServeHTTP(feedRecorder, getFeed)
+	
+	result := postErrors.BadFeedRequest(feed)
+	err_2 := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
+
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	assert.Equal(t, http.StatusBadRequest, feedRecorder.Code, "Status should be 400")
+	assert.Equal(t, postErrors.BadFeedRequest(feed), result, "Error should be the same")
 }

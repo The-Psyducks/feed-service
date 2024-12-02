@@ -6,6 +6,8 @@ const (
 	LIKES_COLLECTION    = "likes"
 	RETWEET_COLLECTION  = "retweets"
 	BOOKMARK_COLLECTION = "bookmarks"
+	TWTMETRICS_COLLECTION = "twtmetrics"
+	TAGMETRICS_COLLECTION = "tagmetrics"
 )
 
 const (
@@ -27,6 +29,14 @@ const (
 	BOOKMARK_FIELD         = "bookmark"
 	MENTIONS_FIELD         = "mentions"
 	BLOCKED_FIELD		  = "blocked"
+)
+
+const (
+	TOTAL_TWEETS = "total_tweets"
+	HOURLY_FRECUENCY = "hourly_frecuency"
+	TREND = "trend"
+	LAST_UPDATED = "last_updated"
+	DAY = "day"
 )
 
 const (

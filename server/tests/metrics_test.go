@@ -40,7 +40,7 @@ func TestMetricsLikes(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
+	post := makeAndAssertPost(author_id, "content "+"#"+tags[0]+" #"+tags[1], tags, []string{}, true, "", r, t)
 
 	getPost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Original_Post_ID, nil)
 	addAuthorization(getPost, tokenLiker)
@@ -59,7 +59,7 @@ func TestMetricsLikes(t *testing.T) {
 	assert.Equal(t, http.StatusNoContent, second.Code)
 
 	time.Sleep(1 * time.Second)
-	
+
 	endTime := time.Now().Format(time.RFC3339)
 
 	getPostLiked, _ := http.NewRequest("GET", "/twitsnap/"+post.Original_Post_ID, nil)
@@ -80,14 +80,13 @@ func TestMetricsLikes(t *testing.T) {
 	assert.Equal(t, result.Likes, 2, "Post should have 2 likes")
 	assert.Equal(t, result.User_Liked, true, "User should have liked the post")
 
-
 	getMetrics, _ := http.NewRequest("GET", "/twitsnap/metrics?time="+time_init+"&end_time="+endTime, nil)
 	addAuthorization(getMetrics, tokenAuthor)
 
 	third := httptest.NewRecorder()
 	r.ServeHTTP(third, getMetrics)
 
-	result_post := models.Metrics{}
+	result_post := models.UserMetrics{}
 
 	err = json.Unmarshal(third.Body.Bytes(), &result_post)
 
@@ -126,7 +125,7 @@ func TestMetricsRetweets(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
+	post := makeAndAssertPost(author_id, "content "+"#"+tags[0]+" #"+tags[1], tags, []string{}, true, "", r, t)
 
 	retweetAPost(post, service.TEST_USER_TWO_USERNAME, tokenRT, r, t)
 
@@ -145,7 +144,7 @@ func TestMetricsRetweets(t *testing.T) {
 	retweetAPost(result, service.TEST_USER_THREE_USERNAME, tokenRT1, r, t)
 
 	time.Sleep(1 * time.Second)
-	
+
 	endTime := time.Now().Format(time.RFC3339)
 
 	getMetrics, _ := http.NewRequest("GET", "/twitsnap/metrics?time="+time_init+"&end_time="+endTime, nil)
@@ -154,7 +153,7 @@ func TestMetricsRetweets(t *testing.T) {
 	third := httptest.NewRecorder()
 	r.ServeHTTP(third, getMetrics)
 
-	result_post := models.Metrics{}
+	result_post := models.UserMetrics{}
 
 	err = json.Unmarshal(third.Body.Bytes(), &result_post)
 
@@ -191,7 +190,7 @@ func TestLikesAndRetweets(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	post := makeAndAssertPost(author_id, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
+	post := makeAndAssertPost(author_id, "content "+"#"+tags[0]+" #"+tags[1], tags, []string{}, true, "", r, t)
 
 	getPost, _ := http.NewRequest("POST", "/twitsnap/like/"+post.Original_Post_ID, nil)
 	addAuthorization(getPost, tokenLiker)
@@ -238,7 +237,7 @@ func TestLikesAndRetweets(t *testing.T) {
 	retweetAPost(result, service.TEST_USER_THREE_USERNAME, tokenLiker1, r, t)
 
 	time.Sleep(1 * time.Second)
-	
+
 	endTime := time.Now().Format(time.RFC3339)
 
 	getMetrics, _ := http.NewRequest("GET", "/twitsnap/metrics?time="+time_init+"&end_time="+endTime, nil)
@@ -247,7 +246,7 @@ func TestLikesAndRetweets(t *testing.T) {
 	third := httptest.NewRecorder()
 	r.ServeHTTP(third, getMetrics)
 
-	result_post := models.Metrics{}
+	result_post := models.UserMetrics{}
 
 	err = json.Unmarshal(third.Body.Bytes(), &result_post)
 

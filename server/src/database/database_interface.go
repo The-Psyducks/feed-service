@@ -31,14 +31,14 @@ type Database interface {
 
 	GetUserHashtags(hashtags []string, following []string, askerID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)
 
-	GetUserMetrics(userID string, limits models.MetricLimits) (models.Metrics, error)
+	GetUserMetrics(userID string, limits models.MetricLimits) (models.UserMetrics, error)
 
 	LikeAPost(postID string, likerID string) error
 
 	UnLikeAPost(postID string, likerID string) error
 
 	AddFavorite(postID string, userID string) error
-	
+
 	RemoveFavorite(postID string, userID string) error
 
 	GetUserFavorites(userID string, limitConfig models.LimitConfig) ([]models.FrontPost, bool, error)

@@ -5,6 +5,9 @@ const (
 	TEST_USER_TWO   = "2"
 	TEST_USER_THREE = "3"
 
+	TEST_USER_NO_TAGS = "5"
+	TEST_USER_INFO_ERROR = "6"
+
 	INITIAL_SKIP = 0
 
 	TEST_TAG_ONE   = "tag1"

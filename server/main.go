@@ -38,13 +38,15 @@ func main() {
 
 	// err = db.ClearDB()
 
-	if err != nil {
-		log.Fatal("Error clearing database: ", err)
-	}
+	// if err != nil {
+	// 	log.Fatal("Error clearing database: ", err)
+	// }
 
 	r := router.CreateRouter(db)
 
 	address := fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("PORT"))
+
+	log.Println("Server running on: ", address)
 
 	if err := r.Run(address); err != nil {
 		log.Fatal("Error running server: ", err)
