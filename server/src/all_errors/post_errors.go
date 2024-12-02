@@ -182,17 +182,6 @@ func DatabaseError(err string) TwitSnapError {
 	return error
 }
 
-func QueueError(err string) TwitSnapError {
-	error := TwitSnapError{
-		"about:blank",
-		"Database Error",
-		http.StatusInternalServerError,
-		"There was an error with the message queue: " + err,
-		"/twitsnap",
-	}
-	return error
-}
-
 func AccssDenied() TwitSnapError {
 	error := TwitSnapError{
 		"about:blank",
