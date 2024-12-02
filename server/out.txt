@@ -1,0 +1,679 @@
+=== RUN   TestBlockedPost
+2024/12/02 02:57:00 TestBlockedPost
+2024/12/02 02:57:00 Connect to database
+2024/12/02 02:57:00 INFO New post created:  original_post_id=7e1794d6-0c10-448e-a64f-125055068683 author_id=1 timestamp=2024-12-02T02:57:00.244555337Z
+[GIN] 2024/12/02 - 02:57:00 | 201 |   16.315291ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:00 | 204 |     332.369µs |                 | POST     "/twitsnap/block/7e1794d6-0c10-448e-a64f-125055068683"
+2024/12/02 02:57:00 mongo: no documents in result
+[GIN] 2024/12/02 - 02:57:00 | 404 |     224.326µs |                 | GET      "/twitsnap/7e1794d6-0c10-448e-a64f-125055068683"
+Error #01: The twitsnap with ID 7e1794d6-0c10-448e-a64f-125055068683 was not found
+--- PASS: TestBlockedPost (0.02s)
+=== RUN   TestBlockeedInFeedFollowing
+2024/12/02 02:57:00 TestBlockeedInFeedFollowing
+2024/12/02 02:57:00 Connect to database
+2024/12/02 02:57:00 INFO New post created:  original_post_id=5b60b7cd-f963-422c-9993-1226fc9cfebf author_id=1 timestamp=2024-12-02T02:57:00.263715875Z
+[GIN] 2024/12/02 - 02:57:00 | 201 |    5.847066ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:01 INFO New post created:  original_post_id=e21c0420-57bc-4d59-bf30-32146c567aa6 author_id=2 timestamp=2024-12-02T02:57:01.270096822Z
+[GIN] 2024/12/02 - 02:57:01 | 201 |    1.129703ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:02 INFO New post created:  original_post_id=0f556aba-76dd-4836-beb0-ff27d648d49a author_id=3 timestamp=2024-12-02T02:57:02.271794159Z
+[GIN] 2024/12/02 - 02:57:02 | 201 |     2.41015ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:02 | 204 |     335.175µs |                 | POST     "/twitsnap/block/5b60b7cd-f963-422c-9993-1226fc9cfebf"
+[GIN] 2024/12/02 - 02:57:03 | 200 |    3.114604ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:03Z&skip=0&limit=6&feed_type=following&wanted_user_id="
+--- PASS: TestBlockeedInFeedFollowing (3.02s)
+=== RUN   TestUnBlockAPost
+2024/12/02 02:57:03 TestUnBlockAPost
+2024/12/02 02:57:03 Connect to database
+2024/12/02 02:57:03 INFO New post created:  original_post_id=14025719-42ee-43b8-be0f-f245ecd70ccc author_id=1 timestamp=2024-12-02T02:57:03.280459303Z
+[GIN] 2024/12/02 - 02:57:03 | 201 |   13.590327ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:03 | 204 |     292.041µs |                 | POST     "/twitsnap/block/14025719-42ee-43b8-be0f-f245ecd70ccc"
+2024/12/02 02:57:03 mongo: no documents in result
+[GIN] 2024/12/02 - 02:57:03 | 404 |     206.591µs |                 | GET      "/twitsnap/14025719-42ee-43b8-be0f-f245ecd70ccc"
+Error #01: The twitsnap with ID 14025719-42ee-43b8-be0f-f245ecd70ccc was not found
+[GIN] 2024/12/02 - 02:57:03 | 204 |     186.894µs |                 | DELETE   "/twitsnap/block/14025719-42ee-43b8-be0f-f245ecd70ccc"
+[GIN] 2024/12/02 - 02:57:03 | 200 |      378.43µs |                 | GET      "/twitsnap/14025719-42ee-43b8-be0f-f245ecd70ccc"
+--- PASS: TestUnBlockAPost (0.02s)
+=== RUN   TestBlockInFeedForyou
+2024/12/02 02:57:03 TestBlockInFeedForyou
+2024/12/02 02:57:03 Connect to database
+2024/12/02 02:57:03 INFO New post created:  original_post_id=976c29e4-4d91-4d9f-8f15-1185689fb740 author_id=1 timestamp=2024-12-02T02:57:03.296811426Z
+[GIN] 2024/12/02 - 02:57:03 | 201 |    5.468417ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:04 INFO New post created:  original_post_id=964be8e8-504c-4e9d-b920-653ddd0753a8 author_id=2 timestamp=2024-12-02T02:57:04.303573005Z
+[GIN] 2024/12/02 - 02:57:04 | 201 |    3.432662ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:05 INFO New post created:  original_post_id=57c217b9-15b4-4b2d-ab69-f5f57ad3eb32 author_id=3 timestamp=2024-12-02T02:57:05.308276497Z
+[GIN] 2024/12/02 - 02:57:05 | 201 |    3.224358ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:05 | 204 |     391.805µs |                 | POST     "/twitsnap/block/964be8e8-504c-4e9d-b920-653ddd0753a8"
+[GIN] 2024/12/02 - 02:57:06 | 200 |    4.077099ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:06Z&skip=0&limit=6&feed_type=foryou&wanted_user_id="
+--- PASS: TestBlockInFeedForyou (3.02s)
+=== RUN   TestBlockInSingleRetweeterFeed
+2024/12/02 02:57:06 TestRetweetInSingleRetweeterFeed
+2024/12/02 02:57:06 Connect to database
+2024/12/02 02:57:06 INFO New post created:  original_post_id=52264a3a-599d-43e6-b826-55a2f4916ba7 author_id=1 timestamp=2024-12-02T02:57:06.318797288Z
+[GIN] 2024/12/02 - 02:57:06 | 201 |   12.240768ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:07 INFO New post created:  original_post_id=cd472931-be09-4b8f-8306-1abb6a5ddea3 author_id=1 timestamp=2024-12-02T02:57:07.331882377Z
+[GIN] 2024/12/02 - 02:57:07 | 201 |    2.228404ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:08 INFO New post created:  original_post_id=5bd36b37-c174-4a3c-87bd-f2a075bbcf54 author_id=1 timestamp=2024-12-02T02:57:08.335576179Z
+[GIN] 2024/12/02 - 02:57:08 | 201 |    3.446472ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:08 | 204 |     897.434µs |                 | POST     "/twitsnap/block/52264a3a-599d-43e6-b826-55a2f4916ba7"
+[GIN] 2024/12/02 - 02:57:09 | 200 |     3.63393ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:09Z&skip=0&limit=6&feed_type=single&wanted_user_id=1"
+--- PASS: TestBlockInSingleRetweeterFeed (3.03s)
+=== RUN   TestBookmarkPost
+2024/12/02 02:57:09 TestBookmarkPost
+2024/12/02 02:57:09 Connect to database
+2024/12/02 02:57:09 INFO New post created:  original_post_id=1af53b43-135c-426b-bcaa-015d8f26bf23 author_id=1 timestamp=2024-12-02T02:57:09.346676133Z
+[GIN] 2024/12/02 - 02:57:09 | 201 |    5.320846ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:09 | 204 |    5.297138ms |                 | POST     "/twitsnap/bookmark/1af53b43-135c-426b-bcaa-015d8f26bf23"
+[GIN] 2024/12/02 - 02:57:09 | 200 |     880.088µs |                 | GET      "/twitsnap/1af53b43-135c-426b-bcaa-015d8f26bf23"
+--- PASS: TestBookmarkPost (0.01s)
+=== RUN   TestUnBookmarkPost
+2024/12/02 02:57:09 TestUnBookmarkPost
+2024/12/02 02:57:09 Connect to database
+2024/12/02 02:57:09 INFO New post created:  original_post_id=31333260-a6e1-4451-927b-9431c3f05fbb author_id=1 timestamp=2024-12-02T02:57:09.360233728Z
+[GIN] 2024/12/02 - 02:57:09 | 201 |    5.548002ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:09 | 204 |     234.327µs |                 | POST     "/twitsnap/bookmark/31333260-a6e1-4451-927b-9431c3f05fbb"
+[GIN] 2024/12/02 - 02:57:09 | 200 |     493.559µs |                 | GET      "/twitsnap/31333260-a6e1-4451-927b-9431c3f05fbb"
+[GIN] 2024/12/02 - 02:57:09 | 204 |      162.51µs |                 | DELETE   "/twitsnap/bookmark/31333260-a6e1-4451-927b-9431c3f05fbb"
+[GIN] 2024/12/02 - 02:57:09 | 200 |     388.715µs |                 | GET      "/twitsnap/31333260-a6e1-4451-927b-9431c3f05fbb"
+--- PASS: TestUnBookmarkPost (0.01s)
+=== RUN   TestFetchBookmarkedPosts
+2024/12/02 02:57:09 TestFetchBookmarkedPosts
+2024/12/02 02:57:09 Connect to database
+2024/12/02 02:57:09 INFO New post created:  original_post_id=df2fd27a-6de3-47ab-9185-a03b5bbd153a author_id=1 timestamp=2024-12-02T02:57:09.36899314Z
+[GIN] 2024/12/02 - 02:57:09 | 201 |    8.377222ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:10 INFO New post created:  original_post_id=daa4e853-24c2-4396-8cbb-e43f0eb890b8 author_id=2 timestamp=2024-12-02T02:57:10.378644335Z
+[GIN] 2024/12/02 - 02:57:10 | 201 |    1.676654ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:11 INFO New post created:  original_post_id=dcc75f8e-e172-4335-9b66-ad327789c124 author_id=3 timestamp=2024-12-02T02:57:11.381126299Z
+[GIN] 2024/12/02 - 02:57:11 | 201 |    2.939197ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:11 | 204 |     850.066µs |                 | POST     "/twitsnap/bookmark/df2fd27a-6de3-47ab-9185-a03b5bbd153a"
+[GIN] 2024/12/02 - 02:57:11 | 204 |     760.605µs |                 | POST     "/twitsnap/bookmark/daa4e853-24c2-4396-8cbb-e43f0eb890b8"
+[GIN] 2024/12/02 - 02:57:11 | 204 |     476.436µs |                 | POST     "/twitsnap/bookmark/dcc75f8e-e172-4335-9b66-ad327789c124"
+[GIN] 2024/12/02 - 02:57:12 | 200 |    3.745232ms |                 | GET      "/twitsnap/bookmarks?time=2024-12-02T02:57:12Z&skip=0&limit=6&wanted_user_id=2"
+--- PASS: TestFetchBookmarkedPosts (3.02s)
+=== RUN   TestBookmarkReTweetedPost
+2024/12/02 02:57:12 TestBookmarkPost
+2024/12/02 02:57:12 Connect to database
+2024/12/02 02:57:12 INFO New post created:  original_post_id=eb23c94c-ca26-4ca5-8488-c512b8c00529 author_id=1 timestamp=2024-12-02T02:57:12.393140072Z
+[GIN] 2024/12/02 - 02:57:12 | 201 |    5.525327ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:12 | 201 |    6.059668ms |                 | POST     "/twitsnap/retweet/eb23c94c-ca26-4ca5-8488-c512b8c00529"
+[GIN] 2024/12/02 - 02:57:12 | 204 |     213.661µs |                 | POST     "/twitsnap/bookmark/eb23c94c-ca26-4ca5-8488-c512b8c00529"
+[GIN] 2024/12/02 - 02:57:12 | 200 |     450.521µs |                 | GET      "/twitsnap/eb23c94c-ca26-4ca5-8488-c512b8c00529"
+[GIN] 2024/12/02 - 02:57:12 | 200 |     379.278µs |                 | GET      "/twitsnap/47682a35-e48a-4aea-a7db-d84d273f8cc7"
+--- PASS: TestBookmarkReTweetedPost (0.02s)
+=== RUN   TestDeletePost
+2024/12/02 02:57:12 TestDeletePost
+2024/12/02 02:57:12 Connect to database
+2024/12/02 02:57:12 INFO New post created:  original_post_id=3b3add20-fbf1-4293-9496-67715bd85ba8 author_id=1 timestamp=2024-12-02T02:57:12.408351615Z
+[GIN] 2024/12/02 - 02:57:12 | 201 |    5.539814ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:12 | 204 |     533.612µs |                 | DELETE   "/twitsnap/3b3add20-fbf1-4293-9496-67715bd85ba8"
+2024/12/02 02:57:12 mongo: no documents in result
+[GIN] 2024/12/02 - 02:57:12 | 404 |     161.678µs |                 | GET      "/twitsnap/3b3add20-fbf1-4293-9496-67715bd85ba8"
+Error #01: The twitsnap with ID 3b3add20-fbf1-4293-9496-67715bd85ba8 was not found
+--- PASS: TestDeletePost (0.01s)
+=== RUN   TestDeleteUnexistentPost
+2024/12/02 02:57:12 TestDeleteUnexistentPost
+2024/12/02 02:57:12 Connect to database
+2024/12/02 02:57:12 INFO New post created:  original_post_id=15765060-4457-4b34-8d5e-16114ebda00b author_id=1 timestamp=2024-12-02T02:57:12.416417086Z
+[GIN] 2024/12/02 - 02:57:12 | 201 |    6.355318ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:12 | 404 |     208.309µs |                 | DELETE   "/twitsnap/15765060-4457-4b34-8d5e-16114ebda00binvalid"
+Error #01: The twitsnap with ID 15765060-4457-4b34-8d5e-16114ebda00binvalid was not found
+--- PASS: TestDeleteUnexistentPost (0.01s)
+=== RUN   TestEditPostContent
+2024/12/02 02:57:12 TestEditPostContent
+2024/12/02 02:57:12 Connect to database
+2024/12/02 02:57:12 INFO New post created:  original_post_id=765a7102-105c-4f26-b94a-b805849a94c9 author_id=1 timestamp=2024-12-02T02:57:12.42454096Z
+[GIN] 2024/12/02 - 02:57:12 | 201 |     5.93969ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:12 | 200 |     879.534µs |                 | PUT      "/twitsnap/edit/765a7102-105c-4f26-b94a-b805849a94c9"
+--- PASS: TestEditPostContent (0.01s)
+=== RUN   TestEditPostTags
+2024/12/02 02:57:12 TestEditPostTags
+2024/12/02 02:57:12 Connect to database
+2024/12/02 02:57:12 INFO New post created:  original_post_id=62fa0c97-7cf7-4a59-b911-e410d2bd8275 author_id=1 timestamp=2024-12-02T02:57:12.442777846Z
+[GIN] 2024/12/02 - 02:57:12 | 201 |    5.648332ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:12 | 200 |     880.694µs |                 | PUT      "/twitsnap/edit/62fa0c97-7cf7-4a59-b911-e410d2bd8275"
+--- PASS: TestEditPostTags (0.02s)
+=== RUN   TestEditPostMediaURL
+2024/12/02 02:57:12 TestEditPostMediaURL
+2024/12/02 02:57:12 Connect to database
+2024/12/02 02:57:12 INFO New post created:  original_post_id=e7a69626-3eb6-4ace-b029-b4949869c10f author_id=1 timestamp=2024-12-02T02:57:12.450867204Z
+[GIN] 2024/12/02 - 02:57:12 | 201 |     8.98398ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:12 | 200 |     796.956µs |                 | PUT      "/twitsnap/edit/e7a69626-3eb6-4ace-b029-b4949869c10f"
+--- PASS: TestEditPostMediaURL (0.01s)
+=== RUN   TestEditPostPublicToPrivate
+2024/12/02 02:57:12 TestEditPostMediaURL
+2024/12/02 02:57:12 Connect to database
+2024/12/02 02:57:12 INFO New post created:  original_post_id=4f374751-dc79-42b4-98ec-0f4fb124171b author_id=1 timestamp=2024-12-02T02:57:12.462568873Z
+[GIN] 2024/12/02 - 02:57:12 | 201 |    5.695594ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:12 | 200 |     851.576µs |                 | PUT      "/twitsnap/edit/4f374751-dc79-42b4-98ec-0f4fb124171b"
+--- PASS: TestEditPostPublicToPrivate (0.01s)
+=== RUN   TestEditPostPrivateToPublic
+2024/12/02 02:57:12 TestEditPostMediaURL
+2024/12/02 02:57:12 Connect to database
+2024/12/02 02:57:12 INFO New post created:  original_post_id=9a24fb62-213e-4529-8a4f-6f7494c56a43 author_id=1 timestamp=2024-12-02T02:57:12.470712563Z
+[GIN] 2024/12/02 - 02:57:12 | 201 |    6.181113ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:12 | 200 |     796.907µs |                 | PUT      "/twitsnap/edit/9a24fb62-213e-4529-8a4f-6f7494c56a43"
+--- PASS: TestEditPostPrivateToPublic (0.01s)
+=== RUN   TestEditMentions
+2024/12/02 02:57:12 TestEditMentions
+2024/12/02 02:57:12 Connect to database
+2024/12/02 02:57:12 Notification sent to  user1
+2024/12/02 02:57:12 Notification sent to  user2
+2024/12/02 02:57:12 INFO New post created:  original_post_id=c37a799d-2cfc-49b7-8c58-c6b256c7e99b author_id=1 timestamp=2024-12-02T02:57:12.479553885Z
+[GIN] 2024/12/02 - 02:57:12 | 201 |    5.764178ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:12 | 200 |    1.031249ms |                 | PUT      "/twitsnap/edit/c37a799d-2cfc-49b7-8c58-c6b256c7e99b"
+2024/12/02 02:57:12 {c37a799d-2cfc-49b7-8c58-c6b256c7e99b content @user3 {1 username1 alias } 2024-12-02T02:57:12.479Z true [] 0 0 false false false c37a799d-2cfc-49b7-8c58-c6b256c7e99b  { IMAGE} false [user3]}
+--- PASS: TestEditMentions (0.01s)
+=== RUN   TestEditPostTagsAndMentions
+2024/12/02 02:57:12 TestEditPostTagsAndMentions
+2024/12/02 02:57:12 Connect to database
+2024/12/02 02:57:12 Notification sent to  user1
+2024/12/02 02:57:12 Notification sent to  user2
+2024/12/02 02:57:12 INFO New post created:  original_post_id=201bced0-092d-4635-9fb2-7465527db746 author_id=1 timestamp=2024-12-02T02:57:12.488681821Z
+[GIN] 2024/12/02 - 02:57:12 | 201 |     6.93375ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:12 | 200 |    1.077412ms |                 | PUT      "/twitsnap/edit/201bced0-092d-4635-9fb2-7465527db746"
+--- PASS: TestEditPostTagsAndMentions (0.01s)
+=== RUN   TestEditPost
+2024/12/02 02:57:12 Connect to database
+2024/12/02 02:57:12 INFO New post created:  original_post_id=d6059e89-440b-416e-aff5-044677a4881d author_id=1 timestamp=2024-12-02T02:57:12.498292003Z
+[GIN] 2024/12/02 - 02:57:12 | 201 |    5.483989ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:12 | 200 |    1.796956ms |                 | PUT      "/twitsnap/edit/d6059e89-440b-416e-aff5-044677a4881d"
+--- PASS: TestEditPost (0.01s)
+=== RUN   TestFeedFollowing
+2024/12/02 02:57:12 TestGetFeedFollowing
+2024/12/02 02:57:12 Connect to database
+2024/12/02 02:57:12 INFO New post created:  original_post_id=60fc708f-8474-4076-9c7f-8379717d3ae1 author_id=1 timestamp=2024-12-02T02:57:12.509088511Z
+[GIN] 2024/12/02 - 02:57:12 | 201 |    6.021025ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:13 INFO New post created:  original_post_id=83127595-b2b3-44e8-9317-f4a8b7037168 author_id=2 timestamp=2024-12-02T02:57:13.515517227Z
+[GIN] 2024/12/02 - 02:57:13 | 201 |    1.231731ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:14 INFO New post created:  original_post_id=e121e600-3759-4c25-9732-afdab832ed50 author_id=3 timestamp=2024-12-02T02:57:14.517494562Z
+[GIN] 2024/12/02 - 02:57:14 | 201 |      3.2922ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:15 | 200 |      6.5134ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:15Z&skip=0&limit=6&feed_type=following&wanted_user_id="
+--- PASS: TestFeedFollowing (3.02s)
+=== RUN   TestFeedFollowingNextOffset
+2024/12/02 02:57:15 TestGetFeedFollowingNextOffset
+2024/12/02 02:57:15 Connect to database
+2024/12/02 02:57:15 INFO New post created:  original_post_id=1107ae52-5d90-4014-9ec2-40aa78b3c04f author_id=2 timestamp=2024-12-02T02:57:15.531304381Z
+[GIN] 2024/12/02 - 02:57:15 | 201 |   13.425848ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:16 INFO New post created:  original_post_id=035e4210-b0b3-4c6c-969b-04b2f93edcf4 author_id=1 timestamp=2024-12-02T02:57:16.545505104Z
+[GIN] 2024/12/02 - 02:57:16 | 201 |    2.824138ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:17 INFO New post created:  original_post_id=c73a37d1-34c6-49ed-bf5c-38bb57e075bf author_id=3 timestamp=2024-12-02T02:57:17.549288369Z
+[GIN] 2024/12/02 - 02:57:17 | 201 |    3.070486ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:18 | 200 |    2.702927ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:18Z&skip=0&limit=2&feed_type=following&wanted_user_id="
+[GIN] 2024/12/02 - 02:57:18 | 200 |    1.255015ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:18Z&skip=2&limit=2&feed_type=following&wanted_user_id="
+--- PASS: TestFeedFollowingNextOffset (3.03s)
+=== RUN   TestFeedForYou
+2024/12/02 02:57:18 TestGetFeedForyou
+2024/12/02 02:57:18 Connect to database
+2024/12/02 02:57:18 INFO New post created:  original_post_id=c9915b44-9f2c-4915-aefd-e2f8084b28c0 author_id=1 timestamp=2024-12-02T02:57:18.559640602Z
+[GIN] 2024/12/02 - 02:57:18 | 201 |   11.801067ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:19 INFO New post created:  original_post_id=5dcbe999-8d7f-4f9d-b943-09ae9132153e author_id=2 timestamp=2024-12-02T02:57:19.572683035Z
+[GIN] 2024/12/02 - 02:57:19 | 201 |    3.329399ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:20 INFO New post created:  original_post_id=ba4ed18a-d4aa-479d-86cd-fd8d66b0170b author_id=3 timestamp=2024-12-02T02:57:20.576923389Z
+[GIN] 2024/12/02 - 02:57:20 | 201 |    2.569568ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:20 INFO New post created:  original_post_id=5b7224a7-73b1-43ee-a513-ae37c9db07eb author_id=4 timestamp=2024-12-02T02:57:20.579608658Z
+[GIN] 2024/12/02 - 02:57:20 | 201 |    3.038064ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:21 | 200 |    6.269285ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:21Z&skip=0&limit=6&feed_type=foryou&wanted_user_id="
+--- PASS: TestFeedForYou (3.03s)
+=== RUN   TestFeedForyouNotFollowing
+2024/12/02 02:57:21 TestGetFeedForyouNotFollowing
+2024/12/02 02:57:21 Connect to database
+2024/12/02 02:57:21 INFO New post created:  original_post_id=931c357d-b575-4a2c-8af3-6050aa682048 author_id=4 timestamp=2024-12-02T02:57:21.594500096Z
+[GIN] 2024/12/02 - 02:57:21 | 201 |   12.198525ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:22 INFO New post created:  original_post_id=6e220b9a-3835-4a16-ae27-856e025aa0c9 author_id=4 timestamp=2024-12-02T02:57:22.607080355Z
+[GIN] 2024/12/02 - 02:57:22 | 201 |    3.322264ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:23 INFO New post created:  original_post_id=5d435711-7fe9-4234-a41b-ea8aadb0d540 author_id=4 timestamp=2024-12-02T02:57:23.611226976Z
+[GIN] 2024/12/02 - 02:57:23 | 201 |    2.896594ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:23 INFO New post created:  original_post_id=2b94691d-70bc-49d1-a532-d84400fde95e author_id=3 timestamp=2024-12-02T02:57:23.614250215Z
+[GIN] 2024/12/02 - 02:57:23 | 201 |    2.425804ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:24 | 200 |    4.774869ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:24Z&skip=0&limit=6&feed_type=foryou&wanted_user_id="
+--- PASS: TestFeedForyouNotFollowing (3.03s)
+=== RUN   TestFeedForyouNextOffset
+2024/12/02 02:57:24 TestGetFeedFollowingNextOffset
+2024/12/02 02:57:24 Connect to database
+2024/12/02 02:57:24 INFO New post created:  original_post_id=ef54a959-fadc-4ed1-9b71-2b647b4d69fa author_id=1 timestamp=2024-12-02T02:57:24.627161335Z
+[GIN] 2024/12/02 - 02:57:24 | 201 |   13.424678ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:25 INFO New post created:  original_post_id=65ae6cda-5324-4564-b276-972563ae2240 author_id=2 timestamp=2024-12-02T02:57:25.641257509Z
+[GIN] 2024/12/02 - 02:57:25 | 201 |     3.28301ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:26 INFO New post created:  original_post_id=8084d44c-f478-4acd-9589-7b5eb59d3038 author_id=3 timestamp=2024-12-02T02:57:26.645652369Z
+[GIN] 2024/12/02 - 02:57:26 | 201 |    3.031688ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:27 | 200 |    5.252967ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:27Z&skip=0&limit=2&feed_type=foryou&wanted_user_id="
+[GIN] 2024/12/02 - 02:57:27 | 200 |     655.105µs |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:27Z&skip=2&limit=2&feed_type=foryou&wanted_user_id="
+--- PASS: TestFeedForyouNextOffset (3.03s)
+=== RUN   TestGetFeedRetweet
+2024/12/02 02:57:27 TestGetFeedRetweet
+2024/12/02 02:57:27 Connect to database
+2024/12/02 02:57:27 INFO New post created:  original_post_id=d3d19fb9-fbbf-4c56-a30c-9cf9848ff74a author_id=1 timestamp=2024-12-02T02:57:27.658465916Z
+[GIN] 2024/12/02 - 02:57:27 | 201 |   12.202484ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:28 INFO New post created:  original_post_id=f0fe68f8-fab5-4284-99d4-10147e2a2e62 author_id=2 timestamp=2024-12-02T02:57:28.671756261Z
+[GIN] 2024/12/02 - 02:57:28 | 201 |     3.22808ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:29 | 201 |   31.198813ms |                 | POST     "/twitsnap/retweet/d3d19fb9-fbbf-4c56-a30c-9cf9848ff74a"
+[GIN] 2024/12/02 - 02:57:29 | 201 |    2.250167ms |                 | POST     "/twitsnap/retweet/f0fe68f8-fab5-4284-99d4-10147e2a2e62"
+2024/12/02 02:57:29 INFO New post created:  original_post_id=05b1a313-e8ff-42ad-9f8d-cf7afb3c37cd author_id=3 timestamp=2024-12-02T02:57:29.70959259Z
+[GIN] 2024/12/02 - 02:57:29 | 201 |     505.372µs |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:30 | 200 |    4.877788ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:30Z&skip=0&limit=6&feed_type=retweet&wanted_user_id=3"
+--- PASS: TestGetFeedRetweet (3.06s)
+=== RUN   TestGetFeedRetweetNotFollowing
+2024/12/02 02:57:30 TestGetFeedRetweetNotFollowing
+2024/12/02 02:57:30 Connect to database
+2024/12/02 02:57:30 INFO New post created:  original_post_id=4c1211b5-414e-4ebc-b41f-e141d9fd02d0 author_id=1 timestamp=2024-12-02T02:57:30.718638668Z
+[GIN] 2024/12/02 - 02:57:30 | 201 |   12.028397ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:31 INFO New post created:  original_post_id=654ded8e-2d90-489c-922e-868d49334443 author_id=2 timestamp=2024-12-02T02:57:31.73191559Z
+[GIN] 2024/12/02 - 02:57:31 | 201 |    2.950155ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:32 | 201 |   25.729703ms |                 | POST     "/twitsnap/retweet/4c1211b5-414e-4ebc-b41f-e141d9fd02d0"
+[GIN] 2024/12/02 - 02:57:32 | 201 |    1.756349ms |                 | POST     "/twitsnap/retweet/654ded8e-2d90-489c-922e-868d49334443"
+2024/12/02 02:57:32 INFO New post created:  original_post_id=94a9bcea-1a79-4eb0-9e9d-0a674ba13424 author_id=3 timestamp=2024-12-02T02:57:32.76353409Z
+[GIN] 2024/12/02 - 02:57:32 | 201 |     449.988µs |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:33 | 200 |    4.233509ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:33Z&skip=0&limit=6&feed_type=retweet&wanted_user_id=4"
+--- PASS: TestGetFeedRetweetNotFollowing (3.05s)
+=== RUN   TestFeedRetweetNextOffset
+2024/12/02 02:57:33 TestFeedRetweetNextOffset
+2024/12/02 02:57:33 Connect to database
+2024/12/02 02:57:33 INFO New post created:  original_post_id=0f3253e2-415b-40c4-83f7-d22e06ffbe68 author_id=1 timestamp=2024-12-02T02:57:33.771473424Z
+[GIN] 2024/12/02 - 02:57:33 | 201 |   11.943612ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:34 INFO New post created:  original_post_id=d6039199-7162-4611-9397-c0e17c88396c author_id=1 timestamp=2024-12-02T02:57:34.784661094Z
+[GIN] 2024/12/02 - 02:57:34 | 201 |    3.391142ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:35 INFO New post created:  original_post_id=4d1a787b-6d21-414d-b3f8-920279526746 author_id=1 timestamp=2024-12-02T02:57:35.789032645Z
+[GIN] 2024/12/02 - 02:57:35 | 201 |    3.881624ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:35 | 201 |     24.6931ms |                 | POST     "/twitsnap/retweet/0f3253e2-415b-40c4-83f7-d22e06ffbe68"
+[GIN] 2024/12/02 - 02:57:36 | 201 |    7.104918ms |                 | POST     "/twitsnap/retweet/d6039199-7162-4611-9397-c0e17c88396c"
+[GIN] 2024/12/02 - 02:57:37 | 201 |     3.49632ms |                 | POST     "/twitsnap/retweet/4d1a787b-6d21-414d-b3f8-920279526746"
+[GIN] 2024/12/02 - 02:57:38 | 200 |    5.818536ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:38Z&skip=0&limit=2&feed_type=retweet&wanted_user_id=3"
+[GIN] 2024/12/02 - 02:57:38 | 200 |     602.349µs |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:38Z&skip=2&limit=2&feed_type=retweet&wanted_user_id=3"
+--- PASS: TestFeedRetweetNextOffset (5.07s)
+=== RUN   TestGetFeedSingle
+2024/12/02 02:57:38 TestGetFeedSingle
+2024/12/02 02:57:38 Connect to database
+2024/12/02 02:57:38 INFO New post created:  original_post_id=ea62e645-26b2-47db-aaf7-7e723bd2def8 author_id=1 timestamp=2024-12-02T02:57:38.840218116Z
+[GIN] 2024/12/02 - 02:57:38 | 201 |   11.292242ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:39 INFO New post created:  original_post_id=7b86e4a9-eff4-48d1-88ba-7076ebc13eca author_id=2 timestamp=2024-12-02T02:57:39.852219332Z
+[GIN] 2024/12/02 - 02:57:39 | 201 |    3.024836ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:40 INFO New post created:  original_post_id=ab66c80e-aa96-4f98-bd4c-0f30250a4936 author_id=3 timestamp=2024-12-02T02:57:40.855877447Z
+[GIN] 2024/12/02 - 02:57:40 | 201 |    3.058314ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:41 | 200 |    3.346153ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:41Z&skip=0&limit=6&feed_type=single&wanted_user_id=1"
+--- PASS: TestGetFeedSingle (3.03s)
+=== RUN   TestGetFeedSingleNotFollowing
+2024/12/02 02:57:41 TestGetFeedSingleNotFollowing: should only get the public posts of the user
+2024/12/02 02:57:41 Connect to database
+2024/12/02 02:57:41 INFO New post created:  original_post_id=66730975-854f-4ec4-8b4f-450a77e6c832 author_id=4 timestamp=2024-12-02T02:57:41.866137635Z
+[GIN] 2024/12/02 - 02:57:41 | 201 |   12.517765ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:42 INFO New post created:  original_post_id=5ed76556-2ec1-4abf-883d-6982f65d42b1 author_id=4 timestamp=2024-12-02T02:57:42.87893369Z
+[GIN] 2024/12/02 - 02:57:42 | 201 |    2.940938ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:43 INFO New post created:  original_post_id=d792aa55-e9f7-45a9-83c6-63276d1c5f7a author_id=4 timestamp=2024-12-02T02:57:43.88274994Z
+[GIN] 2024/12/02 - 02:57:43 | 201 |    3.131281ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:44 | 200 |     4.90134ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:44Z&skip=0&limit=6&feed_type=single&wanted_user_id=4"
+--- PASS: TestGetFeedSingleNotFollowing (3.03s)
+=== RUN   TestFeedSingleWithFollowing
+2024/12/02 02:57:44 TestGetFeedSingleNotFollowing: should only get the public posts of the user not folowing and all the posts of the one followed
+2024/12/02 02:57:44 Connect to database
+2024/12/02 02:57:44 INFO New post created:  original_post_id=e0e27b32-7810-4f70-a76c-5c795d1dae57 author_id=1 timestamp=2024-12-02T02:57:44.894741721Z
+[GIN] 2024/12/02 - 02:57:44 | 201 |   11.834599ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:45 INFO New post created:  original_post_id=77bafa46-66ac-4e42-aaae-24aedf7a5c3c author_id=1 timestamp=2024-12-02T02:57:45.907339893Z
+[GIN] 2024/12/02 - 02:57:45 | 201 |    3.093758ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:46 INFO New post created:  original_post_id=d519d2e3-1743-499d-91bc-e7dab2bcbf2e author_id=1 timestamp=2024-12-02T02:57:46.911283701Z
+[GIN] 2024/12/02 - 02:57:46 | 201 |    2.971002ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:47 | 200 |    6.444149ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:47Z&skip=0&limit=6&feed_type=single&wanted_user_id=1"
+--- PASS: TestFeedSingleWithFollowing (3.03s)
+=== RUN   TestFeedSingleNextOffset
+2024/12/02 02:57:47 TestGetFeedFollowingNextOffset
+2024/12/02 02:57:47 Connect to database
+2024/12/02 02:57:47 INFO New post created:  original_post_id=d719ea1e-87c3-4e73-8495-ebd3c5163ce2 author_id=1 timestamp=2024-12-02T02:57:47.923264944Z
+[GIN] 2024/12/02 - 02:57:47 | 201 |     13.3249ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:48 INFO New post created:  original_post_id=5970db4c-efe1-493a-8c11-102e276480d9 author_id=1 timestamp=2024-12-02T02:57:48.937312209Z
+[GIN] 2024/12/02 - 02:57:48 | 201 |    2.967771ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:49 INFO New post created:  original_post_id=7fa52999-5572-4f1c-89ac-12d5274dd67a author_id=1 timestamp=2024-12-02T02:57:49.941552465Z
+[GIN] 2024/12/02 - 02:57:49 | 201 |    3.107821ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:50 | 200 |    5.557228ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:50Z&skip=0&limit=2&feed_type=single&wanted_user_id=1"
+[GIN] 2024/12/02 - 02:57:50 | 200 |     632.265µs |                 | GET      "/twitsnap/feed?time=2024-12-02T02:57:50Z&skip=2&limit=2&feed_type=single&wanted_user_id=1"
+--- PASS: TestFeedSingleNextOffset (3.03s)
+=== RUN   TestGetPostWithValidID
+2024/12/02 02:57:50 TestGetPostWithValidID
+2024/12/02 02:57:50 Connect to database
+2024/12/02 02:57:50 INFO New post created:  original_post_id=ef072c74-a9bd-4bee-ae17-8e6d28932c2f author_id=1 timestamp=2024-12-02T02:57:50.953595031Z
+[GIN] 2024/12/02 - 02:57:50 | 201 |    9.401624ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:50 | 200 |     474.376µs |                 | GET      "/twitsnap/ef072c74-a9bd-4bee-ae17-8e6d28932c2f"
+--- PASS: TestGetPostWithValidID (0.01s)
+=== RUN   TestGetPostWithInvalidID
+2024/12/02 02:57:50 TestGetPostWithInvalidID
+2024/12/02 02:57:50 Connect to database
+2024/12/02 02:57:50 INFO New post created:  original_post_id=50df5106-c4b5-4485-8bd7-59eba280207f author_id=54 timestamp=2024-12-02T02:57:50.965192795Z
+[GIN] 2024/12/02 - 02:57:50 | 201 |    5.443375ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:50 mongo: no documents in result
+[GIN] 2024/12/02 - 02:57:50 | 404 |     171.025µs |                 | GET      "/twitsnap/50df5106-c4b5-4485-8bd7-59eba280207finvalid"
+Error #01: The twitsnap with ID 50df5106-c4b5-4485-8bd7-59eba280207finvalid was not found
+--- PASS: TestGetPostWithInvalidID (0.01s)
+=== RUN   TestGetAll
+2024/12/02 02:57:50 TestGetAll
+2024/12/02 02:57:50 Connect to database
+2024/12/02 02:57:50 INFO New post created:  original_post_id=776650b3-df83-4262-8be2-8fa4d0d6295e author_id=1 timestamp=2024-12-02T02:57:50.972525916Z
+[GIN] 2024/12/02 - 02:57:50 | 201 |    6.331835ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:51 INFO New post created:  original_post_id=6fb48fa4-fe5b-4c0b-9797-07a8137f500f author_id=2 timestamp=2024-12-02T02:57:51.979562841Z
+[GIN] 2024/12/02 - 02:57:51 | 201 |    3.116524ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:52 INFO New post created:  original_post_id=42db6da0-5bd1-434e-a5f9-e7d4b8e13674 author_id=3 timestamp=2024-12-02T02:57:52.983580295Z
+[GIN] 2024/12/02 - 02:57:52 | 201 |     3.23725ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:52 INFO New post created:  original_post_id=a4716bf1-f51d-48ae-9891-28d92e24c9ea author_id=3 timestamp=2024-12-02T02:57:52.987225238Z
+[GIN] 2024/12/02 - 02:57:52 | 201 |     2.86991ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:53 | 200 |    5.446005ms |                 | GET      "/twitsnap/all?time=2024-12-02T02:57:53Z&skip=0&limit=6"
+--- PASS: TestGetAll (3.03s)
+=== RUN   TestGetAllDeniedAccess
+2024/12/02 02:57:53 TestGetAllDeniedAccess
+2024/12/02 02:57:53 Connect to database
+[GIN] 2024/12/02 - 02:57:55 | 403 |     293.358µs |                 | GET      "/twitsnap/all?time=2024-12-02T02:57:55Z&skip=0&limit=6"
+Error #01: Access Denied, user not Admin
+--- PASS: TestGetAllDeniedAccess (1.00s)
+=== RUN   TestGetAllNextOffset
+2024/12/02 02:57:55 TestGetAllNextOffset
+2024/12/02 02:57:55 Connect to database
+2024/12/02 02:57:55 INFO New post created:  original_post_id=b4bccafd-29ff-4a20-b082-318136bdacff author_id=1 timestamp=2024-12-02T02:57:55.006618905Z
+[GIN] 2024/12/02 - 02:57:55 | 201 |   13.061029ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:56 INFO New post created:  original_post_id=a363661f-e4f2-429a-b3a8-7fcc56e845f1 author_id=2 timestamp=2024-12-02T02:57:56.020632096Z
+[GIN] 2024/12/02 - 02:57:56 | 201 |     996.663µs |                 | POST     "/twitsnap"
+2024/12/02 02:57:57 INFO New post created:  original_post_id=5a86c60f-56e9-4d1a-9a83-ea17fb3e9f4c author_id=3 timestamp=2024-12-02T02:57:57.022556943Z
+[GIN] 2024/12/02 - 02:57:57 | 201 |    3.020318ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:57 INFO New post created:  original_post_id=48b0f76a-9b20-4af5-a193-07044cbfb48e author_id=3 timestamp=2024-12-02T02:57:57.025718514Z
+[GIN] 2024/12/02 - 02:57:57 | 201 |    2.196178ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:57:58 | 200 |    1.240188ms |                 | GET      "/twitsnap/all?time=2024-12-02T02:57:58Z&skip=0&limit=2"
+[GIN] 2024/12/02 - 02:57:58 | 200 |     561.306µs |                 | GET      "/twitsnap/all?time=2024-12-02T02:57:58Z&skip=2&limit=2"
+--- PASS: TestGetAllNextOffset (3.03s)
+=== RUN   TestHashagSearch
+2024/12/02 02:57:58 TestHashagSearch: only posts with all the tags wanted appear
+2024/12/02 02:57:58 Connect to database
+2024/12/02 02:57:58 INFO New post created:  original_post_id=688c9b4e-cf4e-4f9f-a39d-13aa2200823a author_id=1 timestamp=2024-12-02T02:57:58.032847726Z
+[GIN] 2024/12/02 - 02:57:58 | 201 |    13.15926ms |                 | POST     "/twitsnap"
+2024/12/02 02:57:59 INFO New post created:  original_post_id=15f1ac18-7b21-4d12-9484-704b17eceb7e author_id=2 timestamp=2024-12-02T02:57:59.04644082Z
+[GIN] 2024/12/02 - 02:57:59 | 201 |    1.196043ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:00 INFO New post created:  original_post_id=c8f3a15d-d705-416f-8875-accf2abf0ea6 author_id=3 timestamp=2024-12-02T02:58:00.048280048Z
+[GIN] 2024/12/02 - 02:58:00 | 201 |    3.199164ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:00 INFO New post created:  original_post_id=e59a9f53-c749-4311-beae-af38d0e23fba author_id=3 timestamp=2024-12-02T02:58:00.051607675Z
+[GIN] 2024/12/02 - 02:58:00 | 201 |     2.01051ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:01 | 200 |    3.369499ms |                 | GET      "/twitsnap/hashtag-search?tags=tag5&tags=tag6&time=2024-12-02T02:58:01Z&skip=0&limit=6"
+--- PASS: TestHashagSearch (3.03s)
+=== RUN   TestHashagSearchNotFollowing
+2024/12/02 02:58:01 TestHashagSearchNotFollowing: only posts with all the tags wanted appear, and only public posts from not followed users
+2024/12/02 02:58:01 Connect to database
+2024/12/02 02:58:01 INFO New post created:  original_post_id=60ddd308-245b-4ed7-b0ee-30f9acf293da author_id=4 timestamp=2024-12-02T02:58:01.064449442Z
+[GIN] 2024/12/02 - 02:58:01 | 201 |    6.484083ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:02 INFO New post created:  original_post_id=aaff60aa-b2f7-423a-a0b1-e56a69e4abbb author_id=2 timestamp=2024-12-02T02:58:02.071712362Z
+[GIN] 2024/12/02 - 02:58:02 | 201 |    2.763492ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:03 INFO New post created:  original_post_id=ef84bde7-7375-4185-ae66-4f00193b8f25 author_id=3 timestamp=2024-12-02T02:58:03.07619423Z
+[GIN] 2024/12/02 - 02:58:03 | 201 |    3.118038ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:03 INFO New post created:  original_post_id=67bbba90-21ee-443c-863a-1bed136b9895 author_id=3 timestamp=2024-12-02T02:58:03.078852082Z
+[GIN] 2024/12/02 - 02:58:03 | 201 |    1.896747ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:04 | 200 |    3.149478ms |                 | GET      "/twitsnap/hashtag-search?tags=tag5&tags=tag6&time=2024-12-02T02:58:04Z&skip=0&limit=6"
+--- PASS: TestHashagSearchNotFollowing (3.03s)
+=== RUN   TestHashtagSearchFollowing
+2024/12/02 02:58:04 TestHashtagSearchFollowing: only posts with all the tags wanted appear, with public and not public posts from followed users
+2024/12/02 02:58:04 Connect to database
+2024/12/02 02:58:04 INFO New post created:  original_post_id=0f090b53-6775-4b0e-8e36-66e62bbe5bb5 author_id=1 timestamp=2024-12-02T02:58:04.08929042Z
+[GIN] 2024/12/02 - 02:58:04 | 201 |    12.40313ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:05 INFO New post created:  original_post_id=2d6d0404-028f-4dba-8a4d-6490f7d79aa9 author_id=2 timestamp=2024-12-02T02:58:05.102231882Z
+[GIN] 2024/12/02 - 02:58:05 | 201 |    3.393596ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:06 INFO New post created:  original_post_id=9de88f09-add2-40e5-90fa-89fe40a77f03 author_id=3 timestamp=2024-12-02T02:58:06.106555441Z
+[GIN] 2024/12/02 - 02:58:06 | 201 |     2.06973ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:06 INFO New post created:  original_post_id=74790484-8a9c-40df-b076-4bcfb082662a author_id=3 timestamp=2024-12-02T02:58:06.108757521Z
+[GIN] 2024/12/02 - 02:58:06 | 201 |    1.326388ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:07 | 200 |    5.107847ms |                 | GET      "/twitsnap/hashtag-search?tags=tag5&tags=tag6&time=2024-12-02T02:58:07Z&skip=0&limit=6"
+--- PASS: TestHashtagSearchFollowing (3.03s)
+=== RUN   TestHashtagSearchNextOffset
+2024/12/02 02:58:07 TestGetFeedFollowingNextOffset
+2024/12/02 02:58:07 Connect to database
+2024/12/02 02:58:07 INFO New post created:  original_post_id=656ee058-8bc7-4cfa-bc38-301bc6bf65d3 author_id=1 timestamp=2024-12-02T02:58:07.118946357Z
+[GIN] 2024/12/02 - 02:58:07 | 201 |    8.189836ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:08 INFO New post created:  original_post_id=da5e9491-3c57-40d9-b15b-1f1b5af4746f author_id=2 timestamp=2024-12-02T02:58:08.127828757Z
+[GIN] 2024/12/02 - 02:58:08 | 201 |    2.642049ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:09 INFO New post created:  original_post_id=31c0d699-eac7-4212-bcff-400f6908d9e8 author_id=3 timestamp=2024-12-02T02:58:09.130735548Z
+[GIN] 2024/12/02 - 02:58:09 | 201 |    2.795039ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:10 | 200 |    5.785383ms |                 | GET      "/twitsnap/hashtag-search?tags=tag5&tags=tag6&time=2024-12-02T02:58:10Z&skip=0&limit=2"
+[GIN] 2024/12/02 - 02:58:10 | 200 |    1.696892ms |                 | GET      "/twitsnap/hashtag-search?tags=tag5&tags=tag6&time=2024-12-02T02:58:10Z&skip=2&limit=2"
+--- PASS: TestHashtagSearchNextOffset (3.03s)
+=== RUN   TestLikingAPost
+2024/12/02 02:58:10 TestLikingAPost
+2024/12/02 02:58:10 Connect to database
+2024/12/02 02:58:10 INFO New post created:  original_post_id=f74c8dd7-73c7-4ef1-a328-a643a7c4357c author_id=1 timestamp=2024-12-02T02:58:10.144814354Z
+[GIN] 2024/12/02 - 02:58:10 | 201 |    5.868287ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:10 | 204 |    5.098614ms |                 | POST     "/twitsnap/like/f74c8dd7-73c7-4ef1-a328-a643a7c4357c"
+[GIN] 2024/12/02 - 02:58:10 | 200 |     605.144µs |                 | GET      "/twitsnap/f74c8dd7-73c7-4ef1-a328-a643a7c4357c"
+--- PASS: TestLikingAPost (0.01s)
+=== RUN   TestUnlikingAPost
+2024/12/02 02:58:10 Connect to database
+2024/12/02 02:58:10 INFO New post created:  original_post_id=1c82cd91-afd3-426a-b04a-0de1aff2baeb author_id=1 timestamp=2024-12-02T02:58:10.15891764Z
+[GIN] 2024/12/02 - 02:58:10 | 201 |    5.941015ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:10 | 204 |     5.64795ms |                 | POST     "/twitsnap/like/1c82cd91-afd3-426a-b04a-0de1aff2baeb"
+[GIN] 2024/12/02 - 02:58:10 | 200 |     672.636µs |                 | GET      "/twitsnap/1c82cd91-afd3-426a-b04a-0de1aff2baeb"
+[GIN] 2024/12/02 - 02:58:10 | 204 |     358.661µs |                 | DELETE   "/twitsnap/like/1c82cd91-afd3-426a-b04a-0de1aff2baeb"
+[GIN] 2024/12/02 - 02:58:10 | 200 |     523.282µs |                 | GET      "/twitsnap/1c82cd91-afd3-426a-b04a-0de1aff2baeb"
+--- PASS: TestUnlikingAPost (0.02s)
+=== RUN   TestSeeLikedTweetInFeedFollowing
+2024/12/02 02:58:10 Connect to database
+2024/12/02 02:58:10 INFO New post created:  original_post_id=eddeb849-cb00-4235-96c1-8568de49104a author_id=1 timestamp=2024-12-02T02:58:10.174935081Z
+[GIN] 2024/12/02 - 02:58:10 | 201 |    5.865842ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:11 INFO New post created:  original_post_id=cf404190-6969-482e-ab60-b72f03ad1105 author_id=3 timestamp=2024-12-02T02:58:11.181301341Z
+[GIN] 2024/12/02 - 02:58:11 | 201 |    2.797861ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:12 INFO New post created:  original_post_id=71671cff-a359-4b78-8459-28c7a519fb40 author_id=1 timestamp=2024-12-02T02:58:12.185049164Z
+[GIN] 2024/12/02 - 02:58:12 | 201 |    3.163951ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:12 | 204 |    20.85074ms |                 | POST     "/twitsnap/like/eddeb849-cb00-4235-96c1-8568de49104a"
+[GIN] 2024/12/02 - 02:58:13 | 200 |    7.031436ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:58:13Z&skip=0&limit=6&feed_type=following&wanted_user_id="
+--- PASS: TestSeeLikedTweetInFeedFollowing (3.04s)
+=== RUN   TestUserCanNotLikeTwice
+2024/12/02 02:58:13 TestUserCanNotLikeTwice
+2024/12/02 02:58:13 Connect to database
+2024/12/02 02:58:13 INFO New post created:  original_post_id=e85d771b-0e4f-43f5-903d-960fd30e67a0 author_id=1 timestamp=2024-12-02T02:58:13.223632309Z
+[GIN] 2024/12/02 - 02:58:13 | 201 |   12.728759ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:13 | 204 |    6.406796ms |                 | POST     "/twitsnap/like/e85d771b-0e4f-43f5-903d-960fd30e67a0"
+[GIN] 2024/12/02 - 02:58:13 | 200 |     653.802µs |                 | GET      "/twitsnap/e85d771b-0e4f-43f5-903d-960fd30e67a0"
+[GIN] 2024/12/02 - 02:58:13 | 400 |     177.844µs |                 | POST     "/twitsnap/like/e85d771b-0e4f-43f5-903d-960fd30e67a0"
+Error #01: You have already liked this twitsnap: e85d771b-0e4f-43f5-903d-960fd30e67a0
+--- PASS: TestUserCanNotLikeTwice (0.03s)
+=== RUN   TestMetricsLikes
+2024/12/02 02:58:13 TestMetricsLikes
+2024/12/02 02:58:13 Connect to database
+2024/12/02 02:58:14 INFO New post created:  original_post_id=eae3c0be-0bf1-44e1-8724-81a505289471 author_id=1 timestamp=2024-12-02T02:58:14.246631524Z
+[GIN] 2024/12/02 - 02:58:14 | 201 |   21.094818ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:14 | 204 |    7.777646ms |                 | POST     "/twitsnap/like/eae3c0be-0bf1-44e1-8724-81a505289471"
+[GIN] 2024/12/02 - 02:58:14 | 204 |     745.144µs |                 | POST     "/twitsnap/like/eae3c0be-0bf1-44e1-8724-81a505289471"
+[GIN] 2024/12/02 - 02:58:15 | 200 |    2.812101ms |                 | GET      "/twitsnap/eae3c0be-0bf1-44e1-8724-81a505289471"
+[GIN] 2024/12/02 - 02:58:15 | 200 |    1.164622ms |                 | GET      "/twitsnap/metrics?time=2024-12-02T02:58:13Z&end_time=2024-12-02T02:58:15Z"
+2024/12/02 02:58:15 {2 0 1}
+--- PASS: TestMetricsLikes (2.04s)
+=== RUN   TestMetricsRetweets
+2024/12/02 02:58:15 TestMetricsRetweets
+2024/12/02 02:58:15 Connect to database
+2024/12/02 02:58:16 INFO New post created:  original_post_id=338e5943-d392-454f-a27c-94135be71ed6 author_id=1 timestamp=2024-12-02T02:58:16.283096467Z
+[GIN] 2024/12/02 - 02:58:16 | 201 |   19.061301ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:16 | 201 |    9.757607ms |                 | POST     "/twitsnap/retweet/338e5943-d392-454f-a27c-94135be71ed6"
+[GIN] 2024/12/02 - 02:58:16 | 200 |     560.313µs |                 | GET      "/twitsnap/338e5943-d392-454f-a27c-94135be71ed6"
+[GIN] 2024/12/02 - 02:58:16 | 201 |    1.401837ms |                 | POST     "/twitsnap/retweet/338e5943-d392-454f-a27c-94135be71ed6"
+[GIN] 2024/12/02 - 02:58:17 | 200 |    1.791206ms |                 | GET      "/twitsnap/metrics?time=2024-12-02T02:58:15Z&end_time=2024-12-02T02:58:17Z"
+--- PASS: TestMetricsRetweets (2.04s)
+=== RUN   TestLikesAndRetweets
+2024/12/02 02:58:17 TestLikesAndRetweets
+2024/12/02 02:58:17 Connect to database
+2024/12/02 02:58:18 INFO New post created:  original_post_id=35b2a09c-1a23-4f7b-a69d-5e1f41803638 author_id=1 timestamp=2024-12-02T02:58:18.32061196Z
+[GIN] 2024/12/02 - 02:58:18 | 201 |   21.370811ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:18 | 204 |   12.865127ms |                 | POST     "/twitsnap/like/35b2a09c-1a23-4f7b-a69d-5e1f41803638"
+[GIN] 2024/12/02 - 02:58:18 | 204 |    1.423267ms |                 | POST     "/twitsnap/like/35b2a09c-1a23-4f7b-a69d-5e1f41803638"
+[GIN] 2024/12/02 - 02:58:18 | 200 |    1.076925ms |                 | GET      "/twitsnap/35b2a09c-1a23-4f7b-a69d-5e1f41803638"
+[GIN] 2024/12/02 - 02:58:18 | 201 |    6.923392ms |                 | POST     "/twitsnap/retweet/35b2a09c-1a23-4f7b-a69d-5e1f41803638"
+[GIN] 2024/12/02 - 02:58:18 | 200 |     474.859µs |                 | GET      "/twitsnap/35b2a09c-1a23-4f7b-a69d-5e1f41803638"
+[GIN] 2024/12/02 - 02:58:18 | 201 |    1.243565ms |                 | POST     "/twitsnap/retweet/35b2a09c-1a23-4f7b-a69d-5e1f41803638"
+[GIN] 2024/12/02 - 02:58:19 | 200 |    1.773927ms |                 | GET      "/twitsnap/metrics?time=2024-12-02T02:58:17Z&end_time=2024-12-02T02:58:19Z"
+--- PASS: TestLikesAndRetweets (2.05s)
+=== RUN   TestNewPost
+2024/12/02 02:58:19 TestNewPost
+2024/12/02 02:58:19 Connect to database
+2024/12/02 02:58:19 INFO New post created:  original_post_id=3169e449-c272-438d-800a-16c702c7bc99 author_id=1234 timestamp=2024-12-02T02:58:19.375438771Z
+[GIN] 2024/12/02 - 02:58:19 | 201 |   17.591607ms |                 | POST     "/twitsnap"
+--- PASS: TestNewPost (0.02s)
+=== RUN   TestNewPostWithMissInfo
+2024/12/02 02:58:19 TestNewPostWithMissInfo
+2024/12/02 02:58:19 Connect to database
+[GIN] 2024/12/02 - 02:58:19 | 400 |       172.1µs |                 | POST     "/twitsnap"
+Error #01: The twitsnap message is missing Content
+--- PASS: TestNewPostWithMissInfo (0.00s)
+=== RUN   TestNewPostTooLong
+2024/12/02 02:58:19 TestNewPostTooLong
+2024/12/02 02:58:19 Connect to database
+[GIN] 2024/12/02 - 02:58:19 | 413 |      80.064µs |                 | POST     "/twitsnap"
+Error #01: The twitsnap message is too long
+--- PASS: TestNewPostTooLong (0.00s)
+=== RUN   TestNewPostUnexpectedFormat
+2024/12/02 02:58:19 TestNewPost
+2024/12/02 02:58:19 Connect to database
+[GIN] 2024/12/02 - 02:58:19 | 400 |     105.187µs |                 | POST     "/twitsnap"
+Error #01: The twitsnap message has an unexpected format
+--- PASS: TestNewPostUnexpectedFormat (0.00s)
+=== RUN   TestRetweetAPost
+2024/12/02 02:58:19 TestRetweetAPost
+2024/12/02 02:58:19 Connect to database
+2024/12/02 02:58:19 INFO New post created:  original_post_id=75d04d57-f5c0-4b5b-9782-0561858143f6 author_id=1 timestamp=2024-12-02T02:58:19.399201346Z
+[GIN] 2024/12/02 - 02:58:19 | 201 |    5.798748ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:19 | 201 |     6.38519ms |                 | POST     "/twitsnap/retweet/75d04d57-f5c0-4b5b-9782-0561858143f6"
+[GIN] 2024/12/02 - 02:58:19 | 200 |     502.409µs |                 | GET      "/twitsnap/75d04d57-f5c0-4b5b-9782-0561858143f6"
+[GIN] 2024/12/02 - 02:58:19 | 200 |     442.843µs |                 | GET      "/twitsnap/44a7824c-eb5c-4bcd-9c90-34ad4f5cb62c"
+--- PASS: TestRetweetAPost (0.01s)
+=== RUN   TestRetweetInFeedFollowing
+2024/12/02 02:58:19 TestRetweetInFeedFollowing
+2024/12/02 02:58:19 Connect to database
+2024/12/02 02:58:19 INFO New post created:  original_post_id=4605751c-a673-4af8-b015-3c0459370c24 author_id=1 timestamp=2024-12-02T02:58:19.414388804Z
+[GIN] 2024/12/02 - 02:58:19 | 201 |    5.449228ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:20 INFO New post created:  original_post_id=4da0bd60-781c-4798-9932-fff662003422 author_id=2 timestamp=2024-12-02T02:58:20.420610695Z
+[GIN] 2024/12/02 - 02:58:20 | 201 |    3.316159ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:21 INFO New post created:  original_post_id=c6f71c71-d228-4281-8e37-6d18eb404064 author_id=3 timestamp=2024-12-02T02:58:21.424739804Z
+[GIN] 2024/12/02 - 02:58:21 | 201 |    3.039498ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:21 | 201 |   23.794074ms |                 | POST     "/twitsnap/retweet/4605751c-a673-4af8-b015-3c0459370c24"
+[GIN] 2024/12/02 - 02:58:22 | 200 |    6.109171ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:58:22Z&skip=0&limit=6&feed_type=following&wanted_user_id="
+--- PASS: TestRetweetInFeedFollowing (3.05s)
+=== RUN   TestUnRetweetAPost
+2024/12/02 02:58:22 TestUnRetweetAPost
+2024/12/02 02:58:22 Connect to database
+2024/12/02 02:58:22 INFO New post created:  original_post_id=1816bb2b-c29c-4431-9524-0a7feb25df4f author_id=1 timestamp=2024-12-02T02:58:22.461221261Z
+[GIN] 2024/12/02 - 02:58:22 | 201 |    11.59907ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:22 | 201 |    6.451764ms |                 | POST     "/twitsnap/retweet/1816bb2b-c29c-4431-9524-0a7feb25df4f"
+[GIN] 2024/12/02 - 02:58:22 | 200 |     476.274µs |                 | GET      "/twitsnap/1816bb2b-c29c-4431-9524-0a7feb25df4f"
+[GIN] 2024/12/02 - 02:58:22 | 204 |      385.62µs |                 | DELETE   "/twitsnap/retweet/1816bb2b-c29c-4431-9524-0a7feb25df4f"
+[GIN] 2024/12/02 - 02:58:22 | 200 |     429.308µs |                 | GET      "/twitsnap/1816bb2b-c29c-4431-9524-0a7feb25df4f"
+--- PASS: TestUnRetweetAPost (0.02s)
+=== RUN   TestRetweetInFeedForyou
+2024/12/02 02:58:22 TestRetweetInFeedForyou
+2024/12/02 02:58:22 Connect to database
+2024/12/02 02:58:22 INFO New post created:  original_post_id=ba37615c-e3ba-4335-803f-d0a53ece699a author_id=1 timestamp=2024-12-02T02:58:22.482539233Z
+[GIN] 2024/12/02 - 02:58:22 | 201 |    5.922246ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:23 INFO New post created:  original_post_id=b805accb-2295-4d48-9e59-02305d017c2b author_id=2 timestamp=2024-12-02T02:58:23.488856798Z
+[GIN] 2024/12/02 - 02:58:23 | 201 |    2.849653ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:24 INFO New post created:  original_post_id=1714a777-3ac0-4ab0-a7f0-24874bf9d9c2 author_id=3 timestamp=2024-12-02T02:58:24.49231397Z
+[GIN] 2024/12/02 - 02:58:24 | 201 |    3.152602ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:24 | 201 |   14.259199ms |                 | POST     "/twitsnap/retweet/ba37615c-e3ba-4335-803f-d0a53ece699a"
+[GIN] 2024/12/02 - 02:58:25 | 200 |    7.429403ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:58:25Z&skip=0&limit=6&feed_type=foryou&wanted_user_id="
+--- PASS: TestRetweetInFeedForyou (3.04s)
+=== RUN   TestRetweetInSingleRetweeterFeed
+2024/12/02 02:58:25 TestRetweetInSingleRetweeterFeed
+2024/12/02 02:58:25 Connect to database
+2024/12/02 02:58:25 INFO New post created:  original_post_id=a7bb4d54-65d6-4a2c-ad2a-628d7db37032 author_id=1 timestamp=2024-12-02T02:58:25.51999211Z
+[GIN] 2024/12/02 - 02:58:25 | 201 |   11.912636ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:26 INFO New post created:  original_post_id=d62bccec-d754-4d2d-a334-d4e3988a7e60 author_id=2 timestamp=2024-12-02T02:58:26.533064373Z
+[GIN] 2024/12/02 - 02:58:26 | 201 |    3.002473ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:27 INFO New post created:  original_post_id=4f74bf4e-e370-4c5f-9ce2-c14e655ab685 author_id=1 timestamp=2024-12-02T02:58:27.536920241Z
+[GIN] 2024/12/02 - 02:58:27 | 201 |    4.187632ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:27 | 201 |    25.68311ms |                 | POST     "/twitsnap/retweet/d62bccec-d754-4d2d-a334-d4e3988a7e60"
+[GIN] 2024/12/02 - 02:58:28 | 200 |    6.515765ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:58:28Z&skip=0&limit=6&feed_type=single&wanted_user_id=1"
+--- PASS: TestRetweetInSingleRetweeterFeed (3.06s)
+=== RUN   TestRetweetAndLikeOriginal
+2024/12/02 02:58:28 TestRetweetAndLikeOriginal
+2024/12/02 02:58:28 Connect to database
+2024/12/02 02:58:28 INFO New post created:  original_post_id=4c22cd69-22da-4b72-814b-55abbbd0e194 author_id=1 timestamp=2024-12-02T02:58:28.577453362Z
+[GIN] 2024/12/02 - 02:58:28 | 201 |   11.824786ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:28 | 204 |    6.379187ms |                 | POST     "/twitsnap/like/4c22cd69-22da-4b72-814b-55abbbd0e194"
+[GIN] 2024/12/02 - 02:58:28 | 201 |    6.310785ms |                 | POST     "/twitsnap/retweet/4c22cd69-22da-4b72-814b-55abbbd0e194"
+[GIN] 2024/12/02 - 02:58:28 | 200 |     476.125µs |                 | GET      "/twitsnap/6eaed16b-4988-49d7-8fc8-3858f9ce8219"
+--- PASS: TestRetweetAndLikeOriginal (0.03s)
+=== RUN   TestRetweetAndLikeOriginalAndRetweet
+2024/12/02 02:58:28 TestRetweetAndLikeOriginalAndRetweet
+2024/12/02 02:58:28 Connect to database
+2024/12/02 02:58:28 INFO New post created:  original_post_id=46a82454-ed2e-4e6e-b70b-ea27053b2ef4 author_id=1 timestamp=2024-12-02T02:58:28.604482275Z
+[GIN] 2024/12/02 - 02:58:28 | 201 |     5.81301ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:28 | 201 |    6.272645ms |                 | POST     "/twitsnap/retweet/46a82454-ed2e-4e6e-b70b-ea27053b2ef4"
+[GIN] 2024/12/02 - 02:58:28 | 204 |    5.871441ms |                 | POST     "/twitsnap/like/46a82454-ed2e-4e6e-b70b-ea27053b2ef4"
+[GIN] 2024/12/02 - 02:58:28 | 204 |     986.381µs |                 | POST     "/twitsnap/like/46a82454-ed2e-4e6e-b70b-ea27053b2ef4"
+[GIN] 2024/12/02 - 02:58:28 | 200 |    1.378126ms |                 | GET      "/twitsnap/107f80cf-ced0-4edf-8e03-8156412542ac"
+--- PASS: TestRetweetAndLikeOriginalAndRetweet (0.02s)
+=== RUN   TestRetwetSingleAuthorField
+2024/12/02 02:58:28 TestRetwetSingleAuthorField
+2024/12/02 02:58:28 Connect to database
+2024/12/02 02:58:28 INFO New post created:  original_post_id=2e70ce4e-fa59-4969-bb30-9277d7514997 author_id=1 timestamp=2024-12-02T02:58:28.627550056Z
+[GIN] 2024/12/02 - 02:58:28 | 201 |     6.46266ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:29 INFO New post created:  original_post_id=589a1e84-c9c1-404c-82ea-9a2ac013455d author_id=2 timestamp=2024-12-02T02:58:29.634223145Z
+[GIN] 2024/12/02 - 02:58:29 | 201 |    2.517406ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:30 INFO New post created:  original_post_id=f24802d6-2d19-466d-8b83-9473f0d24aa5 author_id=1 timestamp=2024-12-02T02:58:30.637302549Z
+[GIN] 2024/12/02 - 02:58:30 | 201 |    3.478181ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:30 | 201 |   20.293753ms |                 | POST     "/twitsnap/retweet/589a1e84-c9c1-404c-82ea-9a2ac013455d"
+[GIN] 2024/12/02 - 02:58:31 | 200 |    4.177148ms |                 | GET      "/twitsnap/feed?time=2024-12-02T02:58:31Z&skip=0&limit=6&feed_type=single&wanted_user_id=1"
+--- PASS: TestRetwetSingleAuthorField (3.04s)
+=== RUN   TestGetTrending
+2024/12/02 02:58:31 TestGetTrending
+2024/12/02 02:58:31 Connect to database
+2024/12/02 02:58:31 INFO New post created:  original_post_id=4a38dddd-503f-4081-801c-a1ba8faba67a author_id=1 timestamp=2024-12-02T02:58:31.671156677Z
+[GIN] 2024/12/02 - 02:58:31 | 201 |   13.007961ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:32 INFO New post created:  original_post_id=ccff6980-436e-414c-b245-8132acb3f31d author_id=1 timestamp=2024-12-02T02:58:32.684601073Z
+[GIN] 2024/12/02 - 02:58:32 | 201 |    2.626142ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:32 | 200 |    1.537864ms |                 | GET      "/twitsnap/trending"
+--- PASS: TestGetTrending (1.02s)
+=== RUN   TestWordsearch
+2024/12/02 02:58:32 TestWordsearch: post with one or more of the words wanted in the content appear
+2024/12/02 02:58:32 Connect to database
+2024/12/02 02:58:32 INFO New post created:  original_post_id=8858a97f-5ca9-4144-bdd5-d71d7472ee79 author_id=1 timestamp=2024-12-02T02:58:32.693537113Z
+[GIN] 2024/12/02 - 02:58:32 | 201 |   12.618654ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:33 INFO New post created:  original_post_id=2b410214-6f20-4493-8dd8-e173e265bde6 author_id=2 timestamp=2024-12-02T02:58:33.707508887Z
+[GIN] 2024/12/02 - 02:58:33 | 201 |    4.079818ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:34 INFO New post created:  original_post_id=9fecc337-ff44-42b6-af1e-27360863c2fa author_id=3 timestamp=2024-12-02T02:58:34.712230831Z
+[GIN] 2024/12/02 - 02:58:34 | 201 |    3.000085ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:34 INFO New post created:  original_post_id=bdf0b171-ba99-43a9-bd16-de6af405f4ce author_id=3 timestamp=2024-12-02T02:58:34.715372517Z
+[GIN] 2024/12/02 - 02:58:34 | 201 |    2.179493ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:35 | 200 |    6.579524ms |                 | GET      "/twitsnap/word-search?words=apple pie pecan&time=2024-12-02T02:58:35Z&skip=0&limit=6"
+--- PASS: TestWordsearch (3.04s)
+=== RUN   TestWordSearchNotFollowing
+2024/12/02 02:58:35 TestHashagSearchNotFollowing: only posts with all the tags wanted appear, and only public posts from not followed users
+2024/12/02 02:58:35 Connect to database
+2024/12/02 02:58:35 INFO New post created:  original_post_id=4f1acdcf-64d6-4823-b999-a88753c0d31f author_id=4 timestamp=2024-12-02T02:58:35.728424466Z
+[GIN] 2024/12/02 - 02:58:35 | 201 |   11.121647ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:36 INFO New post created:  original_post_id=326a893c-8170-4e14-a080-d70d5e7ca343 author_id=2 timestamp=2024-12-02T02:58:36.740418028Z
+[GIN] 2024/12/02 - 02:58:36 | 201 |      1.2427ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:37 INFO New post created:  original_post_id=361a6728-13ed-46c9-8832-a3072c36a235 author_id=3 timestamp=2024-12-02T02:58:37.74197606Z
+[GIN] 2024/12/02 - 02:58:37 | 201 |    3.354965ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:37 INFO New post created:  original_post_id=6d538cd8-9c4a-4165-af21-514163c74dc6 author_id=3 timestamp=2024-12-02T02:58:37.74546278Z
+[GIN] 2024/12/02 - 02:58:37 | 201 |      2.1104ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:38 | 200 |    2.904502ms |                 | GET      "/twitsnap/word-search?words=apple pie pecan&time=2024-12-02T02:58:38Z&skip=0&limit=6"
+--- PASS: TestWordSearchNotFollowing (3.03s)
+=== RUN   TestWordSearchFollowing
+2024/12/02 02:58:38 TestHashtagSearchFollowing: only posts with all the tags wanted appear, with public and not public posts from followed users
+2024/12/02 02:58:38 Connect to database
+2024/12/02 02:58:38 INFO New post created:  original_post_id=336f4334-9b21-4b15-be52-8643879bda5b author_id=1 timestamp=2024-12-02T02:58:38.75360592Z
+[GIN] 2024/12/02 - 02:58:38 | 201 |   20.262882ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:39 INFO New post created:  original_post_id=5a76414c-9a6e-4e32-b7e7-f17279081e0c author_id=2 timestamp=2024-12-02T02:58:39.774864387Z
+[GIN] 2024/12/02 - 02:58:39 | 201 |    3.297487ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:40 INFO New post created:  original_post_id=43572737-37fc-4c87-a557-bdfa35634dff author_id=3 timestamp=2024-12-02T02:58:40.779183503Z
+[GIN] 2024/12/02 - 02:58:40 | 201 |    2.851547ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:40 INFO New post created:  original_post_id=3f62dba8-4c04-474b-b67d-a688148d8119 author_id=3 timestamp=2024-12-02T02:58:40.782189934Z
+[GIN] 2024/12/02 - 02:58:40 | 201 |    2.407514ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:41 | 200 |    4.977047ms |                 | GET      "/twitsnap/word-search?words=apple pie pecan&time=2024-12-02T02:58:41Z&skip=0&limit=6"
+--- PASS: TestWordSearchFollowing (3.04s)
+=== RUN   TestWordSearchNextOffset
+2024/12/02 02:58:41 TestGetFeedFollowingNextOffset
+2024/12/02 02:58:41 Connect to database
+2024/12/02 02:58:41 INFO New post created:  original_post_id=5b485ddc-0c4b-4557-ab50-ab59241d763e author_id=1 timestamp=2024-12-02T02:58:41.794055882Z
+[GIN] 2024/12/02 - 02:58:41 | 201 |   12.136195ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:42 INFO New post created:  original_post_id=7b06560f-fa04-4bc0-9042-07ed64484388 author_id=2 timestamp=2024-12-02T02:58:42.807164498Z
+[GIN] 2024/12/02 - 02:58:42 | 201 |    3.121443ms |                 | POST     "/twitsnap"
+2024/12/02 02:58:43 INFO New post created:  original_post_id=347ea1bf-3fc9-450b-a002-121b77a6dd47 author_id=3 timestamp=2024-12-02T02:58:43.811279189Z
+[GIN] 2024/12/02 - 02:58:43 | 201 |    3.067908ms |                 | POST     "/twitsnap"
+[GIN] 2024/12/02 - 02:58:44 | 200 |    5.012748ms |                 | GET      "/twitsnap/word-search?words=apple pie pecan&time=2024-12-02T02:58:44Z&skip=0&limit=2"
+[GIN] 2024/12/02 - 02:58:44 | 200 |     619.769µs |                 | GET      "/twitsnap/word-search?words=apple pie pecan&time=2024-12-02T02:58:44Z&skip=2&limit=2"
+--- PASS: TestWordSearchNextOffset (3.03s)
+PASS
+coverage: 94.6% of statements
+ok  	server/tests	104.597s	coverage: 94.6% of statements
+	server/src/auth		coverage: 0.0% of statements
+	server/src/all_errors		coverage: 0.0% of statements
+	server/src/database		coverage: 0.0% of statements
+	server/src/controller		coverage: 0.0% of statements
+	server		coverage: 0.0% of statements
+	server/src/models		coverage: 0.0% of statements
+	server/src/middleware		coverage: 0.0% of statements
+	server/src/service		coverage: 0.0% of statements
+	server/src/router		coverage: 0.0% of statements

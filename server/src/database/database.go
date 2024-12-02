@@ -745,6 +745,7 @@ func (d *AppDatabase) LikeAPost(postID string, likerID string) error {
 	liker := bson.M{"$addToSet": bson.M{LIKERS_FIELD: likerID}}
 
 	_, err := postCollection.UpdateMany(context.Background(), filter, update)
+	
 	if err != nil {
 		log.Println(err)
 		return postErrors.TwitsnapNotFound(postID)

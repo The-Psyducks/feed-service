@@ -2,7 +2,6 @@ package router
 
 import (
 	"fmt"
-	"log"
 	"server/src/controller"
 	"server/src/database"
 	"server/src/middleware"
@@ -22,12 +21,7 @@ func CreateRouter(db database.Database) *gin.Engine {
 	r.Use(middleware.ErrorManager())
 	r.Use(middleware.AuthMiddleware())
 
-	amqp, err := CreateProducer()
-	if err != nil {
-		log.Fatalf("failed to create producer: %v", err)
-	}
-
-	postController := controller.NewPostController(db, amqp)
+	postController := controller.NewPostController(db)
 
 	r.POST("/twitsnap", postController.NewPost)
 	

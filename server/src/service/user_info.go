@@ -118,8 +118,10 @@ func getUserData(userID string, token string) (models.AuthorInfo, error) {
 }
 
 func getUserInterestsWp(userID string, token string) ([]string, error) {
-	if os.Getenv("ENVIROMENT") == "test" {
+	if os.Getenv("ENVIROMENT") == "test" && userID != TEST_USER_NO_TAGS {
 		return []string{TEST_TAG_ONE, TEST_TAG_TWO, TEST_TAG_THREE}, nil
+	} else if os.Getenv("ENVIROMENT") == "test" && userID == TEST_USER_NO_TAGS {
+		return []string{}, nil
 	} else {
 		return getUsersInterests(userID, token)
 	}

@@ -1,10 +1,7 @@
 package service
 
 import (
-	// "log"
 	"server/src/database"
-
-	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 const (
@@ -16,9 +13,8 @@ const (
 
 type Service struct {
 	db   database.Database
-	amqp *amqp.Channel
 }
 
-func NewService(db database.Database, queue *amqp.Channel) *Service {
+func NewService(db database.Database) *Service {
 	return &Service{db: db}
 }

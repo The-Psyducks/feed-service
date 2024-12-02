@@ -16,6 +16,9 @@ import (
 	"server/src/models"
 	"server/src/router"
 	"server/src/service"
+
+	postErrors "server/src/all_errors"
+
 )
 
 const (
@@ -214,4 +217,59 @@ func TestFeedForyouNextOffset(t *testing.T) {
 	compareOrderAsExpected(expectedPosts2, result2.Data, t)
 	assert.Equal(t, 2, result2.Pagination.Limit, "Limit should be 2")
 	assert.Equal(t, 0, result2.Pagination.Next_Offset, "Next offset should be 0")
+}
+
+func TestFeedForYouNoTagFound(t *testing.T) {
+	log.Println("TestFeedForYouNoTagFound")
+
+	db := connectToDatabase()
+
+	r := router.CreateRouter(db)
+
+	tags := []string{service.TEST_TAG_ONE, "tag5"}
+
+	makeAndAssertPost(service.TEST_USER_ONE, "content " + "#" + tags[0] + " #" + tags[1], tags, []string{}, true, "", r, t)
+
+	time.Sleep(1 * time.Second)
+
+	tags2 := []string{"tag6", service.TEST_TAG_TWO}
+
+	makeAndAssertPost(service.TEST_USER_TWO, "content2 " + "#" + tags2[0] + " #" + tags2[1], tags2, []string{}, true, "", r, t)
+
+	time.Sleep(1 * time.Second)
+
+	tags3 := []string{service.TEST_TAG_THREE, "tag6"}
+
+	makeAndAssertPost(service.TEST_USER_THREE, "content3 " + "#" + tags3[0] + " #" + tags3[1], tags3, []string{}, true, "", r, t)
+
+	tags4 := []string{"tag7", "tag8"}
+
+	makeAndAssertPost(service.TEST_NOT_FOLLOWING_ID, "content4 " + "#" + tags4[0] + " #" + tags4[1], tags4, []string{}, true, "", r, t)
+
+	token, err := auth.GenerateToken(service.TEST_USER_NO_TAGS, "username", true)
+
+	assert.Equal(t, err, nil, "Error should be nil")
+
+	time.Sleep(1 * time.Second)
+	time := time.Now().Format(time.RFC3339)
+
+	skip := "0"
+	limit := "6"
+
+	getFeed, _ := http.NewRequest("GET", "/twitsnap/feed?time="+time+"&skip="+skip+"&limit="+limit+"&feed_type="+FEED_TYPE_Y+"&wanted_user_id="+"", nil)
+	addAuthorization(getFeed, token)
+
+	feedRecorder := httptest.NewRecorder()
+	r.ServeHTTP(feedRecorder, getFeed)
+
+	result := postErrors.NoTagsFound()
+
+	err_2 := json.Unmarshal(feedRecorder.Body.Bytes(), &result)
+
+	assert.Equal(t, err_2, nil, "Error should be nil")
+	errNoTagsFound := postErrors.NoTagsFound()
+
+	assert.Equal(t, err, nil, "Error should be nil")
+	assert.Equal(t, http.StatusBadRequest, feedRecorder.Code)
+	assert.Equal(t, errNoTagsFound.Detail, result.Detail)
 }

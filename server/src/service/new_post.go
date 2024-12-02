@@ -1,12 +1,18 @@
 package service
 
 import (
+	"log/slog"
 	"server/src/models"
 
-	"github.com/go-playground/validator/v10"
 	postErrors "server/src/all_errors"
 
+	"github.com/go-playground/validator/v10"
+
 	"strings"
+)
+
+const (
+	MAX_CHAR = 280
 )
 
 func (c *Service) CreatePost(newPost *models.PostExpectedFormat, author_id string, token string) (*models.FrontPost, error) {
@@ -38,11 +44,7 @@ func (c *Service) CreatePost(newPost *models.PostExpectedFormat, author_id strin
 		}
 	}
 
-	if c.amqp!= nil {
-		if err := c.sendNewContentMessage(newPosted.Tags, newPosted.Time); err != nil {
-			return nil, postErrors.QueueError(err.Error())
-		}
-	}
+	slog.Info("New post created: ", "original_post_id", newPosted.Original_Post_ID, "author_id", newPosted.Author_Info.Author_ID, "timestamp", newPosted.Time)
 
 	return &newPosted, nil
 }
@@ -53,7 +55,7 @@ func (c *Service) parsePost(post *models.PostExpectedFormat, author_id string) (
 		return models.DBPost{}, postErrors.TwitSnapImportantFieldsMissing(err)
 	}
 
-	if len(post.Content) > 280 {
+	if len(post.Content) > MAX_CHAR {
 		return models.DBPost{}, postErrors.TwitsnapTooLong()
 	}
 
