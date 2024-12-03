@@ -1,8 +1,10 @@
 package service
 
 import (
+	"log/slog"
 	postErrors "server/src/all_errors"
 	"server/src/models"
+	"time"
 )
 
 
@@ -36,6 +38,8 @@ func (c *Service) fetchFollowingFeed(limitConfig models.LimitConfig, userID stri
 	}
 
 	posts, err = addAuthorInfoToPosts(posts, token)
+
+	slog.Info("Following feed retrieved: ", "user_id", userID, "time", time.Now(), "count", len(posts))
 	return posts, hasMore, err
 }
 
@@ -61,6 +65,8 @@ func (c *Service) fetchForyouFeed(limitConfig models.LimitConfig, userID string,
 	}
 
 	posts, err = addAuthorInfoToPosts(posts, token)
+
+	slog.Info("Foryou feed retrieved: ", "user_id", userID, "time", time.Now(), "count", len(posts))
 	return posts, hasMore, err
 }
 
@@ -85,6 +91,8 @@ func (c *Service) fetchForyouSingle(limitConfig models.LimitConfig, wantedUserID
 	}
 
 	posts, err = addAuthorInfoToPosts(posts, token)
+
+	slog.Info("Single feed retrieved: ", "user_id", userID, "time", time.Now(), "count", len(posts))
 	return posts, hasMore, err
 }
 
@@ -106,5 +114,7 @@ func (c *Service) fetchRetweetFeed(limitConfig models.LimitConfig, wantedUserID 
 	}
 
 	posts, err = addAuthorInfoToPosts(posts, token)
+
+	slog.Info("Retweet feed retrieved: ", "user_id", userID, "time", time.Now(), "count", len(posts))
 	return posts, hasMore, err
 }

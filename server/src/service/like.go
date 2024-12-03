@@ -1,6 +1,8 @@
 package service
 
 import (
+	"log/slog"
+	"time"
 	postErrors "server/src/all_errors"
 )
 
@@ -16,6 +18,8 @@ func (c *Service) UnLikePost(postID string, userID string) error {
 	if err != nil {
 		return postErrors.TwitsnapNotFound(postID)
 	}
+
+	slog.Info("Post unliked: ", "post_id", postID, "user", userID, "time", time.Now())
 
 	return nil
 }

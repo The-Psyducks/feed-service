@@ -1,11 +1,13 @@
 package controller
 
 import (
+	"log/slog"
 	"net/http"
 	postErrors "server/src/all_errors"
 	"server/src/database"
 	"server/src/models"
 	"server/src/service"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -305,6 +307,8 @@ func (c *PostController) LikePost(context *gin.Context) {
 		_ = context.Error(err)
 		return
 	}
+
+	slog.Info("Post liked: ", "post_id", postID, "user", userID, "time", time.Now())
 
 	context.JSON(http.StatusNoContent, gin.H{})
 }

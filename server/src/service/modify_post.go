@@ -2,11 +2,13 @@ package service
 
 import (
 	"errors"
+	"log/slog"
+	"time"
 
-	"github.com/go-playground/validator/v10"
 	postErrors "server/src/all_errors"
 	"server/src/models"
 
+	"github.com/go-playground/validator/v10"
 )
 
 func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpectedFormat, token string, userID string) (*models.FrontPost, error) {
@@ -30,6 +32,8 @@ func (c *Service) ModifyPostByID(postID string, editInfo models.EditPostExpected
 	if err != nil {
 		return nil, postErrors.UserInfoError(err.Error())
 	}
+
+	slog.Info("Post modified: ", "post_id", postID, "User", userID, "time", time.Now())
 
 	return &modPost, nil
 }

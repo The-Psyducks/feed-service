@@ -1,7 +1,9 @@
 package service
 
 import (
+	"log/slog"
 	"server/src/models"
+	"time"
 )
 
 func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models.LimitConfig, userID string, token string) ([]models.FrontPost, bool, error) {
@@ -23,6 +25,8 @@ func (c *Service) FetchUserPostsByHashtags(hashtags []string, limitConfig models
 
 	posts, err = addAuthorInfoToPosts(posts, token)
 
+	slog.Info("Hashtags feed retrieved: ", "user_id", userID, "time", time.Now(), "count", len(posts), "hashtags", hashtags)
+
 	return posts, hasMore, err
 }
 
@@ -42,6 +46,8 @@ func (c *Service) WordsSearch(words string, limitConfig models.LimitConfig, user
 	}
 
 	posts, err = addAuthorInfoToPosts(posts, token)
+
+	slog.Info("Words search feed retrieved: ", "user_id", userID, "time", time.Now(), "count", len(posts), "words", words)
 
 	return posts, hasMore, err
 }
