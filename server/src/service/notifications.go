@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"log"
+	"log/slog"
 	"strconv"
 
 	"net/http"
@@ -16,7 +16,7 @@ import (
 func sendMentionNotif(newMentionNotification models.MentionNotificationRequest, token string) error {
 
 	if os.Getenv("ENVIROMENT") == "test" {
-		log.Println("Notification sent to ", newMentionNotification.UserId)
+		slog.Info("Notification sent to ", "user_id", newMentionNotification.UserId)
 		return nil
 	}
 
@@ -43,7 +43,7 @@ func sendMentionNotif(newMentionNotification models.MentionNotificationRequest, 
 		return errors.New("error sending request, status code: "  + strconv.Itoa(resp.StatusCode))
 	}
 
-	log.Println("Notification sent to ", newMentionNotification.UserId)
+	slog.Info("Notification sent to ", "user_id", newMentionNotification.UserId)
 
 	return nil
 }

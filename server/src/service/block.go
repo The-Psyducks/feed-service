@@ -1,7 +1,9 @@
 package service
 
 import (
+	"log/slog"
 	postErrors "server/src/all_errors"
+	"time"
 )
 
 func (c *Service) BlockPost(postID string) error {
@@ -10,6 +12,8 @@ func (c *Service) BlockPost(postID string) error {
 	if err != nil {
 		return postErrors.TwitsnapNotFound(postID)
 	}
+
+	slog.Info("Post blocked: ", "post_id", postID, "time", time.Now())
 
 	return nil
 }
@@ -20,6 +24,8 @@ func (c *Service) UnBlockPost(postID string) error {
 	if err != nil {
 		return postErrors.TwitsnapNotFound(postID)
 	}
+
+	slog.Info("Post unblocked: ", "post_id", postID, "time", time.Now())
 
 	return nil
 }

@@ -1,9 +1,10 @@
 package service
 
 import (
+	"log/slog"
 	postErrors "server/src/all_errors"
-	"server/src/database"
 	"server/src/models"
+	"time"
 )
 
 func (c *Service) RetweetPost(postId string, userID string, token string) (*models.FrontPost, error) {
@@ -27,6 +28,8 @@ func (c *Service) RetweetPost(postId string, userID string, token string) (*mode
 		return nil, postErrors.UserInfoError(err.Error())
 	}
 
+	slog.Info("Post retweeted: ", "post_id", postId, "User", userID, "time", time.Now())
+
 	return &newRetweet, nil
 }
 
@@ -37,22 +40,7 @@ func (c *Service) RemoveRetweet(postId string, userID string) error {
 		return postErrors.TwitsnapNotFound(postId)
 	}
 
+	slog.Info("Retweet removed: ", "post_id", postId, "time", time.Now())
+
 	return nil
-}
-
-func (c *Service) FetchAllPosts(limitConfig models.LimitConfig, token string) ([]models.FrontPost, bool, error) {
-
-	posts, hasMore, err := c.db.GetAllPosts(limitConfig, database.ADMIN)
-
-	if err != nil {
-		return []models.FrontPost{}, false, err
-	}
-
-	if len(posts) == 0 {
-		return []models.FrontPost{}, false, nil
-	}
-
-	posts, err = addAuthorInfoToPosts(posts, token)
-
-	return posts, hasMore, err
 }
